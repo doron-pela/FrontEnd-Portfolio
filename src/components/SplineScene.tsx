@@ -91,9 +91,11 @@ export default function SplineScene() {
         {/* <div className="absolute right-1/4 top-1/3">Frontend Experience</div> */}
         {/* <div className="absolute left-1/4 top-1/3">Backend Experience</div> */}
         {/* <div className="absolute w- 400 right-1/2 top-1/3">Projects</div> */}
+        <div className="absolute w-40 h-15 bottom-0 right-0 rounded-tl-2xl bg-[#E3E3E3]"></div>
+        {/* <div className="absolute w-full h-[6.5%] bottom-0 bg-[#E3E3E3] flex"/> */}
 
         <Spline
-          className="spline-canvas"
+        // className="spline-canvas"
           scene="https://prod.spline.design/sUMyxeYwXvQtZ9Ap/scene.splinecode"
           onLoad={onLoad}
         />
