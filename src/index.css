@@ -11,10 +11,6 @@ body,
   scroll-behavior: smooth;
 }
 
-body {
-  /* overflow-y: auto; */
-}
-
 .scroll-scene {
   /* position: relative; */
   min-height: 950vh;
