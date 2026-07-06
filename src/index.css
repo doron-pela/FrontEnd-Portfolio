@@ -5,15 +5,12 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  /* width: 100%; */
-  /* min-height: 100%; */
   overflow-x: clip;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 .scroll-scene {
-  /* position: relative; */
-  min-height: 950vh;
+  min-height: 900vh;
   background: black;
 }
 
@@ -33,5 +30,3 @@ body,
   display: block;
   touch-action: pan-y;
 }
-
-

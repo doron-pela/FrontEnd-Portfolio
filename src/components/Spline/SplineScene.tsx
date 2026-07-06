@@ -1,39 +1,23 @@
 import { useEffect, useRef } from "react";
+import { Outlet } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
-import type { Application } from "@splinetool/runtime";
 
-type CameraState = 0 | 0.5 | 1 | 2 | 3;
+import { CAMERA_STATES, SPLINE_SCENE_URL, SPLINE_VARIABLES } from "./constants";
+import type { SplineApplication } from "./@types";
 
 export default function SplineScene() {
-  const splineRef = useRef<Application | null>(null);
+  const splineRef = useRef<SplineApplication | null>(null);
 
-  function onLoad(spline: Application) {
+  function handleSplineLoad(spline: SplineApplication) {
     splineRef.current = spline;
-
-    console.log("Spline loaded");
-    console.log("Initial Spline variables:", spline.getVariables());
   }
 
-  function setCameraState(value: CameraState) {
-    const spline = splineRef.current;
-
-    spline?.setVariable("CameraState", value);
-
-    console.log("CameraState updated:", {
-      value,
-      variables: spline?.getVariables(),
-    });
+  function setCameraState(value: number) {
+    splineRef.current?.setVariable(SPLINE_VARIABLES.cameraState, value);
   }
 
   function setIsDissected(value: boolean) {
-    const spline = splineRef.current;
-
-    spline?.setVariable("IsDissected", value);
-
-    console.log("IsDissected updated:", {
-      value,
-      variables: spline?.getVariables(),
-    });
+    splineRef.current?.setVariable(SPLINE_VARIABLES.isDissected, value);
   }
 
   useEffect(() => {
@@ -42,23 +26,23 @@ export default function SplineScene() {
 
       switch (key) {
         case "0":
-          setCameraState(0);
+          setCameraState(CAMERA_STATES.base);
           break;
 
         case "i":
-          setCameraState(0.5);
+          setCameraState(CAMERA_STATES.side);
           break;
 
         case "f":
-          setCameraState(1);
+          setCameraState(CAMERA_STATES.front);
           break;
 
         case "b":
-          setCameraState(2);
+          setCameraState(CAMERA_STATES.back);
           break;
 
         case "p":
-          setCameraState(3);
+          setCameraState(CAMERA_STATES.projects);
           break;
 
         case "d":
@@ -90,9 +74,11 @@ export default function SplineScene() {
 
         <Spline
           className="spline-canvas"
-          scene="https://prod.spline.design/sUMyxeYwXvQtZ9Ap/scene.splinecode"
-          onLoad={onLoad}
+          scene={SPLINE_SCENE_URL}
+          onLoad={handleSplineLoad}
         />
+
+        <Outlet />
       </div>
     </main>
   );
