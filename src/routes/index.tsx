@@ -27,6 +27,13 @@ const HOME_SECTIONS = {
 type HomeSection = keyof typeof HOME_SECTIONS;
 type AboutLockDirection = "forward" | "backward";
 
+const SECTION_REVEAL_DELAY_SECONDS = {
+  init: 1,
+  about: 1,
+  experience: 1,
+  systems: 1,
+  projects: 1,
+};
 const SECTION_SCROLL_DURATION_SECONDS = 3;
 const ABOUT_REVEALED_PROGRESS = 0.36;
 
@@ -233,22 +240,42 @@ function HomePage() {
   const scrollTo = useCallback(
     (section: HomeSection) => {
       const targetY = getSectionScrollTarget(section);
+      const isGoingToAbout = section === "about";
+      const revealDelay = SECTION_REVEAL_DELAY_SECONDS[section];
 
       gsap.killTweensOf(window);
+      gsap.killTweensOf(aboutTimelineRef.current);
 
       aboutProgrammaticScrollRef.current = true;
       aboutReleasingRef.current = false;
       aboutReleasedDirectionRef.current = null;
       unlockAboutScroll(false);
 
-      if (section !== "about") {
+      if (!isGoingToAbout) {
         aboutProgressRef.current = 0;
         aboutTimelineRef.current?.progress(0);
       }
 
+      if (isGoingToAbout && aboutTimelineRef.current) {
+        aboutProgressRef.current = 0;
+        aboutTimelineRef.current.progress(0);
+
+        gsap.to(aboutTimelineRef.current, {
+          progress: ABOUT_REVEALED_PROGRESS,
+          duration: SECTION_SCROLL_DURATION_SECONDS - revealDelay,
+          delay: revealDelay,
+          ease: "ease.inOut",
+          overwrite: "auto",
+          onUpdate: () => {
+            aboutProgressRef.current =
+              aboutTimelineRef.current?.progress() ?? ABOUT_REVEALED_PROGRESS;
+          },
+        });
+      }
+
       gsap.to(window, {
         duration: SECTION_SCROLL_DURATION_SECONDS,
-        ease: "power3.inOut",
+        ease: "ease.inOut",
         overwrite: "auto",
         scrollTo: {
           y: targetY,
@@ -256,12 +283,17 @@ function HomePage() {
         },
         onUpdate: () => {
           lastWindowScrollYRef.current = window.scrollY;
+
+          if (!isGoingToAbout) {
+            aboutProgressRef.current = 0;
+            aboutTimelineRef.current?.progress(0);
+          }
         },
         onComplete: () => {
           lastWindowScrollYRef.current = targetY;
           aboutProgrammaticScrollRef.current = false;
 
-          if (section === "about") {
+          if (isGoingToAbout) {
             aboutLockYRef.current = targetY;
             aboutProgressRef.current = ABOUT_REVEALED_PROGRESS;
             aboutTimelineRef.current?.progress(ABOUT_REVEALED_PROGRESS);
@@ -582,8 +614,8 @@ function HomePage() {
 
       gsap.set([...headingChars, ...bodyChars], {
         autoAlpha: 0,
-        yPercent: 28,
-        filter: "blur(4px)",
+        yPercent: 0,
+        filter: "blur(7px)",
       });
 
       gsap.set(content, {
@@ -783,7 +815,7 @@ function HomePage() {
                     <span className="block whitespace-nowrap" key={line}>
                       {line.split("").map((char, charIndex) => (
                         <span
-                          // className="about-heading-char inline-block will-change-[transform,opacity,filter]"
+                          className="about-heading-char inline-block will-change-[transform,opacity,filter]"
                           aria-hidden="true"
                           key={`${lineIndex}-${charIndex}`}
                         >
@@ -796,7 +828,7 @@ function HomePage() {
               </div>
 
               <p
-                className="about-blur-item mt-[1.45rem] max-w-[37rem] font-sans text-[clamp(0.94rem,1.05vw,1.08rem)] font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] max-[900px]:max-w-[29rem] max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem]"
+                className="about-blur-item mt-[2.45rem] max-w-[37rem] font-sans text-[clamp(0.94rem,1.05vw,1.08rem)] font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] max-[900px]:max-w-[29rem] max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem]"
                 aria-label={ABOUT_BODY}
               >
                 {bodyWords.map((word, wordIndex) => (
@@ -806,7 +838,12 @@ function HomePage() {
                     key={`${word.join("")}-${wordIndex}`}
                   >
                     {word.map((char, charIndex) => (
-                      <span key={`${wordIndex}-${charIndex}`}>{char}</span>
+                      <span
+                        // className="about-body-char inline-block will-change-[transform,opacity,filter]"
+                        key={`${wordIndex}-${charIndex}`}
+                      >
+                        {char}
+                      </span>
                     ))}
                   </span>
                 ))}
