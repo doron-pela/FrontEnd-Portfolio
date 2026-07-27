@@ -29,26 +29,31 @@ type AboutLockDirection = "forward" | "backward";
 
 const SECTION_REVEAL_DELAY_SECONDS = {
   init: 1,
-  about: 1,
+  about: 1.5,
   experience: 1,
   systems: 1,
   projects: 1,
 };
 const SECTION_SCROLL_DURATION_SECONDS = 3;
-const ABOUT_REVEALED_PROGRESS = 0.36;
+const ABOUT_REVEALED_PROGRESS = 0.36; //From 0 to 0.36 of the timeline, about us is revealing... after 0.36 until 1, the global page locks
 
 const ABOUT_LINES = ["I'm a Product-minded", "software Engineer"];
 
 const ABOUT_BODY =
   "I build fast, reliable software from interface to infrastructure, " +
-  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
-  "I move between user-facing interaction, backend workflows, system structure, and product thinking with the goal of making software feel clear, useful, and deliberate. " +
-  "I care about the details people see, the logic they never have to think about, and the engineering choices that make the final product feel reliable.";
+  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. "
 
 function splitTextIntoWords(text: string) {
   return text.split(" ").map((word) => word.split(""));
-}
+} 
 
+//event.deltaMode is the wheel distance unit. And it can be any one of these, depending on the environment of our application:
+
+//DOM_DELTA_PIXEL is the default pixel (px) unit of wheel distance. --- denoted as 0
+//DOM_DELTA_LINE is the line (roughly 16 px depending on font) unit of wheel distance. --- denoted as 1
+//DOM_DELTA_PAGE is the page (roughly window.innerHeight: the client's/viewport's height) unit of wheel distance --- denoted as 2
+
+//We want to work with pixels, so normalizeWheelDelta() 
 function normalizeWheelDelta(event: WheelEvent) {
   if (event.deltaMode === WheelEvent.DOM_DELTA_LINE) {
     return event.deltaY * 16;
@@ -649,7 +654,7 @@ function HomePage() {
           plane,
           {
             autoAlpha: 1,
-            rotateY: -35,
+            rotateY: -45,
             rotateX: 1.5,
             rotateZ: 0,
             y: 0,
@@ -670,13 +675,12 @@ function HomePage() {
           headingChars,
           {
             autoAlpha: 1,
-            yPercent: 0,
             filter: "blur(0px)",
             stagger: {
               each: 0.008,
               from: "start",
             },
-            duration: 0.28,
+            duration: 0.1,
           },
           0.1,
         )
@@ -690,7 +694,7 @@ function HomePage() {
               each: 0.004,
               from: "start",
             },
-            duration: 0.36,
+            duration: 0.1,
           },
           0.2,
         )
@@ -782,15 +786,15 @@ function HomePage() {
     <>
       <section
         ref={sectionRef}
-        className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+        // className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
       >
         <div
           ref={planeRef}
-          className="absolute right-[10vw] top-[35vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity] max-[900px]:left-[7vw] max-[900px]:right-auto max-[900px]:top-[18vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal"
+          className="absolute right-[10vw] top-[32vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity] max-[900px]:left-[7vw] max-[900px]:right-auto max-[900px]:top-[18vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal"
         >
           <div
             ref={viewportRef}
-            className="relative h-[min(38vh,24rem)] w-[min(42vw,42rem)] overflow-hidden max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)]"
+            className="relative h-[min(38vh,24rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)]"
           >
             {/* <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-linear-to-b from-[#e3e3e3]/90 via-[#e3e3e3]/48 to-transparent backdrop-blur-[2px]" /> */}
 
@@ -798,7 +802,7 @@ function HomePage() {
 
             <div
               ref={contentRef}
-              className="relative z-10 pb-[30vh] pt-12 will-change-transform"
+              className="relative z-10 pb-[0vh] pt-12 will-change-transform max-[900px]:mx-auto sm:max-[900px]:ml-5 max-[500px]:max-w-[20rem] max-[500px]:ml-auto"
             >
               <div className="about-blur-item">
                 <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)]">
@@ -808,7 +812,7 @@ function HomePage() {
                 </div>
 
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,3vw,7.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance max-[900px]:text-[clamp(2.65rem,10vw,5.4rem)]"
+                  className="m-0 font-sans text-[clamp(2rem,4vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance max-[900px]:text-[clamp(2.65rem,9vw,5.4rem)] "
                   aria-label={ABOUT_LINES.join(" ")}
                 >
                   {ABOUT_LINES.map((line, lineIndex) => (
@@ -828,7 +832,7 @@ function HomePage() {
               </div>
 
               <p
-                className="about-blur-item mt-[2.45rem] max-w-[37rem] font-sans text-[clamp(0.94rem,1.05vw,1.08rem)] font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] max-[900px]:max-w-[29rem] max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem]"
+                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.05vw,1.5rem)] font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] max-[900px]:max-w-[29rem] max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[500px]:max-w-[15rem] max-[500px]:ml-20 max-[900px]:text-right"
                 aria-label={ABOUT_BODY}
               >
                 {bodyWords.map((word, wordIndex) => (

@@ -2,23 +2,97 @@ import { useEffect, useRef } from "react";
 import { Outlet } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
 
-import { CAMERA_STATES, SPLINE_SCENE_URL, SPLINE_VARIABLES } from "./constants";
+import {
+  CAMERA_STATES,
+  SPLINE_BREAKPOINTS,
+  SPLINE_SCENE_URL,
+  SPLINE_VARIABLES,
+} from "./constants";
 import type { SplineApplication } from "./@types";
+
+// const RESPONSIVE_BASE_STATES = [
+//   CAMERA_STATES.mobileBase,
+//   CAMERA_STATES.tabletBase,
+//   CAMERA_STATES.base,
+// ] as const;
 
 export default function SplineScene() {
   const splineRef = useRef<SplineApplication | null>(null);
+  const currentCameraStateRef = useRef<number>(CAMERA_STATES.base);
 
-  function handleSplineLoad(spline: SplineApplication) {
-    splineRef.current = spline;
+  function getResponsiveBaseState() {
+    const viewportWidth = window.innerWidth;
+
+    if (viewportWidth < SPLINE_BREAKPOINTS.mobile) {
+      return CAMERA_STATES.mobileBase;
+    }
+
+    if (viewportWidth <= SPLINE_BREAKPOINTS.tablet) {
+      return CAMERA_STATES.tabletBase;
+    }
+
+    return CAMERA_STATES.base;
   }
 
   function setCameraState(value: number) {
+    currentCameraStateRef.current = value;
+
     splineRef.current?.setVariable(SPLINE_VARIABLES.cameraState, value);
+  }
+
+  function setResponsiveBaseState() {
+    setCameraState(getResponsiveBaseState());
   }
 
   function setIsDissected(value: boolean) {
     splineRef.current?.setVariable(SPLINE_VARIABLES.isDissected, value);
   }
+
+  function handleSplineLoad(spline: SplineApplication) {
+    splineRef.current = spline;
+
+    setResponsiveBaseState();
+  }
+
+  function isResponsiveBaseState(value: number) {
+    return (
+      value === CAMERA_STATES.mobileBase ||
+      value === CAMERA_STATES.tabletBase ||
+      value === CAMERA_STATES.base
+    );
+  }
+
+  useEffect(() => {
+    function handleResize() {
+      const viewportWidth = window.innerWidth;
+
+      if (viewportWidth > SPLINE_BREAKPOINTS.tablet) {
+        if (currentCameraStateRef.current !== CAMERA_STATES.base) {
+          setCameraState(CAMERA_STATES.base);
+        }
+
+        return;
+      }
+
+      if (!isResponsiveBaseState(currentCameraStateRef.current)) {
+        return;
+      }
+
+      const nextBaseState = getResponsiveBaseState();
+
+      if (nextBaseState === currentCameraStateRef.current) {
+        return;
+      }
+
+      setCameraState(nextBaseState);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -26,7 +100,7 @@ export default function SplineScene() {
 
       switch (key) {
         case "0":
-          setCameraState(CAMERA_STATES.base);
+          setResponsiveBaseState();
           break;
 
         case "i":
