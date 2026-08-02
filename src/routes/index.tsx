@@ -824,7 +824,7 @@ function HomePage() {
                 </div>
 
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,4vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
+                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
                   aria-label={ABOUT_LINES.join(" ")}
                 >
                   {ABOUT_LINES.map((line, lineIndex) => (
@@ -844,7 +844,7 @@ function HomePage() {
               </div>
 
               <p
-                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.05vw,1.5rem)] 
+                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)] 
                 font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] 
                 max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right"
                 aria-label={ABOUT_BODY}
