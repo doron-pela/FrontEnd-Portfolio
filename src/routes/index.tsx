@@ -18,7 +18,7 @@ const GSAP_HMR_REVISION = import.meta.hot
 
 const HOME_SECTIONS = {
   init: 0,
-  about: 520,
+  about: 720,
   experience: 2550,
   systems: 4408,
   projects: 5900,
@@ -48,6 +48,8 @@ function splitTextIntoWords(text: string) {
 } 
 
 //event.deltaMode is the wheel distance unit. And it can be any one of these, depending on the environment of our application:
+
+//event.deltaY is the scrolling amount (Wheeling amount) +ve = we scrolled down or zoomed out (remember its from (0,0)). -ve, scrolled up or wheeled in.
 
 //DOM_DELTA_PIXEL is the default pixel (px) unit of wheel distance. --- denoted as 0
 //DOM_DELTA_LINE is the line (roughly 16 px depending on font) unit of wheel distance. --- denoted as 1
@@ -91,10 +93,12 @@ function HomePage() {
     return splitTextIntoWords(ABOUT_BODY);
   }, []);
 
+  //The total scrollable distance the view port can travel
   const getAboutInternalScrollDistance = useCallback(() => {
     const viewport = viewportRef.current;
     const content = contentRef.current;
 
+    //To prevent errors like Cannot read properties of null, for when the element's refs are null on first mount.
     if (!viewport || !content) {
       return window.innerHeight;
     }
@@ -102,13 +106,15 @@ function HomePage() {
     return Math.max(content.scrollHeight - viewport.clientHeight, 0);
   }, []);
 
+  //About's timeline's total distance (from 0-1)
   const getAboutDuration = useCallback(() => {
     const internalScrollDistance = getAboutInternalScrollDistance();
 
     return (
-      window.innerHeight * 1 + internalScrollDistance * 1 + window.innerHeight
+      window.innerHeight + internalScrollDistance + window.innerHeight
     );
   }, [getAboutInternalScrollDistance]);
+
 
   const getAboutLockY = useCallback(() => {
     return HOME_SECTIONS.about + getAboutDuration() * ABOUT_REVEALED_PROGRESS;
@@ -790,7 +796,11 @@ function HomePage() {
       >
         <div
           ref={planeRef}
-          className="absolute right-[10vw] top-[32vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity] max-[900px]:left-[7vw] max-[900px]:right-auto max-[900px]:top-[18vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal"
+          className="absolute right-[9vw] top-[32vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity] 
+          max-[900px]:right-0 max-[900px]:top-[15vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal
+          min-[900px]:max-[1600px]:top-[40vh]
+          min-[900px]:max-[1600px]:right-0
+          max-[500px]:right-[7%]"
         >
           <div
             ref={viewportRef}
@@ -802,7 +812,9 @@ function HomePage() {
 
             <div
               ref={contentRef}
-              className="relative z-10 pb-[0vh] pt-12 will-change-transform max-[900px]:mx-auto sm:max-[900px]:ml-5 max-[500px]:max-w-[20rem] max-[500px]:ml-auto"
+              className="absolute right-10 z-10 pb-[0vh] pt-12 will-change-transform
+              max-[700px]:mr-[10vw]
+              "
             >
               <div className="about-blur-item">
                 <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)]">
@@ -812,7 +824,7 @@ function HomePage() {
                 </div>
 
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,4vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance max-[900px]:text-[clamp(2.65rem,9vw,5.4rem)] "
+                  className="m-0 font-sans text-[clamp(2rem,4vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
                   aria-label={ABOUT_LINES.join(" ")}
                 >
                   {ABOUT_LINES.map((line, lineIndex) => (
@@ -832,7 +844,9 @@ function HomePage() {
               </div>
 
               <p
-                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.05vw,1.5rem)] font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] max-[900px]:max-w-[29rem] max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[500px]:max-w-[15rem] max-[500px]:ml-20 max-[900px]:text-right"
+                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.05vw,1.5rem)] 
+                font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] 
+                max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right"
                 aria-label={ABOUT_BODY}
               >
                 {bodyWords.map((word, wordIndex) => (
