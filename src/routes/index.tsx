@@ -16,6 +16,7 @@ const GSAP_HMR_REVISION = import.meta.hot
       (import.meta.hot.data.gsapRevision ?? 0) + 1)
   : 0;
 
+//When the sections begin to show
 const HOME_SECTIONS = {
   init: 0,
   about: 720,
@@ -35,13 +36,15 @@ const SECTION_REVEAL_DELAY_SECONDS = {
   projects: 1,
 };
 const SECTION_SCROLL_DURATION_SECONDS = 3;
-const ABOUT_REVEALED_PROGRESS = 0.36; //From 0 to 0.36 of the timeline, about us is revealing... after 0.36 until 1, the global page locks
+const ABOUT_REVEALED_PROGRESS = 0.36; //From 0 to 0.36 of the timeline, about is revealing... after 0.36 until 1, global scroll is locked. 
+                                      //The point in the about timeline (0-1) when the about is fully visible
 
 const ABOUT_LINES = ["I'm a Product-minded", "software Engineer"];
 
 const ABOUT_BODY =
   "I build fast, reliable software from interface to infrastructure, " +
-  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. "
+  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. ";
+  
 
 function splitTextIntoWords(text: string) {
   return text.split(" ").map((word) => word.split(""));
@@ -106,19 +109,17 @@ function HomePage() {
     return Math.max(content.scrollHeight - viewport.clientHeight, 0);
   }, []);
 
-  //About's timeline's total distance (from 0-1)
-  const getAboutDuration = useCallback(() => {
+  //About's timeline's total pxs distance (from its 0 to its 1)
+  const getAboutPxDuration = useCallback(() => {
     const internalScrollDistance = getAboutInternalScrollDistance();
 
-    return (
-      window.innerHeight + internalScrollDistance + window.innerHeight
-    );
+    return window.innerHeight + internalScrollDistance + window.innerHeight;
   }, [getAboutInternalScrollDistance]);
 
-
+  //Global Y px height when about locks
   const getAboutLockY = useCallback(() => {
-    return HOME_SECTIONS.about + getAboutDuration() * ABOUT_REVEALED_PROGRESS;
-  }, [getAboutDuration]);
+    return HOME_SECTIONS.about + getAboutPxDuration() * ABOUT_REVEALED_PROGRESS;
+  }, [getAboutPxDuration]);
 
   const getSectionScrollTarget = useCallback(
     (section: HomeSection) => {
@@ -134,6 +135,7 @@ function HomePage() {
   const snapWindowToAboutLock = useCallback(() => {
     const lockY = aboutLockYRef.current ?? getAboutLockY();
 
+    //If we're there at scrollY (lock point) already, return
     if (Math.abs(window.scrollY - lockY) <= 1) {
       return;
     }
@@ -153,17 +155,10 @@ function HomePage() {
     });
   }, [getAboutLockY]);
 
-  const unlockAboutScroll = useCallback(
-    (shouldSnapToLock = true) => {
-      aboutLockedRef.current = false;
-      touchYRef.current = null;
-
-      if (shouldSnapToLock) {
-        snapWindowToAboutLock();
-      }
-    },
-    [snapWindowToAboutLock],
-  );
+  const unlockAboutScroll = useCallback(() => {
+    aboutLockedRef.current = false;
+    touchYRef.current = null;
+  }, []);
 
   const releaseAboutScroll = useCallback(
     (direction: AboutLockDirection) => {
@@ -176,15 +171,22 @@ function HomePage() {
         direction === "forward" ? 1 : ABOUT_REVEALED_PROGRESS,
       );
 
-      unlockAboutScroll(true);
+      unlockAboutScroll();
 
-      window.setTimeout(() => {
+      //Allow scroll events to settle (act as debouncer before declaring lock release), then force the timeline back to 0 when we scroll past about section
+      setTimeout(() => {
         aboutReleasingRef.current = false;
-      }, 180);
+
+        if (direction === "backward" && window.scrollY <= HOME_SECTIONS.about) {
+          aboutProgressRef.current = 0;
+          aboutTimelineRef.current?.progress(0);
+        }
+      }, 0);
     },
     [unlockAboutScroll],
   );
 
+  //Globally locking the window for about section
   const lockAboutScroll = useCallback(
     (direction: AboutLockDirection) => {
       if (
@@ -201,7 +203,7 @@ function HomePage() {
 
       gsap.killTweensOf(window);
 
-      aboutLockYRef.current = lockY;
+      aboutLockYRef.current = lockY; //Exact global pixel y distance where about section locks
       aboutLockedRef.current = true;
       aboutProgressRef.current = startProgress;
 
@@ -223,19 +225,21 @@ function HomePage() {
     [getAboutLockY],
   );
 
+  //Locally advancing about section while global window is locked
   const advanceAboutScroll = useCallback(
     (deltaY: number) => {
-      if (!aboutLockedRef.current || aboutProgrammaticScrollRef.current) return;
+      if (!aboutLockedRef.current || aboutProgrammaticScrollRef.current) return; //If our window is not locked at about section
 
-      const distance = Math.max(getAboutDuration(), 1);
+      const distance = Math.max(getAboutPxDuration(), 1);
+
+      //normalize every user scroll in px as percentage of our timeline (e.g, scroll 2 px out of 10 px of total about distance, then progress is 0.2 through timeline)
+      //Then add that to where we are in the timeline to advance us through it.
       const nextProgress = clampAboutProgress(
         aboutProgressRef.current + deltaY / distance,
       );
 
       aboutProgressRef.current = nextProgress;
       aboutTimelineRef.current?.progress(nextProgress);
-
-      snapWindowToAboutLock();
 
       if (nextProgress >= 1 && deltaY > 0) {
         releaseAboutScroll("forward");
@@ -245,9 +249,10 @@ function HomePage() {
         releaseAboutScroll("backward");
       }
     },
-    [getAboutDuration, releaseAboutScroll, snapWindowToAboutLock],
+    [getAboutPxDuration, releaseAboutScroll],
   );
 
+  //Scroll to a section
   const scrollTo = useCallback(
     (section: HomeSection) => {
       const targetY = getSectionScrollTarget(section);
@@ -260,7 +265,7 @@ function HomePage() {
       aboutProgrammaticScrollRef.current = true;
       aboutReleasingRef.current = false;
       aboutReleasedDirectionRef.current = null;
-      unlockAboutScroll(false);
+      unlockAboutScroll();
 
       if (!isGoingToAbout) {
         aboutProgressRef.current = 0;
@@ -324,6 +329,7 @@ function HomePage() {
     [getSectionScrollTarget, lockAboutScroll, unlockAboutScroll],
   );
 
+  //useEffect for actually applying the functions to event listeners
   useEffect(() => {
     function handleSectionKeyDown(event: KeyboardEvent) {
       const target = event.target;
@@ -390,6 +396,7 @@ function HomePage() {
     };
   }, [advanceAboutScroll, scrollTo]);
 
+  //useEffect for actually applying the functions to event listeners
   useEffect(() => {
     function handleWindowScroll() {
       const currentY = window.scrollY;
@@ -492,6 +499,7 @@ function HomePage() {
     snapWindowToAboutLock,
   ]);
 
+  //Applying the functions to event listeners
   useEffect(() => {
     function handleWheel(event: WheelEvent) {
       if (!aboutLockedRef.current || aboutProgrammaticScrollRef.current) {
@@ -560,6 +568,7 @@ function HomePage() {
       });
     };
   }, [advanceAboutScroll]);
+
 
   useGSAP(
     () => {
@@ -639,7 +648,7 @@ function HomePage() {
       });
 
       const timeline = gsap.timeline({
-        paused: true,
+        paused: false,
         defaults: {
           ease: "none",
         },
@@ -662,7 +671,7 @@ function HomePage() {
             autoAlpha: 1,
             rotateY: -45,
             rotateX: 1.5,
-            rotateZ: 0,
+            rotateZ: -1,
             y: 0,
             z: 0,
             duration: 0.28,
@@ -724,7 +733,7 @@ function HomePage() {
         .to(
           blurItems[1],
           {
-            filter: "blur(5px)",
+            // filter: "blur(5px)",
             autoAlpha: 0.48,
             duration: 0.38,
           },
@@ -780,7 +789,7 @@ function HomePage() {
       scope: sectionRef,
       dependencies: [
         getAboutLockY,
-        getAboutDuration,
+        getAboutPxDuration,
         lockAboutScroll,
         GSAP_HMR_REVISION,
       ],
@@ -810,62 +819,61 @@ function HomePage() {
 
             {/* <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent backdrop-blur-[2px]" /> */}
 
-            <div
-              ref={contentRef}
-              className="absolute right-10 z-10 pb-[0vh] pt-12 will-change-transform
-              max-[700px]:mr-[10vw]
-              "
-            >
-              <div className="about-blur-item">
-                <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)]">
-                  <span>ABOUT / 01</span>
-
-                  <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
+            <div className="relative h-[35vh] overflow-y-clip">
+              <div
+                ref={contentRef}
+                className="absolute right-10 z-10 pb-[0vh] pt-12 will-change-transform
+                max-[700px]:mr-[10vw]
+                "
+              >
+                <div className="about-blur-item">
+                  <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)]">
+                    <span>ABOUT / 01</span>
+                    <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
+                  </div>
+                  <h1
+                    className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
+                    aria-label={ABOUT_LINES.join(" ")}
+                  >
+                    {ABOUT_LINES.map((line, lineIndex) => (
+                      <span className="block whitespace-nowrap" key={line}>
+                        {line.split("").map((char, charIndex) => (
+                          <span
+                            className="about-heading-char inline-block will-change-[transform,opacity,filter]"
+                            aria-hidden="true"
+                            key={`${lineIndex}-${charIndex}`}
+                          >
+                            {char === " " ? "\u00A0" : char}
+                          </span>
+                        ))}
+                      </span>
+                    ))}
+                  </h1>
                 </div>
-
-                <h1
-                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
-                  aria-label={ABOUT_LINES.join(" ")}
+                <p
+                  className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
+                  font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal]
+                  max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right"
+                  aria-label={ABOUT_BODY}
                 >
-                  {ABOUT_LINES.map((line, lineIndex) => (
-                    <span className="block whitespace-nowrap" key={line}>
-                      {line.split("").map((char, charIndex) => (
+                  {bodyWords.map((word, wordIndex) => (
+                    <span
+                      className="about-body-word mr-[0.27em] inline-block whitespace-nowrap"
+                      aria-hidden="true"
+                      key={`${word.join("")}-${wordIndex}`}
+                    >
+                      {word.map((char, charIndex) => (
                         <span
-                          className="about-heading-char inline-block will-change-[transform,opacity,filter]"
-                          aria-hidden="true"
-                          key={`${lineIndex}-${charIndex}`}
+                          // className="about-body-char inline-block will-change-[transform,opacity,filter]"
+                          key={`${wordIndex}-${charIndex}`}
                         >
-                          {char === " " ? "\u00A0" : char}
+                          {char}
                         </span>
                       ))}
                     </span>
                   ))}
-                </h1>
+                </p>
               </div>
-
-              <p
-                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)] 
-                font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal] 
-                max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right"
-                aria-label={ABOUT_BODY}
-              >
-                {bodyWords.map((word, wordIndex) => (
-                  <span
-                    className="about-body-word mr-[0.27em] inline-block whitespace-nowrap"
-                    aria-hidden="true"
-                    key={`${word.join("")}-${wordIndex}`}
-                  >
-                    {word.map((char, charIndex) => (
-                      <span
-                        // className="about-body-char inline-block will-change-[transform,opacity,filter]"
-                        key={`${wordIndex}-${charIndex}`}
-                      >
-                        {char}
-                      </span>
-                    ))}
-                  </span>
-                ))}
-              </p>
             </div>
           </div>
         </div>
