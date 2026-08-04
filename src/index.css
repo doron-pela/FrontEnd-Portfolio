@@ -10,7 +10,7 @@ body,
 }
 
 .scroll-scene {
-  min-height: 900vh;
+  min-height: calc(900vh + 900px);
   background: black;
 }
 

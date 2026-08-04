@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import reactLogo from "../assets/react.svg";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -19,7 +20,7 @@ const GSAP_HMR_REVISION = import.meta.hot
 //When the sections begin to show
 const HOME_SECTIONS = {
   init: 0,
-  about: 720,
+  about: 820,
   experience: 2550,
   systems: 4408,
   projects: 5900,
@@ -35,15 +36,30 @@ const SECTION_REVEAL_DELAY_SECONDS = {
   systems: 1,
   projects: 1,
 };
-const SECTION_SCROLL_DURATION_SECONDS = 3;
-const ABOUT_REVEALED_PROGRESS = 0.36; //From 0 to 0.36 of the timeline, about is revealing... after 0.36 until 1, global scroll is locked. 
-                                      //The point in the about timeline (0-1) when the about is fully visible
 
+// const ABOUT_TIMELINE = {
+//   contentStart: 0.46,
+//   contentDuration: 0.78,
+//   exitDuration: 0.1,
+//   exitBlur: 7,
+// } as const;
+
+const ABOUT_REVEAL_SCROLL_DISTANCE = 555;
+const SECTION_SCROLL_DURATION_SECONDS = 3;
+const ABOUT_REVEALED_PROGRESS = 0.19;
+// 0.30; //From 0 to 0.36 of the timeline, about is revealing... after 0.36 until 1, global scroll is locked. 
+                                      //The point in the about timeline (0-1) when the about is fully visible
+                                      //More content to the about section means more timeline stretch. So we need to REDUCE this value as we add content so we lock at the same visual point.
+
+                                      
 const ABOUT_LINES = ["I'm a Product-minded", "software Engineer"];
 
 const ABOUT_BODY =
   "I build fast, reliable software from interface to infrastructure, " +
+  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
+  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
   "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. ";
+
   
 
 function splitTextIntoWords(text: string) {
@@ -111,15 +127,13 @@ function HomePage() {
 
   //About's timeline's total pxs distance (from its 0 to its 1)
   const getAboutPxDuration = useCallback(() => {
-    const internalScrollDistance = getAboutInternalScrollDistance();
-
-    return window.innerHeight + internalScrollDistance + window.innerHeight;
+    return Math.max(getAboutInternalScrollDistance(), 1);
   }, [getAboutInternalScrollDistance]);
 
   //Global Y px height when about locks
   const getAboutLockY = useCallback(() => {
-    return HOME_SECTIONS.about + getAboutPxDuration() * ABOUT_REVEALED_PROGRESS;
-  }, [getAboutPxDuration]);
+    return HOME_SECTIONS.about + ABOUT_REVEAL_SCROLL_DISTANCE;
+  }, []);
 
   const getSectionScrollTarget = useCallback(
     (section: HomeSection) => {
@@ -239,7 +253,15 @@ function HomePage() {
       );
 
       aboutProgressRef.current = nextProgress;
-      aboutTimelineRef.current?.progress(nextProgress);
+
+      if (aboutTimelineRef.current) {
+        gsap.to(aboutTimelineRef.current, {
+          progress: nextProgress,
+          duration: 0.14,
+          ease: "ease.inOut",
+          overwrite: true,
+        });
+      }
 
       if (nextProgress >= 1 && deltaY > 0) {
         releaseAboutScroll("forward");
@@ -601,15 +623,16 @@ function HomePage() {
       const rule = section.querySelector(".about-rule");
 
       function getInternalScrollDistance() {
-        return Math.max(content.scrollHeight - viewport.clientHeight, 0);
+        return Math.max(content.scrollHeight - viewport.clientHeight, 0); //The entire distance the viewport element can scroll to reach the end of its child content.
       }
 
       function getContentTravelDistance() {
-        return getInternalScrollDistance() + window.innerHeight * 0.16;
+        return getInternalScrollDistance(); // + 16% of the viewport/window's inner height just to pad it a little
       }
 
       gsap.set(section, {
         autoAlpha: 0,
+        filter: "blur(0px)",
       });
 
       gsap.set(plane, {
@@ -691,24 +714,17 @@ function HomePage() {
           {
             autoAlpha: 1,
             filter: "blur(0px)",
-            stagger: {
-              each: 0.008,
-              from: "start",
-            },
-            duration: 0.1,
+            stagger: 0.008,
+            duration: 0.05, //To make heading characters appear faster, I reduced the duration
           },
-          0.1,
+          0,
         )
         .to(
           bodyChars,
           {
             autoAlpha: 1,
-            yPercent: 0,
             filter: "blur(0px)",
-            stagger: {
-              each: 0.004,
-              from: "start",
-            },
+            stagger: 0.004,
             duration: 0.1,
           },
           0.2,
@@ -719,51 +735,26 @@ function HomePage() {
             y: () => -getContentTravelDistance(),
             duration: 0.78,
           },
-          0.46,
-        )
-        .to(
-          blurItems[0],
-          {
-            filter: "blur(7px)",
-            autoAlpha: 0.3,
-            duration: 0.32,
-          },
-          0.58,
-        )
-        .to(
-          blurItems[1],
-          {
-            // filter: "blur(5px)",
-            autoAlpha: 0.48,
-            duration: 0.38,
-          },
-          0.8,
-        )
-        .to(
-          plane,
-          {
-            rotateY: -42,
-            rotateX: 0.5,
-            rotateZ: 0,
-            y: -10,
-            duration: 0.54,
-          },
-          0.68,
+          0.35,
         )
         .to(
           section,
           {
+            filter: "blur(7px)",
             autoAlpha: 0,
-            duration: 0.22,
+            duration: .7,
           },
-          1.28,
+          ">",
         );
 
       ScrollTrigger.create({
-        trigger: document.documentElement,
-        start: HOME_SECTIONS.about,
-        end: getAboutLockY,
-        scrub: 0.65,
+        trigger: document.documentElement, //The trigger element for the animation.
+        start: HOME_SECTIONS.about, //The start point. Given in this format -> "value(of trigger element) value(of viewport)". When - of element, meets - of viewport, then we start.
+        //Default value for start on all scroll triggers is "top bottom" meaning "top (of trigger element) hits bottom (of viewport)"
+        end: getAboutLockY, //When - of element, meets - of viewport, then we end.
+        //Default value for end on all scroll triggers is "bottom top"... "bottom bottom" when scrub is true.
+        // markers: true,
+        scrub: true,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           if (
@@ -774,10 +765,29 @@ function HomePage() {
             return;
           }
 
+          const releasedDirection = aboutReleasedDirectionRef.current;
+
+          // After releasing About moving forward, ScrollTrigger must not rewind 1 back to 0.3; return.
+          if (releasedDirection === "forward") {
+            return;
+          }
+
+          // After releasing about moving backward, only allow ScrollTrigger to continue moving backward from 0.3 toward 0.
+          //Otherwise, return
+          if (releasedDirection === "backward" && self.direction > 0) {
+            return;
+          }
+
           const progress = self.progress * ABOUT_REVEALED_PROGRESS;
 
           aboutProgressRef.current = progress;
           aboutTimelineRef.current?.progress(progress);
+
+          // Once the backward reveal range is completely exited,
+          // reset the release guard.
+          if (releasedDirection === "backward" && self.progress <= 0) {
+            aboutReleasedDirectionRef.current = null;
+          }
         },
       });
 
@@ -801,7 +811,8 @@ function HomePage() {
     <>
       <section
         ref={sectionRef}
-        // className="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+        // Remove pointer events to interract with content and debug
+        className="absolute z-20 top-0 left-0 w-full pointer-events-none"
       >
         <div
           ref={planeRef}
@@ -813,17 +824,18 @@ function HomePage() {
         >
           <div
             ref={viewportRef}
-            className="relative h-[min(38vh,24rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)]"
+            className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] overflow-y-clip"
           >
-            {/* <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-linear-to-b from-[#e3e3e3]/90 via-[#e3e3e3]/48 to-transparent backdrop-blur-[2px]" /> */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent backdrop-blur-[1px]" />
 
-            {/* <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent backdrop-blur-[2px]" /> */}
-
-            <div className="relative h-[35vh] overflow-y-clip">
+            <div className="relative h-full">
+              {/* If the content disappears too fast, pad it on the bottom */}
               <div
                 ref={contentRef}
-                className="absolute right-10 z-10 pb-[0vh] pt-12 will-change-transform
+                className="absolute right-10 z-10 pt-12 will-change-transform
                 max-[700px]:mr-[10vw]
+                max-[450px]:mr-[5vw]
+                pb-[40vh]
                 "
               >
                 <div className="about-blur-item">
@@ -850,6 +862,7 @@ function HomePage() {
                     ))}
                   </h1>
                 </div>
+                
                 <p
                   className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
                   font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal]
@@ -873,6 +886,35 @@ function HomePage() {
                     </span>
                   ))}
                 </p>
+
+                {/* <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                  <img
+                    src={reactLogo}
+                    alt="React Logo"
+                    className="size-full object-contain"
+                  />
+                </div>
+                <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                  <img
+                    src={reactLogo}
+                    alt="React Logo"
+                    className="size-full object-contain"
+                  />
+                </div>
+                <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                  <img
+                    src={reactLogo}
+                    alt="React Logo"
+                    className="size-full object-contain"
+                  />
+                </div>
+                <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                  <img
+                    src={reactLogo}
+                    alt="React Logo"
+                    className="size-full object-contain"
+                  />
+                </div> */}
               </div>
             </div>
           </div>
