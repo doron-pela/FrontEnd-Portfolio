@@ -648,7 +648,7 @@ function HomePage() {
       });
 
       const timeline = gsap.timeline({
-        paused: false,
+        paused: true,
         defaults: {
           ease: "none",
         },
