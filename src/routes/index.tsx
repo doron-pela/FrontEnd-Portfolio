@@ -4,7 +4,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import reactLogo from "../assets/react.svg";
+// import reactLogo from "../assets/react.svg";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -686,7 +686,7 @@ function HomePage() {
             autoAlpha: 1,
             duration: 0.08,
           },
-          0,
+          0, //position parameter
         )
         .to(
           plane,
@@ -699,7 +699,7 @@ function HomePage() {
             z: 0,
             duration: 0.28,
           },
-          0.02,
+          0.02, //position parameter (start tween at.. in total time)
         )
         .to(
           rule,
@@ -707,7 +707,7 @@ function HomePage() {
             scaleX: 1,
             duration: 0.16,
           },
-          0.08,
+          0.08, //position parameter (start tween at.. in total time)
         )
         .to(
           headingChars,
@@ -717,7 +717,7 @@ function HomePage() {
             stagger: 0.008,
             duration: 0.05, //To make heading characters appear faster, I reduced the duration
           },
-          0,
+          0, //position parameter (start tween at.. in total time)
         )
         .to(
           bodyChars,
@@ -727,7 +727,7 @@ function HomePage() {
             stagger: 0.004,
             duration: 0.1,
           },
-          0.2,
+          0.2, //position parameter (start tween at.. in total time)
         )
         .to(
           content,
@@ -735,25 +735,34 @@ function HomePage() {
             y: () => -getContentTravelDistance(),
             duration: 0.78,
           },
-          0.35,
+          0.35, //position parameter (start tween at.. in total time)
         )
         .to(
           section,
           {
             filter: "blur(7px)",
             autoAlpha: 0,
-            duration: .7,
+            duration: 0.7,
           },
-          ">",
+          ">", //position parameter to start this tween after the previous one ends
         );
+
+        //When paused: true on a tween/timeline, the time becomes virtual time, cause it wont play that 
+
+        //The total gsap timeline duration is always the farthest ending tween's end time. In this case, total time is 1.83s after calculating
+        console.log(timeline.duration());
+
+        //Each position parameter in gsap timeline represents virtual time in the timeline out of the total timeline's duration. 
+        // e.g 0.35 is 0.35 seconds out of 1.83, 0.2 is 0.2 seconds out of 1.83, etc. The progress is the percentage quotient. 
+
 
       ScrollTrigger.create({
         trigger: document.documentElement, //The trigger element for the animation.
         start: HOME_SECTIONS.about, //The start point. Given in this format -> "value(of trigger element) value(of viewport)". When - of element, meets - of viewport, then we start.
-        //Default value for start on all scroll triggers is "top bottom" meaning "top (of trigger element) hits bottom (of viewport)"
+                                    //Default value for start on all scroll triggers is "top bottom" meaning "top (of trigger element) hits bottom (of viewport)"
         end: getAboutLockY, //When - of element, meets - of viewport, then we end.
-        //Default value for end on all scroll triggers is "bottom top"... "bottom bottom" when scrub is true.
-        // markers: true,
+                            //Default value for end on all scroll triggers is "bottom top"... "bottom bottom" when scrub is true.
+                            // markers: true,
         scrub: true,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -829,7 +838,7 @@ function HomePage() {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent backdrop-blur-[1px]" />
 
             <div className="relative h-full">
-              {/* If the content disappears too fast, pad it on the bottom */}
+              {/* If the content disappears too fast, pad the bottom */}
               <div
                 ref={contentRef}
                 className="absolute right-10 z-10 pt-12 will-change-transform
