@@ -22,8 +22,8 @@ declare module "@tanstack/react-router" {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // Data stays "fresh" for 5 minutes
-      gcTime: 1000 * 60 * 10,    // Unused data remains in cache for 10 minutes
+      staleTime: 1000 * 60 * 5, // Data stays "fresh" for 5 minutes (time before get new)
+      gcTime: 1000 * 60 * 10,    // (Garbage collection timer) Unused data remains in cache for 10 minutes (time before trash old)
       retry: 3,                  // Retry failed requests once before showing error
       refetchOnWindowFocus: false, // Turn off automatic refetching when switching tabs
     },

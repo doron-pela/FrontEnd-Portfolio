@@ -32,6 +32,7 @@ function normalizeWheelDelta(event: WheelEvent) {
   return event.deltaY;
 }
 
+//Keep the output less than 1 (staying within the gsap timeline - 0-1), but also allow for a range between
 function clampSectionProgress(value: number, revealedProgress: number) {
   return Math.min(Math.max(value, revealedProgress), 1);
 }
@@ -55,7 +56,7 @@ export function ScrollLockedSectionController<Section extends string>({
   const getActiveLockedSection = useCallback(() => {
     const activeSection = activeLockedSectionRef.current;
 
-    if (!activeSection) {
+    if (!activeSection) { //No active locked section ref means no section has registered yet
       return null;
     }
 

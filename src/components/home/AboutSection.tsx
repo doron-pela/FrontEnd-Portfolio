@@ -29,7 +29,7 @@ const ABOUT_GSAP_HMR_REVISION = import.meta.hot
 const ABOUT_REVEAL_SCROLL_DISTANCE = 555;
 const ABOUT_REVEALED_PROGRESS = 0.19;
 const ABOUT_LOCAL_PROGRESS_TWEEN_DURATION = 0.14;
-// 0.30; //From 0 to 0.36 of the timeline, about is revealing... after 0.36 until 1, global scroll is locked.
+// 0.19; //From 0 to 0.19 of the timeline, about is revealing... after 0.19 until 1, global scroll is locked.
 //The point in the about timeline (0-1) when the about is fully visible
 //More content to the about section means more timeline stretch. So we need to REDUCE this value as we add content so we lock at the same visual point.
 
@@ -116,7 +116,7 @@ export function AboutSection({
   runtime.getLockY = getAboutLockY;
 
   useEffect(() => {
-    return registerSection(runtime);
+    return registerSection(runtime); //Globally register current section's runtime
   }, [registerSection, runtime]);
 
   useGSAP(
