@@ -6,7 +6,7 @@ export type LockDirection = "forward" | "backward";
 
 //Reminder for myself: Generic just means the parameterized type that will be passed <something> is used inside this type definition.
 //The = string means default it to string type
-//Each section component in the homepage must set the global runtime ref.
+//Each section component in the homepage must construct its runtime object and set (register) it as the global runtime ref .current in its useEffect.
 export type ScrollSectionRuntime<Section extends string = string> = {
   section: Section;
   startY: number;

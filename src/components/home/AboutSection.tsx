@@ -357,7 +357,8 @@ export function AboutSection({
     <section
       ref={sectionRef}
       // Remove pointer events to interract with content and debug
-      className="absolute z-20 top-0 left-0 w-full pointer-events-none"
+      className="absolute z-20 top-0 left-0 w-full 
+      "
     >
       <div
         ref={planeRef}
@@ -371,7 +372,7 @@ export function AboutSection({
           ref={viewportRef}
           className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] overflow-y-clip"
         >
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent backdrop-blur-[1px]" />
+          <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] " />
 
           <div className="relative h-full">
             {/* If the content disappears too fast, pad the bottom */}
@@ -388,7 +389,7 @@ export function AboutSection({
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance"
+                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance pointer-events-auto"
                   aria-label={ABOUT_LINES.join(" ")}
                 >
                   {ABOUT_LINES.map((line, lineIndex) => (

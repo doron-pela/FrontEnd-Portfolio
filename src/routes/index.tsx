@@ -47,6 +47,7 @@ function HomePage() {
   );
   const programmaticScrollRef = useRef(false);
 
+  //Called, this function is our actual effect in every section component
   const registerSection = useCallback<RegisterScrollSection<HomeSection>>(
     (runtime) => {
       sectionRuntimesRef.current.set(runtime.section, runtime);
