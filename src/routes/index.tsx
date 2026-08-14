@@ -63,6 +63,10 @@ function HomePage() {
 
   return (
     <>
+      {/* <p className="max-w-[200px] absolute top-11/20 left-8/17 z-10 font-bold font-[white] text-lg">
+        I am a fullstack engineer based in Ghana
+      </p> */}
+
       <ScrollLockedSectionController<HomeSection>
         positions={HOME_SECTIONS}
         revealDelaySeconds={SECTION_REVEAL_DELAY_SECONDS}
