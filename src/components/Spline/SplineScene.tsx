@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+// src/components/Spline/SplineScene.tsx
 import { Outlet } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
+import { useEffect, useRef } from "react";
 
 import {
   CAMERA_STATES,
@@ -10,24 +11,33 @@ import {
 } from "./constants";
 import type { SplineApplication } from "./@types";
 
-// const RESPONSIVE_BASE_STATES = [
-//   CAMERA_STATES.mobileBase,
-//   CAMERA_STATES.tabletBase,
-//   CAMERA_STATES.base,
-// ] as const;
-
 export default function SplineScene() {
   const splineRef = useRef<SplineApplication | null>(null);
-  const currentCameraStateRef = useRef<number>(CAMERA_STATES.base);
+  const responsiveFrameRef = useRef<number | null>(null);
+
+  //Match the original responsive rules exactly:
+  //mobile  -> width < SPLINE_BREAKPOINTS.mobile
+  //tablet  -> width >= SPLINE_BREAKPOINTS.mobile && width <= SPLINE_BREAKPOINTS.tablet
+  //desktop -> width > SPLINE_BREAKPOINTS.tablet
+  //The tiny subtraction preserves the original strict "< mobile" boundary
+  //while still allowing matchMedia to own the actual breakpoint detection.
+  const getResponsiveMediaQueries = () => {
+    const mobileMaxWidth = Math.max(SPLINE_BREAKPOINTS.mobile - 0.02, 0);
+
+    return {
+      mobile: window.matchMedia(`(max-width: ${mobileMaxWidth}px)`),
+      tablet: window.matchMedia(`(max-width: ${SPLINE_BREAKPOINTS.tablet}px)`),
+    };
+  };
 
   function getResponsiveBaseState() {
-    const viewportWidth = window.innerWidth;
+    const { mobile, tablet } = getResponsiveMediaQueries();
 
-    if (viewportWidth < SPLINE_BREAKPOINTS.mobile) {
+    if (mobile.matches) {
       return CAMERA_STATES.mobileBase;
     }
 
-    if (viewportWidth <= SPLINE_BREAKPOINTS.tablet) {
+    if (tablet.matches) {
       return CAMERA_STATES.tabletBase;
     }
 
@@ -35,8 +45,6 @@ export default function SplineScene() {
   }
 
   function setCameraState(value: number) {
-    currentCameraStateRef.current = value;
-
     splineRef.current?.setVariable(SPLINE_VARIABLES.cameraState, value);
   }
 
@@ -51,46 +59,52 @@ export default function SplineScene() {
   function handleSplineLoad(spline: SplineApplication) {
     splineRef.current = spline;
 
+    //Initial load always starts from the correct responsive base state.
     setResponsiveBaseState();
   }
 
-  function isResponsiveBaseState(value: number) {
-    return (
-      value === CAMERA_STATES.mobileBase ||
-      value === CAMERA_STATES.tabletBase ||
-      value === CAMERA_STATES.base
-    );
-  }
-
   useEffect(() => {
-    function handleResize() {
-      const viewportWidth = window.innerWidth;
+    const mobileMaxWidth = Math.max(SPLINE_BREAKPOINTS.mobile - 0.02, 0);
+    const mobileQuery = window.matchMedia(`(max-width: ${mobileMaxWidth}px)`);
+    const tabletQuery = window.matchMedia(
+      `(max-width: ${SPLINE_BREAKPOINTS.tablet}px)`,
+    );
 
-      if (viewportWidth > SPLINE_BREAKPOINTS.tablet) {
-        if (currentCameraStateRef.current !== CAMERA_STATES.base) {
-          setCameraState(CAMERA_STATES.base);
-        }
-
-        return;
+    function handleResponsiveBreakpointChange() {
+      //A single viewport change can flip more than one MediaQueryList at almost
+      //the same time. Collapse those notifications into one update after the
+      //browser has committed the new viewport geometry.
+      if (responsiveFrameRef.current !== null) {
+        cancelAnimationFrame(responsiveFrameRef.current);
       }
 
-      if (!isResponsiveBaseState(currentCameraStateRef.current)) {
-        return;
-      }
+      responsiveFrameRef.current = requestAnimationFrame(() => {
+        responsiveFrameRef.current = null;
 
-      const nextBaseState = getResponsiveBaseState();
-
-      if (nextBaseState === currentCameraStateRef.current) {
-        return;
-      }
-
-      setCameraState(nextBaseState);
+        //The media-query change event itself is the breakpoint gate. This runs
+        //whether the current Spline CameraState is base, side, front, back or
+        //projects, so a resize can never be ignored because of camera history.
+        setResponsiveBaseState();
+      });
     }
 
-    window.addEventListener("resize", handleResize);
+    mobileQuery.addEventListener("change", handleResponsiveBreakpointChange);
+    tabletQuery.addEventListener("change", handleResponsiveBreakpointChange);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      mobileQuery.removeEventListener(
+        "change",
+        handleResponsiveBreakpointChange,
+      );
+      tabletQuery.removeEventListener(
+        "change",
+        handleResponsiveBreakpointChange,
+      );
+
+      if (responsiveFrameRef.current !== null) {
+        cancelAnimationFrame(responsiveFrameRef.current);
+        responsiveFrameRef.current = null;
+      }
     };
   }, []);
 
