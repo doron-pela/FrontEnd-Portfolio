@@ -48,6 +48,10 @@ export function ScrollLockedSectionController<Section extends string>({
   const activeLockedSectionRef = useRef<Section | null>(null);
   const lastWindowScrollYRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
+  const resizingViewportRef = useRef(false);
+  const resizeEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const getRegisteredSections = useCallback(() => {
     return Array.from(runtimesRef.current.values());
@@ -352,6 +356,52 @@ export function ScrollLockedSectionController<Section extends string>({
     };
   }, [isolateLockedSection]);
 
+  //Viewport resizing can make the browser adjust window.scrollY even though
+  //the user did not intentionally scroll. While a manual-scroll section is
+  //locked, keep that section isolated and keep the window snapped to its lock
+  //point without converting resize-induced movement into timeline progress.
+  useEffect(() => {
+    function handleViewportResize() {
+      resizingViewportRef.current = true;
+
+      const activeSection = getActiveLockedSection();
+
+      if (activeSection?.lockedRef.current) {
+        isolateLockedSection(activeSection.section);
+        snapWindowToSectionLock(activeSection);
+      }
+
+      if (resizeEndTimeoutRef.current) {
+        clearTimeout(resizeEndTimeoutRef.current);
+      }
+
+      resizeEndTimeoutRef.current = setTimeout(() => {
+        resizingViewportRef.current = false;
+
+        const currentActiveSection = getActiveLockedSection();
+
+        if (currentActiveSection?.lockedRef.current) {
+          isolateLockedSection(currentActiveSection.section);
+          snapWindowToSectionLock(currentActiveSection);
+        }
+      }, 120);
+    }
+
+    window.addEventListener("resize", handleViewportResize, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("resize", handleViewportResize);
+
+      if (resizeEndTimeoutRef.current) {
+        clearTimeout(resizeEndTimeoutRef.current);
+      }
+
+      resizingViewportRef.current = false;
+    };
+  }, [getActiveLockedSection, isolateLockedSection, snapWindowToSectionLock]);
+
   //useEffect for actually applying the functions to event listeners
   useEffect(() => {
     function handleSectionKeyDown(event: KeyboardEvent) {
@@ -457,6 +507,19 @@ export function ScrollLockedSectionController<Section extends string>({
       if (activeSection?.lockedRef.current) {
         const lockY = activeSection.getLockY();
         const lockedY = activeSection.lockYRef.current ?? lockY;
+
+        //A viewport resize can cause the browser to move scrollY even though the
+        //user did not actually scroll. Never convert that geometry correction
+        //into local section timeline progress. Keep the active section isolated
+        //and snap the window back to its existing lock point instead.
+        if (resizingViewportRef.current) {
+          isolateLockedSection(activeSection.section);
+          snapWindowToSectionLock(activeSection);
+
+          lastWindowScrollYRef.current = lockedY;
+          return;
+        }
+
         const deltaY = currentY - lockedY;
 
         if (Math.abs(deltaY) > 1) {
@@ -543,6 +606,7 @@ export function ScrollLockedSectionController<Section extends string>({
     advanceSectionScroll,
     getActiveLockedSection,
     getRegisteredSections,
+    isolateLockedSection,
     lockSectionScroll,
     programmaticScrollRef,
     snapWindowToSectionLock,

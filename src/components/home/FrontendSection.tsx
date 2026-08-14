@@ -37,7 +37,7 @@ const FRONTEND_LOCKED_STORY_TIME = 1.4;
 //begins translated 50% toward the copy, so it initially reads as a peek.
 //The reveal and the internal carousel scroll are intentionally sequential:
 //the wall fully glides into view first, then its screenshots begin scrolling.
-const FRONTEND_DESKTOP_GALLERY_PEEK_PERCENT = 60;
+const FRONTEND_DESKTOP_GALLERY_PEEK_PERCENT = 57;
 
 //Browser page zoom changes window.devicePixelRatio in Chromium/Firefox. We
 //capture the DPR from the first mounted version of this section as the 1x
@@ -95,8 +95,10 @@ const FRONTEND_PROJECTS: readonly FrontendProject[] = [
     outcome:
       "A coherent frontend that can grow without every new page becoming a one-off implementation.",
     technologies: ["React", "TypeScript", "TanStack", "Motion"],
-    liveUrl: null,
-    repositoryUrl: null,
+    liveUrl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
+    repositoryUrl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
     screenshots: [
       {
         src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
@@ -1014,7 +1016,7 @@ function ProjectScreenshotGallery({
       {canScrollLeft ? (
         <button
           aria-label={`Scroll ${projectTitle} screenshots left`}
-          className="pointer-events-auto absolute left-[clamp(0.45rem,0.65vw,0.7rem)] top-1/2 z-30 flex size-[clamp(2rem,2.55vw,2.55rem)] -translate-y-1/2 items-center justify-center rounded-full border border-white/42 bg-white/42 text-[#171717]/72 shadow-[0_8px_28px_rgba(23,23,23,0.08)] backdrop-blur-[14px] transition-[transform,background-color,opacity] duration-200 hover:scale-105 hover:bg-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/20 max-[680px]:left-2 max-[680px]:size-8"
+          className="pointer-events-auto cursor-pointer absolute left-[clamp(0.45rem,0.65vw,0.7rem)] top-1/2 z-30 flex size-[clamp(2rem,2.55vw,2.55rem)] -translate-y-1/2 items-center justify-center rounded-full border border-white/42 bg-white/42 text-[#171717]/72 shadow-[0_8px_28px_rgba(23,23,23,0.08)] backdrop-blur-[14px] transition-[transform,background-color,opacity] duration-200 hover:scale-105 hover:bg-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/20 max-[680px]:left-2 max-[680px]:size-8"
           onClick={() => scrollGallery("left")}
           type="button"
         >
@@ -1025,7 +1027,7 @@ function ProjectScreenshotGallery({
       {canScrollRight ? (
         <button
           aria-label={`Scroll ${projectTitle} screenshots right`}
-          className="pointer-events-auto absolute right-[clamp(0.45rem,0.65vw,0.7rem)] top-1/2 z-30 flex size-[clamp(2rem,2.55vw,2.55rem)] -translate-y-1/2 items-center justify-center rounded-full border border-white/42 bg-white/42 text-[#171717]/72 shadow-[0_8px_28px_rgba(23,23,23,0.08)] backdrop-blur-[14px] transition-[transform,background-color,opacity] duration-200 hover:scale-105 hover:bg-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/20 max-[680px]:right-2 max-[680px]:size-8"
+          className="pointer-events-auto cursor-pointer absolute right-[clamp(0.45rem,0.65vw,0.7rem)] top-1/2 z-30 flex size-[clamp(2rem,2.55vw,2.55rem)] -translate-y-1/2 items-center justify-center rounded-full border border-white/42 bg-white/42 text-[#171717]/72 shadow-[0_8px_28px_rgba(23,23,23,0.08)] backdrop-blur-[14px] transition-[transform,background-color,opacity] duration-200 hover:scale-105 hover:bg-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/20 max-[680px]:right-2 max-[680px]:size-8"
           onClick={() => scrollGallery("right")}
           type="button"
         >
