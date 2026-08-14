@@ -56,12 +56,31 @@ export function ScrollLockedSectionController<Section extends string>({
   const getActiveLockedSection = useCallback(() => {
     const activeSection = activeLockedSectionRef.current;
 
-    if (!activeSection) { //No active locked section ref means no section has registered yet
+    if (!activeSection) {
+      //No active locked section ref means no section has registered yet
       return null;
     }
 
     return runtimesRef.current.get(activeSection) ?? null;
   }, [runtimesRef]);
+
+  //When one manual-scroll section owns the global lock, hard-hide every other
+  //manual-scroll section at the DOM level. GSAP timelines only animate opacity /
+  //visibility, so display:none cannot be undone by a ScrollTrigger refresh when
+  //the viewport is resized. Passing null restores the normal timeline-driven UI.
+  const isolateLockedSection = useCallback((activeSection: Section | null) => {
+    const sectionElements = document.querySelectorAll<HTMLElement>(
+      "[data-scroll-locked-section]",
+    );
+
+    sectionElements.forEach((element) => {
+      const isActiveSection =
+        element.dataset.scrollLockedSection === activeSection;
+
+      element.style.display =
+        activeSection !== null && !isActiveSection ? "none" : "";
+    });
+  }, []);
 
   const snapWindowToSectionLock = useCallback(
     (runtime: ScrollSectionRuntime<Section>) => {
@@ -96,9 +115,10 @@ export function ScrollLockedSectionController<Section extends string>({
 
       if (activeLockedSectionRef.current === runtime.section) {
         activeLockedSectionRef.current = null;
+        isolateLockedSection(null);
       }
     },
-    [],
+    [isolateLockedSection],
   );
 
   const releaseSectionScroll = useCallback(
@@ -148,6 +168,7 @@ export function ScrollLockedSectionController<Section extends string>({
       runtime.lockYRef.current = lockY; //Exact global pixel y distance where about section locks
       runtime.lockedRef.current = true;
       activeLockedSectionRef.current = runtime.section;
+      isolateLockedSection(runtime.section);
 
       runtime.snapRef.current = true;
 
@@ -164,7 +185,7 @@ export function ScrollLockedSectionController<Section extends string>({
         runtime.snapRef.current = false;
       });
     },
-    [programmaticScrollRef],
+    [isolateLockedSection, programmaticScrollRef],
   );
 
   //Locally advancing about section while global window is locked
@@ -321,6 +342,15 @@ export function ScrollLockedSectionController<Section extends string>({
       unlockSectionScroll,
     ],
   );
+
+  //Never leave an inline isolation style behind across route unmounts / HMR.
+  useEffect(() => {
+    isolateLockedSection(null);
+
+    return () => {
+      isolateLockedSection(null);
+    };
+  }, [isolateLockedSection]);
 
   //useEffect for actually applying the functions to event listeners
   useEffect(() => {

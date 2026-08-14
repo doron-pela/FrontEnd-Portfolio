@@ -356,6 +356,7 @@ export function AboutSection({
   return (
     <section
       ref={sectionRef}
+      data-scroll-locked-section="about"
       // Remove pointer events to interract with content and debug
       className="absolute z-20 top-0 left-0 w-full 
       "

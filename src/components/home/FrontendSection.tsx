@@ -31,13 +31,13 @@ const FRONTEND_REVEAL_SCROLL_DISTANCE = 520;
 const FRONTEND_REVEALED_PROGRESS = 0.2;
 
 const FRONTEND_LOCAL_PROGRESS_TWEEN_DURATION = 0.3;
-const FRONTEND_LOCKED_STORY_TIME = 1.42;
+const FRONTEND_LOCKED_STORY_TIME = 1.4;
 
 //Desktop-only gallery reveal tuning. At 50, an overflowing screenshot wall
 //begins translated 50% toward the copy, so it initially reads as a peek.
 //The reveal and the internal carousel scroll are intentionally sequential:
 //the wall fully glides into view first, then its screenshots begin scrolling.
-const FRONTEND_DESKTOP_GALLERY_PEEK_PERCENT = 50;
+const FRONTEND_DESKTOP_GALLERY_PEEK_PERCENT = 60;
 
 //Browser page zoom changes window.devicePixelRatio in Chromium/Firefox. We
 //capture the DPR from the first mounted version of this section as the 1x
@@ -148,78 +148,78 @@ const FRONTEND_PROJECTS: readonly FrontendProject[] = [
       },
     ],
   },
-  {
-    title: "Homepage Visual CMS",
-    description:
-      "A visual homepage editing experience where structured content remains type-safe while the administrator sees changes in the actual page composition.",
-    contribution:
-      "I worked on the editor architecture, live preview behavior, reusable section configuration and the bridge between structured values and presentation.",
-    outcome:
-      "Content editing feels visual without turning the production homepage into an unrestricted page builder.",
-    technologies: ["React", "Puck", "TipTap", "TypeScript"],
-    liveUrl: null,
-    repositoryUrl: null,
-    screenshots: [
-      {
-        src: null,
-        alt: "Homepage visual editor canvas",
-        aspectRatio: 16 / 10,
-      },
-      {
-        src: null,
-        alt: "Homepage visual editor controls",
-        aspectRatio: 3 / 4,
-      },
-    ],
-  },
-  {
-    title: "Products + Case Studies",
-    description:
-      "Reusable product and case-study experiences driven by structured API data instead of duplicated presentation content.",
-    contribution:
-      "I translated backend contracts into client models, reusable cards, detail screens, media treatment and testimonial mappings while preserving the designed UI.",
-    outcome:
-      "One source of truth can now power multiple polished client experiences and their administration surfaces.",
-    technologies: ["React", "API", "Rich Text", "Schema"],
-    liveUrl: null,
-    repositoryUrl: null,
-    screenshots: [
-      {
-        src: null,
-        alt: "Product and case studies index",
-        aspectRatio: 16 / 10,
-      },
-      {
-        src: null,
-        alt: "Product and case study detail",
-        aspectRatio: 4 / 5,
-      },
-    ],
-  },
-  {
-    title: "Events + Community",
-    description:
-      "Interactive event and publishing surfaces that combine discovery, registration intent, comments, reactions, filtering and rich content.",
-    contribution:
-      "I integrated the frontend data flows, optimistic interaction patterns, prefetch strategy, auth-aware routing and responsive presentation.",
-    outcome:
-      "The public experience remains immediate even when the workflows behind it involve authentication and server state.",
-    technologies: ["React Query", "Routing", "Optimistic UI", "Prefetch"],
-    liveUrl: null,
-    repositoryUrl: null,
-    screenshots: [
-      {
-        src: null,
-        alt: "Events discovery interface",
-        aspectRatio: 16 / 10,
-      },
-      {
-        src: null,
-        alt: "Community discussion interface",
-        aspectRatio: 3 / 4,
-      },
-    ],
-  },
+  // {
+  //   title: "Homepage Visual CMS",
+  //   description:
+  //     "A visual homepage editing experience where structured content remains type-safe while the administrator sees changes in the actual page composition.",
+  //   contribution:
+  //     "I worked on the editor architecture, live preview behavior, reusable section configuration and the bridge between structured values and presentation.",
+  //   outcome:
+  //     "Content editing feels visual without turning the production homepage into an unrestricted page builder.",
+  //   technologies: ["React", "Puck", "TipTap", "TypeScript"],
+  //   liveUrl: null,
+  //   repositoryUrl: null,
+  //   screenshots: [
+  //     {
+  //       src: null,
+  //       alt: "Homepage visual editor canvas",
+  //       aspectRatio: 16 / 10,
+  //     },
+  //     {
+  //       src: null,
+  //       alt: "Homepage visual editor controls",
+  //       aspectRatio: 3 / 4,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Products + Case Studies",
+  //   description:
+  //     "Reusable product and case-study experiences driven by structured API data instead of duplicated presentation content.",
+  //   contribution:
+  //     "I translated backend contracts into client models, reusable cards, detail screens, media treatment and testimonial mappings while preserving the designed UI.",
+  //   outcome:
+  //     "One source of truth can now power multiple polished client experiences and their administration surfaces.",
+  //   technologies: ["React", "API", "Rich Text", "Schema"],
+  //   liveUrl: null,
+  //   repositoryUrl: null,
+  //   screenshots: [
+  //     {
+  //       src: null,
+  //       alt: "Product and case studies index",
+  //       aspectRatio: 16 / 10,
+  //     },
+  //     {
+  //       src: null,
+  //       alt: "Product and case study detail",
+  //       aspectRatio: 4 / 5,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Events + Community",
+  //   description:
+  //     "Interactive event and publishing surfaces that combine discovery, registration intent, comments, reactions, filtering and rich content.",
+  //   contribution:
+  //     "I integrated the frontend data flows, optimistic interaction patterns, prefetch strategy, auth-aware routing and responsive presentation.",
+  //   outcome:
+  //     "The public experience remains immediate even when the workflows behind it involve authentication and server state.",
+  //   technologies: ["React Query", "Routing", "Optimistic UI", "Prefetch"],
+  //   liveUrl: null,
+  //   repositoryUrl: null,
+  //   screenshots: [
+  //     {
+  //       src: null,
+  //       alt: "Events discovery interface",
+  //       aspectRatio: 16 / 10,
+  //     },
+  //     {
+  //       src: null,
+  //       alt: "Community discussion interface",
+  //       aspectRatio: 3 / 4,
+  //     },
+  //   ],
+  // },
 ] as const;
 
 const GRID_COLUMNS = Array.from({ length: 11 });
@@ -1826,6 +1826,7 @@ export default function FrontendSection({
   return (
     <section
       ref={sectionRef}
+      data-scroll-locked-section="experience"
       className="pointer-events-none absolute inset-0 z-30 overflow-hidden text-[#171717]"
     >
       <LiquidGlassDefinitions />
