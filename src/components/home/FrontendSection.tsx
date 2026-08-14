@@ -31,7 +31,7 @@ const FRONTEND_REVEAL_SCROLL_DISTANCE = 520;
 const FRONTEND_REVEALED_PROGRESS = 0.2;
 
 const FRONTEND_LOCAL_PROGRESS_TWEEN_DURATION = 0.3;
-const FRONTEND_LOCKED_STORY_TIME = 1.4;
+const FRONTEND_LOCKED_STORY_TIME = 1.42;
 
 //Desktop-only gallery reveal tuning. At 50, an overflowing screenshot wall
 //begins translated 50% toward the copy, so it initially reads as a peek.
@@ -1060,7 +1060,7 @@ export default function FrontendSection({
 
   //This section is a five-scene editorial sequence, so its local scroll distance is intentionally based on viewport travel rather than About's overflowing text height.
   const getFrontendPxDuration = useCallback(() => {
-    return Math.max(window.innerHeight * 3.7, 3100);
+    return Math.max(window.innerHeight * 2.2, 2200);
   }, []);
 
   const getFrontendLockY = useCallback(() => {
