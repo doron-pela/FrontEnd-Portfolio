@@ -2025,12 +2025,10 @@ export default function FrontendSection({
                 right-side safe column (27vw left gutter, 4vw right gutter) and
                 reserves the top ~11vh for the future navbar.
               */}
-            <div className="absolute bottom-[3.25vh] right-[4.35vw] top-[clamp(5.75rem,9vh,8.25rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] max-[900px]:bottom-[3.5vh] max-[900px]:right-[4.5vw] max-[900px]:top-[clamp(5.5rem,8.5vh,7rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[27vw] max-[680px]:right-[4vw] max-[680px]:top-[clamp(5.75rem,11vh,7rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
-              <div className="frontend-browser-zoom-compensated z-40 ml-auto flex w-full shrink-0 flex-col items-end text-right  max-[680px]:translate-y-0
-              
-              ">
+            <div className="absolute bottom-[3.25vh] right-[4.35vw] top-[clamp(5.75rem,9vh,8.25rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:right-[4.5vw] max-[900px]:top-[clamp(5.5rem,8.5vh,7rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[27vw] max-[680px]:right-[4vw] max-[680px]:top-[clamp(5.75rem,11vh,7rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
+              <div className="frontend-browser-zoom-compensated z-40 ml-auto flex w-full shrink-0 flex-col items-end text-right">
                 <h2
-                  className="m-0 font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]"
+                  className="m-0 font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.35rem,3.8vw,3rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.95rem,4vh,2.2rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]"
                   aria-label="Frontend Engineering"
                 >
                   <span className="block overflow-y-clip pb-[0.08em]">
@@ -2045,7 +2043,7 @@ export default function FrontendSection({
                   </span>
                 </h2>
 
-                <p className="frontend-intro-item mt-2 max-w-[24rem] font-mono text-[clamp(0.58rem,0.66vw,0.74rem)] uppercase leading-[1.6] tracking-[0.09em] text-[#171717]/44 max-[900px]:max-w-[18rem] max-[900px]:text-[0.5rem] max-[680px]:mt-2 max-[680px]:max-w-[16rem] max-[680px]:text-[0.47rem] max-[680px]:leading-[1.55]">
+                <p className="frontend-intro-item mt-2 max-w-[24rem] font-mono text-[clamp(0.58rem,0.66vw,0.74rem)] uppercase leading-[1.6] tracking-[0.09em] text-[#171717]/44 min-[901px]:max-[1180px]:mt-[0.32rem] min-[901px]:max-[1180px]:text-[0.5rem] min-[901px]:max-[1180px]:leading-[1.45] max-[900px]:max-w-[18rem] max-[900px]:text-[0.5rem] max-[680px]:mt-2 max-[680px]:max-w-[16rem] max-[680px]:text-[0.47rem] max-[680px]:leading-[1.55]">
                   Selected frontend proof of work.
                 </p>
               </div>
@@ -2089,16 +2087,26 @@ export default function FrontendSection({
                           or longer copy grows that row upward from the fixed bottom
                           edge and the gallery stretches with it automatically.
                         */}
-                      <div className="flex h-full min-h-0 w-full flex-col justify-end max-[1180px]:justify-center max-[1180px]:-translate-y-[clamp(0.75rem,2.4vh,2rem)] max-[680px]:-translate-y-[clamp(0.35rem,1.2vh,0.75rem)]">
-                        <div className="frontend-browser-zoom-compensated frontend-project-copy relative z-30 ml-auto w-full max-w-[23rem] text-right max-[1180px]:max-w-[31rem] max-[680px]:max-w-none">
-                          <h3 className="ml-auto max-w-[23rem] text-[clamp(1.85rem,1.05vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
+                      {/*
+                        From 901px through 1180px the project is still in the
+                        stacked tablet/laptop composition, while its copy width
+                        has already reached the 31rem cap. In that band, letting
+                        vw-based type and vertical spacing continue growing can
+                        make the project's natural height exceed the stack and
+                        push the centered composition upward into the header.
+                        Keep the same structure, but use a deliberately compact
+                        vertical rhythm so the whole project remains self-contained.
+                      */}
+                      <div className="flex h-full min-h-0 w-full flex-col justify-end max-[1180px]:justify-center max-[680px]:-translate-y-[clamp(0.35rem,1.2vh,0.75rem)]">
+                        <div className="frontend-browser-zoom-compensated frontend-project-copy relative z-30 ml-auto w-full max-w-[23rem] text-right max-[1180px]:max-w-[31rem] min-[901px]:max-[1180px]:shrink-0 max-[680px]:max-w-none">
+                          <h3 className="ml-auto max-w-[23rem] text-[clamp(1.85rem,1.05vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
                             {project.title}
                           </h3>
                         </div>
 
-                        <div className="mt-[clamp(1.15rem,1.75vh,1.55rem)] flex min-h-0 w-full items-stretch justify-end gap-[clamp(0.42rem,0.62vw,0.72rem)] max-[1180px]:flex-col max-[1180px]:items-end max-[1180px]:gap-[clamp(1rem,1.65vh,1.4rem)] max-[680px]:mt-[0.72rem] max-[680px]:gap-[clamp(0.88rem,1.45vh,1.12rem)]">
+                        <div className="mt-[clamp(1.15rem,1.75vh,1.55rem)] flex min-h-0 w-full items-stretch justify-end gap-[clamp(0.42rem,0.62vw,0.72rem)] max-[1180px]:flex-col max-[1180px]:items-end max-[1180px]:gap-[clamp(1rem,1.65vh,1.4rem)] min-[901px]:max-[1180px]:mt-[clamp(0.42rem,0.85vh,0.58rem)] min-[901px]:max-[1180px]:shrink-0 min-[901px]:max-[1180px]:gap-[clamp(0.56rem,1vh,0.72rem)] max-[680px]:mt-[0.72rem] max-[680px]:gap-[clamp(0.88rem,1.45vh,1.12rem)]">
                           {hasScreenshots ? (
-                            <div className="relative z-20 order-1 flex min-h-0 min-w-0 flex-1 self-stretch items-stretch overflow-hidden min-[1181px]:basis-[60%] min-[1181px]:min-h-[min(56vh,35rem)] max-[1180px]:order-2 max-[1180px]:ml-auto max-[1180px]:h-[min(27vh,17rem)] max-[1180px]:w-full max-[1180px]:max-w-[34rem] max-[1180px]:flex-none max-[1180px]:self-auto max-[900px]:h-[min(25vh,15.5rem)] max-[680px]:h-[min(19vh,11.25rem)] max-[680px]:max-w-none">
+                            <div className="relative z-20 order-1 flex min-h-0 min-w-0 flex-1 self-stretch items-stretch overflow-hidden min-[1181px]:basis-[60%] min-[1181px]:min-h-[min(56vh,35rem)] max-[1180px]:order-2 max-[1180px]:ml-auto max-[1180px]:h-[min(27vh,17rem)] max-[1180px]:w-full max-[1180px]:max-w-[34rem] max-[1180px]:flex-none max-[1180px]:self-auto min-[901px]:max-[1180px]:h-[min(24vh,15rem)] max-[900px]:h-[min(25vh,15.5rem)] max-[680px]:h-[min(19vh,11.25rem)] max-[680px]:max-w-none">
                               <div className="h-full min-h-0 w-full">
                                 <ProjectScreenshotGallery
                                   projectTitle={project.title}
@@ -2128,11 +2136,11 @@ export default function FrontendSection({
                                         }`}
                                       />
 
-                                      <div className="frontend-project-copy flex flex-col items-end gap-[clamp(0.45rem,0.7vh,0.62rem)] py-[clamp(0.92rem,1.35vh,1.18rem)] text-right max-[1180px]:gap-[0.32rem] max-[1180px]:py-[0.7rem] max-[680px]:gap-[0.3rem] max-[680px]:py-[0.66rem]">
-                                        <span className="font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
+                                      <div className="frontend-project-copy flex flex-col items-end gap-[clamp(0.45rem,0.7vh,0.62rem)] py-[clamp(0.92rem,1.35vh,1.18rem)] text-right max-[1180px]:gap-[0.32rem] max-[1180px]:py-[0.7rem] min-[901px]:max-[1180px]:gap-[0.22rem] min-[901px]:max-[1180px]:py-[clamp(0.42rem,0.8vh,0.5rem)] max-[680px]:gap-[0.3rem] max-[680px]:py-[0.66rem]">
+                                        <span className="font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
                                           {detail.label}
                                         </span>
-                                        <p className="max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1.3vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
+                                        <p className="max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1.3vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
                                           {detail.value}
                                         </p>
                                       </div>
@@ -2141,7 +2149,7 @@ export default function FrontendSection({
                                 </div>
                               ) : null}
 
-                              <p className="frontend-technology-text ml-auto mt-[clamp(1rem,1.5vh,1.3rem)] w-full max-w-[23rem] text-right font-mono text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.65] tracking-[0.035em] text-[#171717]/68 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:text-[0.74rem] max-[680px]:mt-[0.72rem] max-[680px]:max-w-none max-[680px]:text-[0.7rem] max-[680px]:leading-[1.6]">
+                              <p className="frontend-technology-text ml-auto mt-[clamp(1rem,1.5vh,1.3rem)] w-full max-w-[23rem] text-right font-mono text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.65] tracking-[0.035em] text-[#171717]/68 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:text-[0.74rem] min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:text-[0.66rem] min-[901px]:max-[1180px]:leading-[1.5] max-[680px]:mt-[0.72rem] max-[680px]:max-w-none max-[680px]:text-[0.7rem] max-[680px]:leading-[1.6]">
                                 {project.technologies.join(", ")}
                               </p>
 
@@ -2149,10 +2157,10 @@ export default function FrontendSection({
                                   The screenshot gallery itself is intentionally
                                   only a media/carousel interaction. */}
                               {(project.liveUrl || project.repositoryUrl) && (
-                                <div className="frontend-project-copy ml-auto mt-[clamp(1.05rem,1.6vh,1.4rem)] flex w-full max-w-[23rem] flex-wrap items-center justify-end gap-x-[clamp(1.2rem,1.8vw,1.95rem)] gap-y-3 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:gap-x-3 max-[1180px]:gap-y-2 max-[680px]:mt-[0.82rem] max-[680px]:max-w-none">
+                                <div className="frontend-project-copy ml-auto mt-[clamp(1.05rem,1.6vh,1.4rem)] flex w-full max-w-[23rem] flex-wrap items-center justify-end gap-x-[clamp(1.2rem,1.8vw,1.95rem)] gap-y-3 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:gap-x-3 max-[1180px]:gap-y-2 min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:gap-x-2.5 min-[901px]:max-[1180px]:gap-y-1.5 max-[680px]:mt-[0.82rem] max-[680px]:max-w-none">
                                   {project.liveUrl ? (
                                     <a
-                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/14 bg-white/[0.08] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/72 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/20 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] max-[680px]:text-[0.54rem]"
+                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/14 bg-white/[0.08] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/72 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/20 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
                                       href={project.liveUrl}
                                       rel="noreferrer"
                                       target="_blank"
@@ -2163,7 +2171,7 @@ export default function FrontendSection({
 
                                   {project.repositoryUrl ? (
                                     <a
-                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] max-[680px]:text-[0.54rem]"
+                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
                                       href={project.repositoryUrl}
                                       rel="noreferrer"
                                       target="_blank"
