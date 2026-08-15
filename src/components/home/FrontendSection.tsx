@@ -2450,7 +2450,7 @@ export default function FrontendSection({
               */}
             <div
               aria-hidden="true"
-              className="frontend-timeline-rail pointer-events-none absolute right-[2.1vw] z-[65] hidden w-px overflow-hidden rounded-full min-[1181px]:block"
+              className="frontend-timeline-rail pointer-events-none absolute right-[2.1vw] z-[65] hidden w-[2px] overflow-hidden rounded-full min-[1181px]:block"
               ref={timelineVerticalRailRef}
               style={{ height: 0, top: 0 }}
             >

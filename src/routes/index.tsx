@@ -1,6 +1,6 @@
 // src/routes/index.tsx
 import { createFileRoute, useLocation } from "@tanstack/react-router";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
 import FrontendSection from "@/components/home/FrontendSection";
@@ -66,6 +66,32 @@ function HomePage() {
           }
         : null,
     );
+
+  //The project-return state is a one-shot instruction, not persistent homepage
+  //state. We copy it into routeRestoreStateRef synchronously above, then remove
+  //only our custom key from this history entry. TanStack's own history keys are
+  //left untouched, so its normal scroll restoration remains free to restore the
+  //actual window position on later homepage refreshes or history navigations.
+  useEffect(() => {
+    if (!portfolioReturnStateRef.current) {
+      return;
+    }
+
+    const currentHistoryState = (window.history.state ?? {}) as Record<
+      string,
+      unknown
+    >;
+
+    if (!("portfolioReturn" in currentHistoryState)) {
+      return;
+    }
+
+    const nextHistoryState = { ...currentHistoryState };
+
+    delete nextHistoryState.portfolioReturn;
+
+    window.history.replaceState(nextHistoryState, "", window.location.href);
+  }, []);
 
   //Called, this function is our actual effect in every section component
   const registerSection = useCallback<RegisterScrollSection<HomeSection>>(
