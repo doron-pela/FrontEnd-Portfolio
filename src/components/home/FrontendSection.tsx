@@ -33,6 +33,22 @@ const FRONTEND_REVEALED_PROGRESS = 0.2;
 const FRONTEND_LOCAL_PROGRESS_TWEEN_DURATION = 0.3;
 const FRONTEND_LOCKED_STORY_TIME = 1.42;
 
+//Once project 01 is fully assembled, every project owns one equal virtual
+//timeline slot. The first 0.4s of each slot is the fully readable card hold;
+//the remaining 0.76s is either the transition into the next assembled card or,
+//for the final project, the section outro. Keeping these values explicit makes
+//the physical scroll allocation mathematically uniform across project count.
+const FRONTEND_SCENE_HOLD_TIME = 0.4;
+const FRONTEND_SCENE_TRANSITION_TIME = 0.76;
+const FRONTEND_SCENE_SCROLL_SLOT_TIME =
+  FRONTEND_SCENE_HOLD_TIME + FRONTEND_SCENE_TRANSITION_TIME;
+
+//The progress line always stops just before the existing project dots. On wide
+//desktop it is vertical; at <=1180px it lies horizontally on the bottom bed of
+//the composition immediately to the left of the unchanged horizontal dot row.
+const FRONTEND_TIMELINE_NAV_CLEARANCE_PX = 6;
+const FRONTEND_TIMELINE_HORIZONTAL_THICKNESS_PX = 2;
+
 //Desktop-only gallery reveal tuning. At 50, an overflowing screenshot wall
 //begins translated 50% toward the copy, so it initially reads as a peek.
 //The reveal and the internal carousel scroll are intentionally sequential:
@@ -1047,6 +1063,8 @@ export default function FrontendSection({
   const stageRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const timelineVerticalRailRef = useRef<HTMLDivElement | null>(null);
+  const timelineHorizontalRailRef = useRef<HTMLDivElement | null>(null);
 
   const frontendTimelineRef = useRef<gsap.core.Timeline | null>(null);
   const frontendProgressRef = useRef(FRONTEND_REVEALED_PROGRESS);
@@ -1058,9 +1076,21 @@ export default function FrontendSection({
     null,
   );
 
-  //This section is a five-scene editorial sequence, so its local scroll distance is intentionally based on viewport travel rather than About's overflowing text height.
+  //Frontend scroll distance is derived from the projects that actually exist.
+  //The controller advances normalized timeline progress by deltaY / distance.
+  //Because local ownership begins at revealedProgress rather than at 0, divide
+  //by the remaining normalized range so the LOCKED portion itself receives
+  //exactly one viewport-height of physical scroll per rendered project.
+  //Combined with the equal virtual scene slots below, every card therefore gets
+  //the same physical scroll allocation regardless of how many projects exist.
   const getFrontendPxDuration = useCallback(() => {
-    return Math.max(window.innerHeight * 2.2, 2200);
+    const revealedProgress =
+      runtimeRef.current?.revealedProgress ?? FRONTEND_REVEALED_PROGRESS;
+    const lockedProgressRange = Math.max(1 - revealedProgress, 0.0001);
+
+    return (
+      (window.innerHeight * FRONTEND_PROJECTS.length) / lockedProgressRange
+    );
   }, []);
 
   const getFrontendLockY = useCallback(() => {
@@ -1134,6 +1164,119 @@ export default function FrontendSection({
   useEffect(() => {
     return registerSection(runtime);
   }, [registerSection, runtime]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const content = contentRef.current;
+    const verticalRail = timelineVerticalRailRef.current;
+    const horizontalRail = timelineHorizontalRailRef.current;
+
+    if (!section || !content || !verticalRail || !horizontalRail) return;
+
+    let frame = 0;
+
+    //The two orientations are separate DOM rails on purpose. The previous
+    //single-element implementation had to switch width/height/visibility and
+    //positioning modes at 1180px, which made the horizontal state vulnerable to
+    //stale geometry. Both rails now share the same progress value, while each
+    //owns only the geometry for its orientation. The unfilled track remains
+    //completely invisible; only the travelled line itself is rendered.
+    const syncTimelineRailGeometry = () => {
+      cancelAnimationFrame(frame);
+
+      frame = requestAnimationFrame(() => {
+        const cardNav =
+          section.querySelector<HTMLElement>(".frontend-card-nav");
+        const gallery = section.querySelector<HTMLElement>(
+          ".frontend-project-gallery-shell",
+        );
+        const stack = section.querySelector<HTMLElement>(".frontend-stack");
+
+        if (!cardNav || !stack) return;
+
+        const contentRect = content.getBoundingClientRect();
+        const navRect = cardNav.getBoundingClientRect();
+        const stackRect = stack.getBoundingClientRect();
+        const galleryRect = gallery?.getBoundingClientRect() ?? null;
+
+        //Wide desktop: start where the screenshot region begins and stop just
+        //before the first dot in the vertical navigator.
+        const verticalAnchorRect = galleryRect ?? stackRect;
+        const verticalTop = Math.max(
+          verticalAnchorRect.top - contentRect.top,
+          0,
+        );
+        const verticalBottom =
+          navRect.top - contentRect.top - FRONTEND_TIMELINE_NAV_CLEARANCE_PX;
+        const verticalHeight = Math.max(verticalBottom - verticalTop, 0);
+
+        verticalRail.style.top = `${verticalTop}px`;
+        verticalRail.style.height = `${verticalHeight}px`;
+        verticalRail.style.visibility =
+          verticalHeight > 1 ? "visible" : "hidden";
+
+        //<=1180px: lay the progress line down on the same horizontal bed as the
+        //dot navigator. Prefer the screenshot's left edge as the start point,
+        //but fall back to the stack if media is absent. The endpoint is derived
+        //from the actual nav's left edge, so adding/removing project dots always
+        //shortens/lengthens the line automatically without changing the dots.
+        let horizontalLeft = (galleryRect ?? stackRect).left - contentRect.left;
+        let horizontalRight =
+          navRect.left - contentRect.left - FRONTEND_TIMELINE_NAV_CLEARANCE_PX;
+
+        //If transient card transforms ever make the gallery geometry invalid,
+        //fall back to the stable stack bounds instead of hiding the indicator.
+        if (horizontalRight <= horizontalLeft + 1) {
+          horizontalLeft = stackRect.left - contentRect.left;
+        }
+
+        horizontalLeft = Math.max(horizontalLeft, 0);
+        horizontalRight = Math.min(
+          Math.max(horizontalRight, horizontalLeft),
+          contentRect.width,
+        );
+
+        const horizontalWidth = Math.max(horizontalRight - horizontalLeft, 0);
+        const horizontalTop =
+          navRect.top -
+          contentRect.top +
+          navRect.height / 2 -
+          FRONTEND_TIMELINE_HORIZONTAL_THICKNESS_PX / 2;
+
+        horizontalRail.style.left = `${horizontalLeft}px`;
+        horizontalRail.style.width = `${horizontalWidth}px`;
+        horizontalRail.style.top = `${horizontalTop}px`;
+        horizontalRail.style.height = `${FRONTEND_TIMELINE_HORIZONTAL_THICKNESS_PX}px`;
+        horizontalRail.style.visibility =
+          horizontalWidth > 1 ? "visible" : "hidden";
+      });
+    };
+
+    syncTimelineRailGeometry();
+
+    const resizeObserver = new ResizeObserver(syncTimelineRailGeometry);
+    resizeObserver.observe(content);
+
+    const cardNav = section.querySelector<HTMLElement>(".frontend-card-nav");
+    const gallery = section.querySelector<HTMLElement>(
+      ".frontend-project-gallery-shell",
+    );
+    const stack = section.querySelector<HTMLElement>(".frontend-stack");
+
+    if (cardNav) resizeObserver.observe(cardNav);
+    if (gallery) resizeObserver.observe(gallery);
+    if (stack) resizeObserver.observe(stack);
+
+    window.addEventListener("resize", syncTimelineRailGeometry, {
+      passive: true,
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", syncTimelineRailGeometry);
+    };
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -1359,6 +1502,7 @@ export default function FrontendSection({
       );
       const stack = section.querySelector<HTMLElement>(".frontend-stack");
       const cardNav = section.querySelector<HTMLElement>(".frontend-card-nav");
+
       if (cards.length !== FRONTEND_PROJECTS.length || !stack || !cardNav) {
         return;
       }
@@ -1427,6 +1571,8 @@ export default function FrontendSection({
         autoAlpha: 0,
         x: 10,
       });
+
+      section.style.setProperty("--frontend-timeline-progress", "0");
 
       //Each project still has a strict card-sized coordinate system. The card
       //itself is intentionally invisible; only its arranged children render.
@@ -1501,6 +1647,18 @@ export default function FrontendSection({
       });
 
       frontendTimelineRef.current = timeline;
+
+      //Both visible progress lines mirror the timeline's normalized 0-1
+      //playhead through one section-level CSS variable. This remains correct for
+      //ScrollTrigger scrubbing, locally locked wheel/touch progress, programmatic
+      //section navigation and dot-based scene seeking without introducing a tween
+      //that could change the story timeline's duration.
+      timeline.eventCallback("onUpdate", () => {
+        section.style.setProperty(
+          "--frontend-timeline-progress",
+          timeline.progress().toString(),
+        );
+      });
 
       const revealProject = (sceneIndex: number, startTime: number) => {
         timeline
@@ -1649,7 +1807,18 @@ export default function FrontendSection({
         .addLabel("locked-story", FRONTEND_LOCKED_STORY_TIME)
         .addLabel("frontend-scene-0", FRONTEND_LOCKED_STORY_TIME);
 
-      const transitionStarts = [1.82, 2.96, 4.1, 5.24] as const;
+      //Every project after the first is generated from the same scene slot.
+      //Project 01 is fully assembled at locked-story. It then receives exactly
+      //FRONTEND_SCENE_HOLD_TIME before the next transition begins. Every later
+      //assembled project repeats that same slot, so adding/removing projects can
+      //never leave a giant trailing timeline gap or unequal per-card scroll.
+      const transitionStarts = Array.from(
+        { length: Math.max(FRONTEND_PROJECTS.length - 1, 0) },
+        (_, transitionIndex) =>
+          FRONTEND_LOCKED_STORY_TIME +
+          FRONTEND_SCENE_HOLD_TIME +
+          transitionIndex * FRONTEND_SCENE_SCROLL_SLOT_TIME,
+      );
 
       transitionStarts.forEach((transitionStart, transitionIndex) => {
         const sceneIndex = transitionIndex + 1;
@@ -1708,10 +1877,20 @@ export default function FrontendSection({
 
         timeline.addLabel(
           `frontend-scene-${sceneIndex}`,
-          transitionStart + 0.76,
+          transitionStart + FRONTEND_SCENE_TRANSITION_TIME,
         );
       });
 
+      const lastSceneLabelTime =
+        FRONTEND_LOCKED_STORY_TIME +
+        Math.max(FRONTEND_PROJECTS.length - 1, 0) *
+          FRONTEND_SCENE_SCROLL_SLOT_TIME;
+      const finalCardExitStart = lastSceneLabelTime + FRONTEND_SCENE_HOLD_TIME;
+
+      //The final project owns the same complete slot as every earlier project.
+      //Its first 0.4s is the readable hold; the remaining 0.76s is used for the
+      //outro. The section fade ends exactly at the end of that slot, so the full
+      //locked timeline is N equal project slots for N rendered projects.
       timeline
         .to(
           cards[FRONTEND_PROJECTS.length - 1],
@@ -1724,7 +1903,7 @@ export default function FrontendSection({
             duration: 0.5,
             ease: "power3.in",
           },
-          6.42,
+          finalCardExitStart,
         )
         .to(
           titleLines,
@@ -1735,7 +1914,7 @@ export default function FrontendSection({
             duration: 0.46,
             ease: "power3.in",
           },
-          6.98,
+          lastSceneLabelTime + 0.46,
         )
         .to(
           cardNav,
@@ -1745,7 +1924,7 @@ export default function FrontendSection({
             duration: 0.32,
             ease: "power2.in",
           },
-          7.0,
+          lastSceneLabelTime + 0.5,
         )
         .to(
           section,
@@ -1755,7 +1934,7 @@ export default function FrontendSection({
             duration: 0.6,
             ease: "power2.in",
           },
-          7.06,
+          lastSceneLabelTime + 0.56,
         );
 
       const lockedStoryTime =
@@ -1811,6 +1990,7 @@ export default function FrontendSection({
 
       return () => {
         frontendTimelineRef.current = null;
+        section.style.removeProperty("--frontend-timeline-progress");
       };
     },
     {
@@ -1965,6 +2145,16 @@ export default function FrontendSection({
             transform: translate3d(var(--frontend-gallery-peek-x), 0, 0);
             will-change: transform;
           }
+        }
+
+        .frontend-timeline-progress-horizontal {
+          transform: scaleX(var(--frontend-timeline-progress, 0));
+          transform-origin: left center;
+        }
+
+        .frontend-timeline-progress-vertical {
+          transform: scaleY(var(--frontend-timeline-progress, 0));
+          transform-origin: top center;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -2189,6 +2379,31 @@ export default function FrontendSection({
                   );
                 })}
               </div>
+            </div>
+
+            {/*
+                Timeline progress is intentionally separate from the dot nav.
+                There is no visible background track: only the travelled portion
+                is drawn. Wide desktop keeps the vertical line beside the vertical
+                dots; <=1180px lays that same line horizontally on the bottom bed
+                immediately before the unchanged horizontal dot navigator.
+              */}
+            <div
+              aria-hidden="true"
+              className="frontend-timeline-rail pointer-events-none absolute right-[2.1vw] z-[65] hidden w-px overflow-hidden rounded-full min-[1181px]:block"
+              ref={timelineVerticalRailRef}
+              style={{ height: 0, top: 0 }}
+            >
+              <span className="frontend-timeline-progress-vertical absolute inset-0 h-full w-full bg-[#171717]/72 will-change-transform" />
+            </div>
+
+            <div
+              aria-hidden="true"
+              className="frontend-timeline-rail pointer-events-none absolute z-[65] overflow-hidden rounded-full min-[1181px]:hidden"
+              ref={timelineHorizontalRailRef}
+              style={{ height: 0, left: 0, top: 0, width: 0 }}
+            >
+              <span className="frontend-timeline-progress-horizontal absolute inset-0 h-full w-full bg-[#171717]/76 will-change-transform" />
             </div>
 
             {/*
