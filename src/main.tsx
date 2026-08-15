@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 
 // Create a new router instance
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, scrollRestoration:true });
 
 // Register the router instance for maximum TypeScript type-safety
 declare module "@tanstack/react-router" {

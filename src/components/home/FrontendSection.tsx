@@ -2,6 +2,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Link } from "@tanstack/react-router";
 import type {
   CSSProperties,
   PointerEvent as ReactPointerEvent,
@@ -99,6 +100,7 @@ type FrontendProject = {
   screenshots: readonly ProjectScreenshot[];
   liveUrl: string | null;
   repositoryUrl?: string | null;
+  detailsSlug?: string | null;
 };
 
 const FRONTEND_PROJECTS: readonly FrontendProject[] = [
@@ -115,6 +117,7 @@ const FRONTEND_PROJECTS: readonly FrontendProject[] = [
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
     repositoryUrl:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
+    detailsSlug: "owd-web-platform",
     screenshots: [
       {
         src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
@@ -153,6 +156,7 @@ const FRONTEND_PROJECTS: readonly FrontendProject[] = [
     technologies: ["GSAP", "Spline", "ScrollTrigger", "React"],
     liveUrl: null,
     repositoryUrl: null,
+    detailsSlug: "spline-portfolio",
     screenshots: [
       {
         src: null,
@@ -239,6 +243,26 @@ const FRONTEND_PROJECTS: readonly FrontendProject[] = [
   //   ],
   // },
 ] as const;
+
+function rememberFrontendProjectReturnState(projectIndex: number) {
+  //TanStack's `state` option belongs to the DESTINATION history entry. For a
+  //true Back restoration we need the metadata on the CURRENT home entry, so
+  //update only that browser-history state while preserving TanStack's own keys.
+  const currentHistoryState = window.history.state ?? {};
+
+  window.history.replaceState(
+    {
+      ...currentHistoryState,
+      portfolioReturn: {
+        section: "experience",
+        projectIndex,
+        locked: true,
+      },
+    },
+    "",
+    window.location.href,
+  );
+}
 
 const GRID_COLUMNS = Array.from({ length: 11 });
 const GRID_ROWS = Array.from({ length: 7 });
@@ -2239,7 +2263,7 @@ export default function FrontendSection({
               </div>
 
               <div className="frontend-stack relative z-30 min-h-0 w-full flex-1 overflow-visible will-change-[transform,opacity]">
-                {FRONTEND_PROJECTS.map((project) => {
+                {FRONTEND_PROJECTS.map((project, sceneIndex) => {
                   //A screenshot entry with src: null is only configuration or
                   //placeholder metadata. It must not reserve gallery space.
                   //When screenshots exist they render to the LEFT of the stable
@@ -2345,8 +2369,13 @@ export default function FrontendSection({
 
                               {/* Explicit project destinations live with the copy.
                                   The screenshot gallery itself is intentionally
-                                  only a media/carousel interaction. */}
-                              {(project.liveUrl || project.repositoryUrl) && (
+                                  only a media/carousel interaction. The internal
+                                  detail link is optional as well: adding a
+                                  detailsSlug to a project is what makes the
+                                  "View project" action appear. */}
+                              {(project.liveUrl ||
+                                project.repositoryUrl ||
+                                project.detailsSlug) && (
                                 <div className="frontend-project-copy ml-auto mt-[clamp(1.05rem,1.6vh,1.4rem)] flex w-full max-w-[23rem] flex-wrap items-center justify-end gap-x-[clamp(1.2rem,1.8vw,1.95rem)] gap-y-3 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:gap-x-3 max-[1180px]:gap-y-2 min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:gap-x-2.5 min-[901px]:max-[1180px]:gap-y-1.5 max-[680px]:mt-[0.82rem] max-[680px]:max-w-none">
                                   {project.liveUrl ? (
                                     <a
@@ -2368,6 +2397,37 @@ export default function FrontendSection({
                                     >
                                       Repository ↗
                                     </a>
+                                  ) : null}
+
+                                  {project.detailsSlug ? (
+                                    <Link
+                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/78 bg-[#171717] px-[clamp(0.88rem,1.08vw,1.12rem)] py-[clamp(0.5rem,0.62vw,0.66rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#f4f2eb] shadow-[0_8px_22px_rgba(23,23,23,0.08)] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-[#171717]/88 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/22 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.72rem] min-[901px]:max-[1180px]:py-[0.44rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
+                                      onClick={(event) => {
+                                        //Modified clicks may open a new tab and
+                                        //leave this home entry active, so only
+                                        //stamp a return point for same-tab nav.
+                                        if (
+                                          event.defaultPrevented ||
+                                          event.button !== 0 ||
+                                          event.metaKey ||
+                                          event.ctrlKey ||
+                                          event.shiftKey ||
+                                          event.altKey
+                                        ) {
+                                          return;
+                                        }
+
+                                        rememberFrontendProjectReturnState(
+                                          sceneIndex,
+                                        );
+                                      }}
+                                      params={{
+                                        projectSlug: project.detailsSlug,
+                                      }}
+                                      to="/experience/frontend/$projectSlug"
+                                    >
+                                      View project →
+                                    </Link>
                                   ) : null}
                                 </div>
                               )}

@@ -1,18 +1,20 @@
-import * as React from 'react'
-import { 
-  // Outlet, 
-  createRootRoute } from '@tanstack/react-router'
-import SplineScene from '@/components/Spline/SplineScene'
+import { Outlet, createRootRoute, useLocation } from "@tanstack/react-router";
+
+import SplineScene from "@/components/Spline/SplineScene";
 
 export const Route = createRootRoute({
   component: RootComponent,
-})
+});
 
 function RootComponent() {
+  const location = useLocation();
+  const isFrontendProjectDetailRoute = location.pathname.startsWith(
+    "/experience/frontend/",
+  );
+
   return (
-    <React.Fragment>
-      <SplineScene/>
-      {/* <Outlet /> */}
-    </React.Fragment>
-  )
+    <>
+      {isFrontendProjectDetailRoute ? <Outlet /> : <SplineScene />}
+    </>
+  );
 }

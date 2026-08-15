@@ -1,3 +1,4 @@
+// src/@types/scroll-locked-section.types.ts
 import type { RefObject } from "react";
 
 import type { HomeSection } from "@/@types/home-section.types";
@@ -12,7 +13,7 @@ export type ScrollSectionRuntime<Section extends string = string> = {
   startY: number;
   revealedProgress: number; //Default revelation point along the section's timeline that we should get to after a programmatic scroll.
   timelineRef: RefObject<gsap.core.Timeline | null>;
-  progressRef: RefObject<number>; 
+  progressRef: RefObject<number>;
   lockedRef: RefObject<boolean>;
   releasingRef: RefObject<boolean>;
   lockYRef: RefObject<number | null>;
@@ -21,6 +22,15 @@ export type ScrollSectionRuntime<Section extends string = string> = {
   getPxDuration: () => number; //Full pixel length of the section
   getLockY: () => number;
   localProgressTweenDuration: number;
+};
+
+//A route return can rebuild an already-known manual section instantly. A label
+//is preferred because it stays meaningful when the timeline duration changes;
+//progress remains available for generic/manual restoration cases.
+export type ScrollSectionRestoreState<Section extends string = string> = {
+  section: Section;
+  timelineLabel?: string;
+  progress?: number;
 };
 
 //Clean up function for each section's useEffect (Cleanup function in useEff.. must always return void)
@@ -34,9 +44,10 @@ export type ScrollLockedSectionControllerProps<Section extends string> = {
   revealDelaySeconds: Record<Section, number>;
   keyMap: Record<string, Section>;
   scrollDurationSeconds: number;
-  runtimesRef: RefObject<Map<Section, ScrollSectionRuntime<Section>>>;  //Record<> and Map<> are the same except that record takes <strings|nums|symbols as key, v>, while map takes <anything as key, v>
+  runtimesRef: RefObject<Map<Section, ScrollSectionRuntime<Section>>>; //Record<> and Map<> are the same except that record takes <strings|nums|symbols as key, v>, while map takes <anything as key, v>
   //RuntimesRef will globally hold the registered runtime for any of the sections that register
   programmaticScrollRef: RefObject<boolean>;
+  restoreState?: ScrollSectionRestoreState<Section> | null;
 };
 
 //Passed as props to each section in homepage

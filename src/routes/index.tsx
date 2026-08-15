@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+// src/routes/index.tsx
+import { createFileRoute, useLocation } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
@@ -7,8 +8,10 @@ import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSec
 import type { HomeSection } from "@/@types/home-section.types";
 import type {
   RegisterScrollSection,
+  ScrollSectionRestoreState,
   ScrollSectionRuntime,
 } from "@/@types/scroll-locked-section.types";
+import type { PortfolioReturnState } from "@/@types/router-history.types";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -42,10 +45,27 @@ const SECTION_KEY_MAP: Record<string, HomeSection> = {
 };
 
 function HomePage() {
+  const location = useLocation();
   const sectionRuntimesRef = useRef(
     new Map<HomeSection, ScrollSectionRuntime<HomeSection>>(),
   );
   const programmaticScrollRef = useRef(false);
+
+  //The project-detail link stores this on the HOME history entry before it
+  //leaves. Returning with browser/TanStack history therefore gives this exact
+  //entry its project index back without putting restoration data in the URL.
+  const portfolioReturnStateRef = useRef<PortfolioReturnState | undefined>(
+    location.state.portfolioReturn,
+  );
+  const routeRestoreStateRef =
+    useRef<ScrollSectionRestoreState<HomeSection> | null>(
+      portfolioReturnStateRef.current?.locked
+        ? {
+            section: portfolioReturnStateRef.current.section,
+            timelineLabel: `frontend-scene-${portfolioReturnStateRef.current.projectIndex}`,
+          }
+        : null,
+    );
 
   //Called, this function is our actual effect in every section component
   const registerSection = useCallback<RegisterScrollSection<HomeSection>>(
@@ -74,6 +94,7 @@ function HomePage() {
         scrollDurationSeconds={SECTION_SCROLL_DURATION_SECONDS}
         runtimesRef={sectionRuntimesRef}
         programmaticScrollRef={programmaticScrollRef}
+        restoreState={routeRestoreStateRef.current}
       />
 
       <AboutSection

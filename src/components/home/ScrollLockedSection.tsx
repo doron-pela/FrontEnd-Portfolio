@@ -1,3 +1,4 @@
+// src/components/home/ScrollLockedSection.tsx
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useCallback, useEffect, useRef } from "react";
@@ -44,8 +45,10 @@ export function ScrollLockedSectionController<Section extends string>({
   scrollDurationSeconds,
   runtimesRef,
   programmaticScrollRef,
+  restoreState = null,
 }: ScrollLockedSectionControllerProps<Section>) {
   const activeLockedSectionRef = useRef<Section | null>(null);
+  const hasRestoredStateRef = useRef(false);
   const lastWindowScrollYRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
   const resizingViewportRef = useRef(false);
@@ -346,6 +349,112 @@ export function ScrollLockedSectionController<Section extends string>({
       unlockSectionScroll,
     ],
   );
+
+  //Route restoration is intentionally separate from scrollTo(). Numeric key
+  //navigation still performs the authored reveal/scroll animation. A route
+  //return already has a known locked section + timeline scene, so rebuild that
+  //controller state immediately instead of replaying the route from the top.
+  useEffect(() => {
+    if (!restoreState || hasRestoredStateRef.current) {
+      return;
+    }
+
+    let restoreFrame = 0;
+    let cancelled = false;
+
+    const restoreWhenReady = () => {
+      if (cancelled || hasRestoredStateRef.current) {
+        return;
+      }
+
+      const destinationRuntime =
+        runtimesRef.current.get(restoreState.section) ?? null;
+      const destinationTimeline =
+        destinationRuntime?.timelineRef.current ?? null;
+
+      //Section runtimes register after their GSAP timeline exists. Route mounts
+      //can reach this controller one frame earlier, so wait only until that
+      //existing control surface is ready instead of creating a second store.
+      if (!destinationRuntime || !destinationTimeline) {
+        restoreFrame = requestAnimationFrame(restoreWhenReady);
+        return;
+      }
+
+      const registeredSections = getRegisteredSections();
+      const labelTime = restoreState.timelineLabel
+        ? destinationTimeline.labels[restoreState.timelineLabel]
+        : undefined;
+      const labelProgress =
+        labelTime === undefined
+          ? undefined
+          : labelTime / Math.max(destinationTimeline.duration(), 0.0001);
+      const targetProgress = clampSectionProgress(
+        restoreState.progress ??
+          labelProgress ??
+          destinationRuntime.revealedProgress,
+        destinationRuntime.revealedProgress,
+      );
+      const targetY = destinationRuntime.getLockY();
+
+      gsap.killTweensOf(window);
+
+      registeredSections.forEach((runtime) => {
+        gsap.killTweensOf(runtime.timelineRef.current);
+
+        runtime.releasingRef.current = false;
+        runtime.releasedDirectionRef.current = null;
+        runtime.lockedRef.current = false;
+        runtime.lockYRef.current = null;
+        runtime.snapRef.current = false;
+
+        if (runtime !== destinationRuntime) {
+          resetSection(runtime);
+        }
+      });
+
+      //Own the synthetic route-restoration scroll so the global scroll handler
+      //cannot mistake it for real wheel/touch input and advance the local story.
+      programmaticScrollRef.current = true;
+      destinationRuntime.lockYRef.current = targetY;
+      destinationRuntime.lockedRef.current = true;
+      activeLockedSectionRef.current = destinationRuntime.section;
+      isolateLockedSection(destinationRuntime.section);
+
+      destinationRuntime.snapRef.current = true;
+
+      window.scrollTo({
+        top: targetY,
+        left: 0,
+        behavior: "auto",
+      });
+
+      lastWindowScrollYRef.current = targetY;
+      setScrollSectionProgressImmediately(destinationRuntime, targetProgress);
+      destinationRuntime.progressRef.current = targetProgress;
+      hasRestoredStateRef.current = true;
+
+      restoreFrame = requestAnimationFrame(() => {
+        destinationRuntime.snapRef.current = false;
+        programmaticScrollRef.current = false;
+      });
+    };
+
+    restoreFrame = requestAnimationFrame(restoreWhenReady);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(restoreFrame);
+
+      programmaticScrollRef.current = false;
+    };
+  }, [
+    getRegisteredSections,
+    isolateLockedSection,
+    programmaticScrollRef,
+    resetSection,
+    restoreState,
+    runtimesRef,
+  ]);
 
   //Never leave an inline isolation style behind across route unmounts / HMR.
   useEffect(() => {

@@ -10,33 +10,57 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExperienceFrontendRouteRouteImport } from './routes/experience/frontend/route'
+import { Route as ExperienceFrontendProjectSlugRouteImport } from './routes/experience/frontend/$projectSlug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperienceFrontendRouteRoute = ExperienceFrontendRouteRouteImport.update({
+  id: '/experience/frontend',
+  path: '/experience/frontend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperienceFrontendProjectSlugRoute =
+  ExperienceFrontendProjectSlugRouteImport.update({
+    id: '/$projectSlug',
+    path: '/$projectSlug',
+    getParentRoute: () => ExperienceFrontendRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/experience/frontend': typeof ExperienceFrontendRouteRouteWithChildren
+  '/experience/frontend/$projectSlug': typeof ExperienceFrontendProjectSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/experience/frontend': typeof ExperienceFrontendRouteRouteWithChildren
+  '/experience/frontend/$projectSlug': typeof ExperienceFrontendProjectSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/experience/frontend': typeof ExperienceFrontendRouteRouteWithChildren
+  '/experience/frontend/$projectSlug': typeof ExperienceFrontendProjectSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/experience/frontend' | '/experience/frontend/$projectSlug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/experience/frontend' | '/experience/frontend/$projectSlug'
+  id:
+    | '__root__'
+    | '/'
+    | '/experience/frontend'
+    | '/experience/frontend/$projectSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExperienceFrontendRouteRoute: typeof ExperienceFrontendRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +72,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experience/frontend': {
+      id: '/experience/frontend'
+      path: '/experience/frontend'
+      fullPath: '/experience/frontend'
+      preLoaderRoute: typeof ExperienceFrontendRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experience/frontend/$projectSlug': {
+      id: '/experience/frontend/$projectSlug'
+      path: '/$projectSlug'
+      fullPath: '/experience/frontend/$projectSlug'
+      preLoaderRoute: typeof ExperienceFrontendProjectSlugRouteImport
+      parentRoute: typeof ExperienceFrontendRouteRoute
+    }
   }
 }
 
+interface ExperienceFrontendRouteRouteChildren {
+  ExperienceFrontendProjectSlugRoute: typeof ExperienceFrontendProjectSlugRoute
+}
+
+const ExperienceFrontendRouteRouteChildren: ExperienceFrontendRouteRouteChildren =
+  {
+    ExperienceFrontendProjectSlugRoute: ExperienceFrontendProjectSlugRoute,
+  }
+
+const ExperienceFrontendRouteRouteWithChildren =
+  ExperienceFrontendRouteRoute._addFileChildren(
+    ExperienceFrontendRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExperienceFrontendRouteRoute: ExperienceFrontendRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
