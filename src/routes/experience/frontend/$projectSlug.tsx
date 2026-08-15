@@ -39,7 +39,7 @@ function FrontendProjectDetailPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-[#f4f2eb] px-[clamp(1.25rem,4vw,4rem)] py-[clamp(1.5rem,5vw,4.5rem)] text-[#171717]">
+    <main className="min-h-dvh bg-[#E3E3E3] px-[clamp(1.25rem,4vw,4rem)] py-[clamp(1.5rem,5vw,4.5rem)] text-[#171717]">
       <div className="mx-auto flex min-h-[calc(100dvh-clamp(3rem,10vw,9rem))] w-full max-w-[78rem] flex-col">
         <button
           className="w-fit rounded-full border border-[#171717]/12 bg-white/20 px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-[#171717]/68 transition-[transform,background-color] duration-200 hover:-translate-y-px hover:bg-white/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16"
