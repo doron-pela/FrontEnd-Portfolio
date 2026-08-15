@@ -18,5 +18,5 @@ export const CAMERA_STATES = {
 
 export const SPLINE_BREAKPOINTS = {
   mobile: 700,
-  tablet: 1300,
+  tablet: 1100,
 } as const;

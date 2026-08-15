@@ -29,6 +29,14 @@ const ABOUT_GSAP_HMR_REVISION = import.meta.hot
 const ABOUT_REVEAL_SCROLL_DISTANCE = 555;
 const ABOUT_REVEALED_PROGRESS = 0.19;
 const ABOUT_LOCAL_PROGRESS_TWEEN_DURATION = 0.14;
+
+//The outer About section owns the persistent responsive composition offset.
+//The inner plane still owns only its local 3D reveal motion (42px -> 0).
+//Keeping those responsibilities separate prevents the plane's reveal tween
+//from immediately overwriting the responsive Y position.
+const ABOUT_MOBILE_MAX_WIDTH = 650;
+const ABOUT_NON_MOBILE_SECTION_Y = 0;
+const ABOUT_MOBILE_SECTION_Y = 0;
 // 0.19; //From 0 to 0.19 of the timeline, about is revealing... after 0.19 until 1, global scroll is locked.
 //The point in the about timeline (0-1) when the about is fully visible
 //More content to the about section means more timeline stretch. So we need to REDUCE this value as we add content so we lock at the same visual point.
@@ -166,12 +174,31 @@ export function AboutSection({
         return getInternalScrollDistance(); // + 16% of the viewport/window's inner height just to pad it a little
       }
 
+      const mobileAboutQuery = window.matchMedia(
+        `(max-width: ${ABOUT_MOBILE_MAX_WIDTH}px)`,
+      );
+
+      //The section is the persistent composition layer. Unlike the plane, its
+      //timeline never tweens x/y, so this responsive offset remains intact
+      //through the whole About sequence instead of being overwritten at 0.02.
+      const syncAboutSectionPosition = () => {
+        gsap.set(section, {
+          y: mobileAboutQuery.matches
+            ? ABOUT_MOBILE_SECTION_Y
+            : ABOUT_NON_MOBILE_SECTION_Y,
+        });
+      };
+
       gsap.set(section, {
         autoAlpha: 0,
         filter: "blur(0px)",
       });
 
-      //The About section alone owns this tilted 3D text plane.
+      syncAboutSectionPosition();
+      mobileAboutQuery.addEventListener("change", syncAboutSectionPosition);
+
+      //The About section alone owns this tilted 3D text plane. Its Y remains
+      //local reveal motion only: the plane starts 42px lower and settles at 0.
       gsap.set(plane, {
         transformPerspective: 1400,
         transformOrigin: "center left",
@@ -338,6 +365,10 @@ export function AboutSection({
       });
 
       return () => {
+        mobileAboutQuery.removeEventListener(
+          "change",
+          syncAboutSectionPosition,
+        );
         aboutTimelineRef.current = null;
       };
     },
@@ -358,39 +389,40 @@ export function AboutSection({
       ref={sectionRef}
       data-scroll-locked-section="about"
       // Remove pointer events to interract with content and debug
-      className="absolute z-20 top-0 left-0 w-full 
+      className="absolute z-20 top-0 left-0 w-full
       "
     >
       <div
         ref={planeRef}
         className="absolute right-[9vw] top-[32vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity]
           max-[900px]:right-0 max-[900px]:top-[15vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal
+          min-[651px]:max-[900px]:top-[30vh]
           min-[900px]:max-[1600px]:top-[40vh]
           min-[900px]:max-[1600px]:right-0
-          max-[500px]:right-[7%]"
+          max-[650px]:left-[44vw] max-[650px]:right-0 max-[650px]:w-auto"
       >
         <div
           ref={viewportRef}
-          className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] overflow-y-clip"
+          className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] max-[650px]:h-[min(44vh,24rem)] max-[650px]:w-full overflow-y-clip"
         >
-          <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] " />
+          <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
 
           <div className="relative h-full">
             {/* If the content disappears too fast, pad the bottom */}
             <div
               ref={contentRef}
               className="absolute right-10 z-10 pt-12 will-change-transform
-                max-[700px]:mr-[10vw]
-                max-[450px]:mr-[5vw]
+                min-[651px]:max-[700px]:mr-[10vw]
+                max-[650px]:right-0 max-[650px]:mr-0 max-[650px]:w-full
                 pb-[40vh]"
             >
               <div className="about-blur-item">
-                <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)]">
+                <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)] max-[650px]:justify-end">
                   <span>ABOUT / 01</span>
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance pointer-events-auto"
+                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance pointer-events-auto max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
                   aria-label={ABOUT_LINES.join(" ")}
                 >
                   {ABOUT_LINES.map((line, lineIndex) => (
@@ -410,9 +442,10 @@ export function AboutSection({
               </div>
 
               <p
-                className="about-blur-item mt-[2.45rem] mx-auto max-w-[37rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
+                className="about-blur-item mt-[2.45rem] mx-auto max-w-[32rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
                   font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal]
-                  max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right"
+                  max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right
+                  max-[650px]:ml-auto max-[650px]:mr-0 max-[650px]:w-full max-[650px]:max-w-[15rem]"
                 aria-label={ABOUT_BODY}
               >
                 {bodyWords.map((word, wordIndex) => (

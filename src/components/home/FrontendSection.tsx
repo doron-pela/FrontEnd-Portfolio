@@ -2026,7 +2026,9 @@ export default function FrontendSection({
                 reserves the top ~11vh for the future navbar.
               */}
             <div className="absolute bottom-[3.25vh] right-[4.35vw] top-[clamp(5.75rem,9vh,8.25rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] max-[900px]:bottom-[3.5vh] max-[900px]:right-[4.5vw] max-[900px]:top-[clamp(5.5rem,8.5vh,7rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[27vw] max-[680px]:right-[4vw] max-[680px]:top-[clamp(5.75rem,11vh,7rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
-              <div className="frontend-browser-zoom-compensated z-40 ml-auto flex w-full shrink-0 flex-col items-end text-right max-[1180px]:translate-y-[clamp(0.35rem,1.5vw,1.15rem)] max-[680px]:translate-y-0">
+              <div className="frontend-browser-zoom-compensated z-40 ml-auto flex w-full shrink-0 flex-col items-end text-right  max-[680px]:translate-y-0
+              
+              ">
                 <h2
                   className="m-0 font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]"
                   aria-label="Frontend Engineering"
