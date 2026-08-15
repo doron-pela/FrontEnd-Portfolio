@@ -1,8 +1,9 @@
 // src/components/Spline/SplineScene.tsx
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useLocation } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import SplineLoadingScreen from "./SplineLoadingScreen";
 import {
   CAMERA_STATES,
   SPLINE_BREAKPOINTS,
@@ -12,8 +13,11 @@ import {
 import type { SplineApplication } from "./@types";
 
 export default function SplineScene() {
+  const location = useLocation();
   const splineRef = useRef<SplineApplication | null>(null);
   const responsiveFrameRef = useRef<number | null>(null);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
 
   //Match the original responsive rules exactly:
   //mobile  -> width < SPLINE_BREAKPOINTS.mobile
@@ -61,7 +65,18 @@ export default function SplineScene() {
 
     //Initial load always starts from the correct responsive base state.
     setResponsiveBaseState();
+
+    //The loader is ONLY a visual layer above the exact original Spline + Outlet
+    //structure. Nothing about the page, its scroll position, route restoration,
+    //section registration or ScrollTrigger lifecycle waits for this state.
+    setSceneReady(true);
   }
+
+  const handleLoadingScreenComplete = useCallback(() => {
+    //Unmount ONLY the loader layer. Spline and <Outlet /> remain in the exact
+    //same mounted tree before, during and after this state change.
+    setShowLoadingScreen(false);
+  }, []);
 
   useEffect(() => {
     const mobileMaxWidth = Math.max(SPLINE_BREAKPOINTS.mobile - 0.02, 0);
@@ -165,8 +180,13 @@ export default function SplineScene() {
           scene={SPLINE_SCENE_URL}
           onLoad={handleSplineLoad}
         />
-
         <Outlet />
+        {location.pathname === "/" && showLoadingScreen ? (
+          <SplineLoadingScreen
+            sceneReady={sceneReady}
+            onComplete={handleLoadingScreenComplete}
+          />
+        ) : null}
       </div>
     </main>
   );
