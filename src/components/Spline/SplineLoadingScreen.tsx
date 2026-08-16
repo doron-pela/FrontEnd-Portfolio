@@ -16,10 +16,11 @@ type PerforationPoint = {
 //instant flash when Spline happens to resolve unusually quickly.
 const LOADER_INTRO_DURATION_SECONDS = 0.82;
 
-//These points are both the waiting-state "seed anchors" and the final real mask
-//perforations. While Spline loads, each visible seed orbits a little around its
-//anchor. When readiness arrives, every seed glides home to its anchor and that
-//same point becomes the center of a real perforation through the loader surface.
+//These points remain the final real mask perforation anchors. During loading,
+//the visible dots temporarily leave those anchors and gather onto ONE shared
+//circular orbit around the viewport center. They chase one another around that
+//same path at equal angular spacing. When Spline is ready, each dot returns to
+//its own anchor, disappears completely, and only the mask holes expand.
 const PERFORATION_POINTS: readonly PerforationPoint[] = [
   { x: 0.17, y: 0.25 },
   { x: 0.73, y: 0.18 },
@@ -54,10 +55,10 @@ export default function SplineLoadingScreen({
     This component only covers that already-live page until onComplete().
   */
 
-  //The waiting state stays minimal, but it is no longer static. Six tiny
-  //surface-tension seeds orbit gently around their eventual perforation anchors
-  //while a few large soft light blooms move underneath them. There is still no
-  //headline, system copy, progress UI, robot SVG, or status text to read.
+  //The waiting state stays minimal, but the motion is now deliberately legible.
+  //Instead of six almost-static local orbits, the dots gather onto one large
+  //shared circle around the viewport center and chase one another around it at
+  //equal spacing. This gives the loader a clear "dance" without introducing text.
   useEffect(() => {
     const shell = shellRef.current;
 
@@ -70,12 +71,14 @@ export default function SplineLoadingScreen({
     ).matches;
 
     const context = gsap.context(() => {
-      const seeds = shell.querySelectorAll<HTMLElement>(".spline-loader-seed");
+      const seeds = Array.from(
+        shell.querySelectorAll<HTMLElement>(".spline-loader-seed"),
+      );
       const seedCores = shell.querySelectorAll<HTMLElement>(
         ".spline-loader-ripple-core",
       );
-      const seedRings = shell.querySelectorAll<HTMLElement>(
-        ".spline-loader-ripple-ring",
+      const seedGlows = shell.querySelectorAll<HTMLElement>(
+        ".spline-loader-seed-glow",
       );
       const fieldSweep = shell.querySelector<HTMLElement>(
         ".spline-loader-field-sweep",
@@ -94,6 +97,7 @@ export default function SplineLoadingScreen({
         x: 0,
         y: 0,
         rotation: 0,
+        autoAlpha: 1,
         transformOrigin: "50% 50%",
       });
 
@@ -103,9 +107,9 @@ export default function SplineLoadingScreen({
         transformOrigin: "50% 50%",
       });
 
-      gsap.set(seedRings, {
+      gsap.set(seedGlows, {
         autoAlpha: 0,
-        scale: 0.55,
+        scale: 0.7,
         transformOrigin: "50% 50%",
       });
 
@@ -119,10 +123,10 @@ export default function SplineLoadingScreen({
       if (prefersReducedMotion) {
         intro
           .set(seedCores, {
-            autoAlpha: 0.38,
+            autoAlpha: 0.5,
             scale: 1,
           })
-          .set(seedRings, {
+          .set(seedGlows, {
             autoAlpha: 0.12,
             scale: 1,
           })
@@ -135,22 +139,22 @@ export default function SplineLoadingScreen({
         .to(
           seedCores,
           {
-            autoAlpha: 0.4,
+            autoAlpha: 0.62,
             scale: 1,
-            duration: 0.42,
-            stagger: 0.075,
+            duration: 0.36,
+            stagger: 0.055,
           },
-          0.05,
+          0.03,
         )
         .to(
-          seedRings,
+          seedGlows,
           {
-            autoAlpha: 0.14,
+            autoAlpha: 0.16,
             scale: 1,
-            duration: 0.5,
-            stagger: 0.075,
+            duration: 0.42,
+            stagger: 0.055,
           },
-          0.12,
+          0.08,
         )
         .to(
           {},
@@ -160,54 +164,103 @@ export default function SplineLoadingScreen({
           0,
         );
 
-      //The dots do not become a conventional spinner. Each one traces a small,
-      //slightly imperfect elliptical orbit around its own future perforation
-      //anchor. Different radii, directions, phases and durations keep the six
-      //marks feeling like suspended droplets rather than synchronized UI dots.
-      const baseOrbitRadius = Math.min(
-        Math.max(window.innerWidth * 0.012, 10),
-        20,
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const shortestViewportSide = Math.min(viewportWidth, viewportHeight);
+
+      //This is intentionally much larger than the previous 10–20px local orbit.
+      //At common laptop sizes the circle is ~200px in radius; on phones it still
+      //has enough room (~90–120px) to read unmistakably as a real shared orbit.
+      const orbitRadius = Math.min(
+        Math.max(shortestViewportSide * 0.23, 92),
+        220,
+      );
+      const orbitCenterX = viewportWidth * 0.5;
+      const orbitCenterY = viewportHeight * 0.48;
+
+      const orbitState = {
+        angle: -Math.PI / 2,
+        mix: 0,
+      };
+
+      const seedSetters = seeds.map((seed) => ({
+        x: gsap.quickSetter(seed, "x", "px"),
+        y: gsap.quickSetter(seed, "y", "px"),
+        rotation: gsap.quickSetter(seed, "rotation", "deg"),
+      }));
+
+      function renderSharedOrbit() {
+        const globalRadiusPulse = 1 + Math.sin(orbitState.angle * 2) * 0.045;
+
+        seeds.forEach((_, index) => {
+          const point = PERFORATION_POINTS[index];
+
+          if (!point) {
+            return;
+          }
+
+          const phase =
+            orbitState.angle +
+            (index / Math.max(seeds.length, 1)) * Math.PI * 2;
+
+          const targetX =
+            orbitCenterX + Math.cos(phase) * orbitRadius * globalRadiusPulse;
+          const targetY =
+            orbitCenterY + Math.sin(phase) * orbitRadius * globalRadiusPulse;
+
+          const anchorX = point.x * viewportWidth;
+          const anchorY = point.y * viewportHeight;
+
+          const targetOffsetX = targetX - anchorX;
+          const targetOffsetY = targetY - anchorY;
+
+          const setter = seedSetters[index];
+
+          if (!setter) {
+            return;
+          }
+
+          setter.x(targetOffsetX * orbitState.mix);
+          setter.y(targetOffsetY * orbitState.mix);
+
+          //A tiny tangent-facing rotation makes the dots feel as if they are
+          //flowing along the circular path rather than randomly translating.
+          setter.rotation((phase * 180) / Math.PI + 90);
+        });
+      }
+
+      //Gather the six scattered anchor dots into the shared orbital line quickly
+      //enough that even a fast Spline load visibly communicates the choreography.
+      loopTweensRef.current.push(
+        gsap.to(orbitState, {
+          mix: 1,
+          duration: 0.52,
+          ease: "power3.inOut",
+          onUpdate: renderSharedOrbit,
+        }),
       );
 
-      seeds.forEach((seed, index) => {
-        const state = {
-          angle: (index / Math.max(seeds.length, 1)) * Math.PI * 2,
-        };
-        const direction = index % 2 === 0 ? 1 : -1;
-        const radiusX = baseOrbitRadius * (0.72 + (index % 3) * 0.2);
-        const radiusY = baseOrbitRadius * (0.48 + ((index + 1) % 3) * 0.16);
-        const setX = gsap.quickSetter(seed, "x", "px");
-        const setY = gsap.quickSetter(seed, "y", "px");
-        const setRotation = gsap.quickSetter(seed, "rotation", "deg");
+      //All dots use ONE angle state. Their fixed 60-degree phase difference is
+      //what makes them visibly chase one another around the same circle.
+      loopTweensRef.current.push(
+        gsap.to(orbitState, {
+          angle: orbitState.angle + Math.PI * 2,
+          duration: 3.15,
+          ease: "none",
+          repeat: -1,
+          onUpdate: renderSharedOrbit,
+        }),
+      );
 
-        loopTweensRef.current.push(
-          gsap.to(state, {
-            angle: state.angle + direction * Math.PI * 2,
-            duration: 3.7 + index * 0.42,
-            ease: "none",
-            repeat: -1,
-            onUpdate: () => {
-              const organicRadius =
-                1 + Math.sin(state.angle * 2.15 + index * 0.83) * 0.12;
-
-              setX(Math.cos(state.angle) * radiusX * organicRadius);
-              setY((Math.sin(state.angle) * radiusY) / organicRadius);
-              setRotation(Math.sin(state.angle + index) * 8);
-            },
-          }),
-        );
-      });
-
-      //The orbiting cores still breathe independently so motion exists at two
-      //scales: positional drift from the parent seed and tiny surface tension at
-      //the center. It stays intentionally quiet and never becomes a progress UI.
+      //The visible dot itself breathes slightly while its parent performs the
+      //large shared orbit. This is intentionally secondary to the positional dance.
       loopTweensRef.current.push(
         gsap.to(seedCores, {
-          scale: 0.72,
-          autoAlpha: 0.22,
-          duration: 1.15,
+          scale: 1.22,
+          autoAlpha: 0.82,
+          duration: 0.72,
           stagger: {
-            each: 0.18,
+            each: 0.11,
             repeat: -1,
             yoyo: true,
           },
@@ -216,27 +269,21 @@ export default function SplineLoadingScreen({
       );
 
       loopTweensRef.current.push(
-        gsap.fromTo(
-          seedRings,
-          {
-            scale: 0.72,
-            autoAlpha: 0.14,
+        gsap.to(seedGlows, {
+          scale: 1.7,
+          autoAlpha: 0.04,
+          duration: 1.05,
+          stagger: {
+            each: 0.13,
+            repeat: -1,
+            yoyo: true,
           },
-          {
-            scale: 2.7,
-            autoAlpha: 0,
-            duration: 1.7,
-            stagger: {
-              each: 0.24,
-              repeat: -1,
-            },
-            ease: "power2.out",
-          },
-        ),
+          ease: "sine.inOut",
+        }),
       );
 
-      //A single broad sweep is enough to keep the otherwise-flat field from
-      //feeling frozen. It is deliberately low contrast.
+      //The broad ambient field remains deliberately secondary. The shared orbit
+      //is now the loader's dominant visible activity.
       if (fieldSweep) {
         loopTweensRef.current.push(
           gsap.fromTo(
@@ -247,11 +294,11 @@ export default function SplineLoadingScreen({
             },
             {
               xPercent: 135,
-              autoAlpha: 0.42,
-              duration: 4.4,
+              autoAlpha: 0.3,
+              duration: 4.8,
               ease: "sine.inOut",
               repeat: -1,
-              repeatDelay: 0.8,
+              repeatDelay: 0.9,
             },
           ),
         );
@@ -307,10 +354,10 @@ export default function SplineLoadingScreen({
     };
   }, []);
 
-  //Spline's onLoad remains the only real readiness signal. Once both that signal
-  //and the tiny minimum intro have completed, the six moving seeds glide back to
-  //their exact anchors, settle like droplets touching a surface, and then become
-  //actual perforations whose SVG mask holes grow until nothing opaque remains.
+  //Spline's onLoad remains the only real readiness signal. When it arrives, the
+  //shared orbit freezes at its current phase. Every dot then glides back to its
+  //own original perforation anchor. The visible dots disappear COMPLETELY before
+  //the mask begins opening, so the reveal is only clean expanding apertures.
   useEffect(() => {
     const shell = shellRef.current;
 
@@ -320,6 +367,9 @@ export default function SplineLoadingScreen({
 
     exitStartedRef.current = true;
 
+    //Killing these tweens freezes the shared orbit exactly where it is. GSAP
+    //leaves the current inline transforms intact, which lets the return-home
+    //animation begin from the real visible positions with no snapping.
     loopTweensRef.current.forEach((tween) => tween.kill());
     loopTweensRef.current = [];
 
@@ -335,12 +385,6 @@ export default function SplineLoadingScreen({
       shell.querySelectorAll<SVGCircleElement>(".spline-loader-perforation"),
     );
     const seeds = shell.querySelectorAll<HTMLElement>(".spline-loader-seed");
-    const rippleRings = shell.querySelectorAll<HTMLElement>(
-      ".spline-loader-ripple-ring",
-    );
-    const rippleCores = shell.querySelectorAll<HTMLElement>(
-      ".spline-loader-ripple-core",
-    );
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -370,6 +414,9 @@ export default function SplineLoadingScreen({
 
     if (prefersReducedMotion) {
       exit
+        .set(seeds, {
+          autoAlpha: 0,
+        })
         .to(ambientLayer, {
           autoAlpha: 0,
           duration: 0.1,
@@ -386,109 +433,58 @@ export default function SplineLoadingScreen({
       };
     }
 
-    //Do not snap the dancing seeds back to their anchors when readiness arrives.
-    //Their looping tweens are already stopped above, leaving every seed wherever
-    //it happened to be in its orbit. The exit timeline now eases each one home.
-    //Only after that convergence is nearly complete do the true mask holes begin.
     exit
-      .to(
-        ambientLayer,
-        {
-          autoAlpha: 0,
-          filter: "blur(5px)",
-          duration: 0.72,
-          ease: "sine.inOut",
-        },
-        0,
-      )
+      //The six dots stop chasing one another and peel away from the shared orbit,
+      //returning to the exact anchor locations that will become the mask holes.
       .to(
         seeds,
         {
           x: 0,
           y: 0,
           rotation: 0,
-          duration: 0.72,
-          stagger: 0.035,
+          duration: 0.88,
+          stagger: 0.028,
           ease: "power3.inOut",
         },
         0,
       )
-      //Normalize the tiny droplet cores as the moving seeds settle. Because we
-      //tween from their current looped values, there is no visual reset/pop.
       .to(
-        rippleCores,
-        {
-          autoAlpha: 0.72,
-          scale: 1,
-          duration: 0.48,
-          stagger: 0.03,
-          ease: "sine.inOut",
-        },
-        0.16,
-      )
-      .to(
-        rippleRings,
-        {
-          autoAlpha: 0.2,
-          scale: 1,
-          duration: 0.48,
-          stagger: 0.03,
-          ease: "sine.inOut",
-        },
-        0.16,
-      )
-      //The settled droplets create one broad, very smooth surface ripple. The
-      //real mask perforations begin during this ripple rather than after it, so
-      //the opening reads as one continuous liquid event instead of three steps.
-      .to(
-        rippleRings,
+        ambientLayer,
         {
           autoAlpha: 0,
-          scale: 4.2,
-          duration: 1.05,
-          stagger: 0.04,
-          ease: "power2.out",
-        },
-        0.48,
-      )
-      //Grow directly from zero to a meaningful droplet aperture. A longer
-      //sine-in-out tween removes the old pinhole -> droplet snap.
-      .to(
-        perforations,
-        {
-          attr: {
-            r: (index: number) => 68 + (index % 4) * 18,
-          },
-          duration: 0.92,
-          stagger: 0.04,
+          filter: "blur(6px)",
+          duration: 0.9,
           ease: "sine.inOut",
         },
-        0.58,
+        0,
       )
-      //The apertures then accelerate gently into one another. The overlap keeps
-      //their edges moving continuously while the underlying Spline scene emerges.
+      //The markers are gone BEFORE perforation starts. From this point onward
+      //nothing visible sits on top of the openings.
+      .to(
+        seeds,
+        {
+          autoAlpha: 0,
+          scale: 0.58,
+          duration: 0.2,
+          stagger: 0.018,
+          ease: "power2.in",
+        },
+        0.72,
+      )
+      //One continuous expansion. No visible dot, no ripple ring, no staged
+      //pinhole. The only thing the eye sees now is the background appearing
+      //through six circles whose radii smoothly grow until they overlap.
       .to(
         perforations,
         {
           attr: {
             r: finalRadius,
           },
-          duration: 1.48,
-          stagger: 0.025,
-          ease: "power3.inOut",
+          duration: 1.72,
+          stagger: 0.032,
+          ease: "sine.inOut",
         },
-        ">-0.18",
-      )
-      .to(
-        rippleCores,
-        {
-          autoAlpha: 0,
-          scale: 1.65,
-          duration: 0.48,
-          stagger: 0.02,
-          ease: "sine.out",
-        },
-        "<0.18",
+        0.94,
       );
 
     return () => {
@@ -571,10 +567,10 @@ export default function SplineLoadingScreen({
       </div>
 
       {/*
-        These six tiny marks are the entire visible loader UI. During the wait
-        each seed circles softly around its anchor while its rings breathe. Once
-        Spline is ready, every seed glides back to this CSS left/top coordinate,
-        settles, ripples, and becomes the real perforation in the SVG mask.
+        These six dots are the entire visible loader UI. They temporarily leave
+        these anchor coordinates, gather onto one shared central circle, and chase
+        one another around it. Once Spline is ready they return here, disappear,
+        and the invisible SVG mask circles at these same anchors simply expand.
       */}
       <div
         aria-hidden="true"
@@ -589,9 +585,8 @@ export default function SplineLoadingScreen({
               top: `${point.y * 100}%`,
             }}
           >
-            <span className="spline-loader-ripple-core absolute inset-[3px] rounded-full bg-[#171717]/75 opacity-0" />
-            <span className="spline-loader-ripple-ring absolute inset-0 rounded-full border border-[#171717]/42 opacity-0" />
-            <span className="spline-loader-ripple-ring absolute -inset-1 rounded-full border border-[#171717]/18 opacity-0" />
+            <span className="spline-loader-seed-glow absolute -inset-1 rounded-full bg-[#171717]/10 blur-[3px] opacity-0" />
+            <span className="spline-loader-ripple-core absolute inset-[3px] rounded-full bg-[#171717]/82 opacity-0" />
           </span>
         ))}
       </div>
