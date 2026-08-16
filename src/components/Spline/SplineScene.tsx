@@ -1,3 +1,4 @@
+// src/components/Spline/SplineScene.tsx
 import { Outlet, useLocation } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -15,8 +16,15 @@ export default function SplineScene() {
   const location = useLocation();
   const splineRef = useRef<SplineApplication | null>(null);
   const responsiveFrameRef = useRef<number | null>(null);
+  const pendingIsDissectedRef = useRef<boolean | null>(null);
   const [sceneReady, setSceneReady] = useState(false);
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+
+  //The loader is specifically the INDEX-route entrance gate. If SplineScene
+  //ever mounts first on another route, that route does not need to manufacture
+  //an index loader. Returning from a project-detail route remounts SplineScene
+  //at "/", so that real scene load gets one fresh gate automatically.
+  const isIndexRoute = location.pathname === "/";
+  const [loaderComplete, setLoaderComplete] = useState(() => !isIndexRoute);
 
   //Match the original responsive rules exactly:
   //mobile  -> width < SPLINE_BREAKPOINTS.mobile
@@ -56,6 +64,10 @@ export default function SplineScene() {
   }
 
   function setIsDissected(value: boolean) {
+    //AboutSection is already mounted behind the visual loader. If its
+    //ScrollTrigger emits D/A before Spline's onLoad has supplied the runtime,
+    //retain that most recent request and apply it as soon as Spline is ready.
+    pendingIsDissectedRef.current = value;
     splineRef.current?.setVariable(SPLINE_VARIABLES.isDissected, value);
   }
 
@@ -65,16 +77,27 @@ export default function SplineScene() {
     //Initial load always starts from the correct responsive base state.
     setResponsiveBaseState();
 
-    //The loader is ONLY a visual layer above the exact original Spline + Outlet
-    //structure. Nothing about the page, its scroll position, route restoration,
-    //section registration or ScrollTrigger lifecycle waits for this state.
+    //The homepage route is mounted underneath the loader, so About may already
+    //have crossed its ScrollTrigger boundary before Spline itself finishes
+    //loading. Honor the latest queued D/A request instead of losing that state.
+    if (pendingIsDissectedRef.current !== null) {
+      spline.setVariable(
+        SPLINE_VARIABLES.isDissected,
+        pendingIsDissectedRef.current,
+      );
+    }
+
+    //This is the real readiness signal for the visual gate. The homepage itself
+    //is ALREADY mounted behind that gate, so route/history restoration can finish
+    //while the opaque loading surface is still covering the viewport.
     setSceneReady(true);
   }
 
-  const handleLoadingScreenComplete = useCallback(() => {
-    //Unmount ONLY the loader layer. Spline and <Outlet /> remain in the exact
-    //same mounted tree before, during and after this state change.
-    setShowLoadingScreen(false);
+  const handleLoaderComplete = useCallback(() => {
+    //After the perforation reveal has completely exposed the scene, removing
+    //this state unmounts SplineLoadingScreen entirely. It leaves no invisible
+    //overlay, pointer layer, GSAP loop, or loader DOM above the live Spline scene.
+    setLoaderComplete(true);
   }, []);
 
   useEffect(() => {
@@ -131,21 +154,24 @@ export default function SplineScene() {
           setResponsiveBaseState();
           break;
 
-        case "i":
-          setCameraState(CAMERA_STATES.side);
-          break;
+        //Temporarily disable manual CameraState keyboard overrides.
+        //Keep the code here (rather than deleting it) so these development
+        //shortcuts can be restored later without reconstructing the mapping.
+        // case "i":
+        //   setCameraState(CAMERA_STATES.side);
+        //   break;
 
-        case "f":
-          setCameraState(CAMERA_STATES.front);
-          break;
+        // case "f":
+        //   setCameraState(CAMERA_STATES.front);
+        //   break;
 
-        case "b":
-          setCameraState(CAMERA_STATES.back);
-          break;
+        // case "b":
+        //   setCameraState(CAMERA_STATES.back);
+        //   break;
 
-        case "p":
-          setCameraState(CAMERA_STATES.projects);
-          break;
+        // case "p":
+        //   setCameraState(CAMERA_STATES.projects);
+        //   break;
 
         case "d":
           setIsDissected(true);
@@ -179,11 +205,22 @@ export default function SplineScene() {
           scene={SPLINE_SCENE_URL}
           onLoad={handleSplineLoad}
         />
+
+        {/*
+          IMPORTANT: keep the route mounted from the beginning.
+
+          The loader is only an opaque visual gate. Mounting <Outlet /> now lets
+          the homepage's existing route-return restoration register its section
+          runtimes and restore window/timeline state BEHIND the loader. Therefore
+          returning from /experience/frontend/:projectSlug no longer reveals the
+          index at scrollY 0 and then visibly snaps back to the saved project.
+        */}
         <Outlet />
-        {location.pathname === "/" && showLoadingScreen ? (
+
+        {isIndexRoute && !loaderComplete ? (
           <SplineLoadingScreen
             sceneReady={sceneReady}
-            onComplete={handleLoadingScreenComplete}
+            onComplete={handleLoaderComplete}
           />
         ) : null}
       </div>

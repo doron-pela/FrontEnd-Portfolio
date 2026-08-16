@@ -53,6 +53,18 @@ function splitTextIntoWords(text: string) {
   return text.split(" ").map((word) => word.split(""));
 }
 
+type AboutSplineKey = "d" | "a";
+
+function dispatchAboutSplineKey(key: AboutSplineKey) {
+  window.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key,
+      code: key === "d" ? "KeyD" : "KeyA",
+      bubbles: true,
+    }),
+  );
+}
+
 export function AboutSection({
   startY,
   registerSection,
@@ -70,6 +82,19 @@ export function AboutSection({
   const aboutLockYRef = useRef<number | null>(null);
   const aboutSnapRef = useRef(false);
   const aboutReleasedDirectionRef = useRef<"forward" | "backward" | null>(null);
+  const aboutSplineDissectedRef = useRef(false);
+
+  const setAboutSplineDissected = useCallback((isDissected: boolean) => {
+    //ScrollTrigger refreshes, responsive recalculations and programmatic
+    //navigation can all touch the same boundary. Only emit a new key when the
+    //logical About state really changes.
+    if (aboutSplineDissectedRef.current === isDissected) {
+      return;
+    }
+
+    aboutSplineDissectedRef.current = isDissected;
+    dispatchAboutSplineKey(isDissected ? "d" : "a");
+  }, []);
 
   const bodyWords = useMemo(() => {
     return splitTextIntoWords(ABOUT_BODY);
@@ -126,6 +151,54 @@ export function AboutSection({
   useEffect(() => {
     return registerSection(runtime); //Globally register current section's runtime
   }, [registerSection, runtime]);
+
+  useEffect(() => {
+    function handleProgrammaticSectionNavigation(event: KeyboardEvent) {
+      const target = event.target;
+
+      //Mirror the section controller's keyboard intent guard. A numeric key used
+      //inside an editable field is text input, not portfolio navigation.
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (event.key === "1") {
+        setAboutSplineDissected(true);
+        return;
+      }
+
+      if (
+        aboutSplineDissectedRef.current &&
+        (event.key === "0" ||
+          event.key === "2" ||
+          event.key === "3" ||
+          event.key === "4")
+      ) {
+        setAboutSplineDissected(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleProgrammaticSectionNavigation);
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleProgrammaticSectionNavigation,
+      );
+
+      //Unmounting About while it owns the dissected Spline state is also an
+      //About exit, so always return Spline to its assembled state.
+      if (aboutSplineDissectedRef.current) {
+        aboutSplineDissectedRef.current = false;
+        dispatchAboutSplineKey("a");
+      }
+    };
+  }, [setAboutSplineDissected]);
 
   useGSAP(
     () => {
@@ -243,6 +316,15 @@ export function AboutSection({
 
       aboutTimelineRef.current = timeline;
 
+      timeline.eventCallback("onUpdate", () => {
+        if (
+          aboutReleasedDirectionRef.current === "forward" &&
+          timeline.progress() >= 1 - 0.0001
+        ) {
+          setAboutSplineDissected(false);
+        }
+      });
+
       timeline
         .to(
           section,
@@ -319,7 +401,7 @@ export function AboutSection({
       //Each position parameter in gsap timeline represents virtual time in the timeline out of the total timeline's duration.
       // e.g 0.35 is 0.35 seconds out of 1.83, 0.2 is 0.2 seconds out of 1.83, etc. The progress is the percentage quotient.
 
-      ScrollTrigger.create({
+      const aboutScrollTrigger = ScrollTrigger.create({
         trigger: document.documentElement, //The trigger element for the animation.
         start: startY, //The start point. Given in this format -> "value(of trigger element) value(of viewport)". When - of element, meets - of viewport, then we start.
         //Default value for start on all scroll triggers is "top bottom" meaning "top (of trigger element) hits bottom (of viewport)"
@@ -328,6 +410,31 @@ export function AboutSection({
         // markers: true,
         scrub: true,
         invalidateOnRefresh: true,
+
+        //Manual/native entry into About from either direction dissects Spline.
+        //Programmatic navigation is handled from its numeric destination key
+        //above so a skipped section cannot temporarily trigger D while GSAP
+        //simply passes through its scroll range.
+        onEnter: () => {
+          if (!programmaticScrollRef.current) {
+            setAboutSplineDissected(true);
+          }
+        },
+        onEnterBack: () => {
+          if (!programmaticScrollRef.current) {
+            setAboutSplineDissected(true);
+          }
+        },
+
+        //Backward local release happens at ABOUT_REVEALED_PROGRESS while About
+        //is still visibly inside its reveal range. Keep D active through that
+        //handoff and emit A only when global scroll actually exits above startY.
+        onLeaveBack: () => {
+          if (!programmaticScrollRef.current) {
+            setAboutSplineDissected(false);
+          }
+        },
+
         onUpdate: (self) => {
           if (
             aboutLockedRef.current ||
@@ -364,6 +471,16 @@ export function AboutSection({
         },
       });
 
+      const currentY = window.scrollY;
+      const restoredInsideAbout =
+        currentY >= startY &&
+        currentY <= getAboutLockY() &&
+        aboutReleasedDirectionRef.current !== "forward";
+
+      if (restoredInsideAbout || aboutScrollTrigger.isActive) {
+        setAboutSplineDissected(true);
+      }
+
       return () => {
         mobileAboutQuery.removeEventListener(
           "change",
@@ -377,6 +494,7 @@ export function AboutSection({
       dependencies: [
         getAboutLockY,
         getAboutPxDuration,
+        setAboutSplineDissected,
         startY,
         ABOUT_GSAP_HMR_REVISION,
       ],
