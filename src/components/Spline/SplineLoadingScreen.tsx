@@ -1,4 +1,3 @@
-// src/components/Spline/SplineLoadingScreen.tsx
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 
@@ -12,10 +11,15 @@ type PerforationPoint = {
   y: number;
 };
 
-const LOADER_INTRO_DURATION_SECONDS = 1.42;
+//The loader no longer needs a long authored introduction because there is no
+//headline or explanatory UI to read. This short minimum simply prevents an
+//instant flash when Spline happens to resolve unusually quickly.
+const LOADER_INTRO_DURATION_SECONDS = 0.82;
 
-//Asymmetry keeps the reveal organic. These points are normalized viewport
-//coordinates and are converted to exact SVG pixels immediately before exit.
+//These points are both the waiting-state "seed anchors" and the final real mask
+//perforations. While Spline loads, each visible seed orbits a little around its
+//anchor. When readiness arrives, every seed glides home to its anchor and that
+//same point becomes the center of a real perforation through the loader surface.
 const PERFORATION_POINTS: readonly PerforationPoint[] = [
   { x: 0.17, y: 0.25 },
   { x: 0.73, y: 0.18 },
@@ -25,16 +29,11 @@ const PERFORATION_POINTS: readonly PerforationPoint[] = [
   { x: 0.64, y: 0.83 },
 ] as const;
 
-const CURSOR_TRAIL_POINTS = Array.from({ length: 7 });
-
 export default function SplineLoadingScreen({
   sceneReady,
   onComplete,
 }: SplineLoadingScreenProps) {
   const shellRef = useRef<HTMLDivElement | null>(null);
-  const cursorGlowRef = useRef<HTMLDivElement | null>(null);
-  const progressFillRef = useRef<HTMLDivElement | null>(null);
-  const progressSignalRef = useRef<HTMLDivElement | null>(null);
   const exitStartedRef = useRef(false);
   const loopTweensRef = useRef<gsap.core.Tween[]>([]);
   const [introComplete, setIntroComplete] = useState(false);
@@ -42,133 +41,41 @@ export default function SplineLoadingScreen({
   /*
     IMPORTANT ARCHITECTURE RULE:
 
-    This component is only a fixed visual layer. It deliberately does NOT:
+    This component remains ONLY a visual overlay. It deliberately does NOT:
     - change html/body overflow,
     - call window.scrollTo(),
-    - alter scroll restoration,
+    - alter route/history restoration,
     - mount/unmount homepage sections,
     - touch ScrollTrigger,
     - change Spline variables,
     - hide Spline or <Outlet />.
 
-    SplineScene owns the real page exactly as before. This layer simply covers it
-    with a higher z-index until its own exit timeline calls onComplete().
+    SplineScene continues to own the real page and its restoration behavior.
+    This component only covers that already-live page until onComplete().
   */
 
-  //Cursor energy lives entirely inside the loader. It gives the waiting state a
-  //responsive feel without forwarding pointer events to Spline or changing any
-  //application state underneath the overlay.
+  //The waiting state stays minimal, but it is no longer static. Six tiny
+  //surface-tension seeds orbit gently around their eventual perforation anchors
+  //while a few large soft light blooms move underneath them. There is still no
+  //headline, system copy, progress UI, robot SVG, or status text to read.
   useEffect(() => {
     const shell = shellRef.current;
-    const cursorGlow = cursorGlowRef.current;
 
-    if (!shell || !cursorGlow) return;
-
-    const trailPoints = Array.from(
-      shell.querySelectorAll<HTMLElement>(".spline-loader-cursor-trail"),
-    );
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion) {
+    if (!shell) {
       return;
     }
-
-    const current = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
-
-    const target = {
-      x: current.x,
-      y: current.y,
-    };
-
-    const previous = trailPoints.map(() => ({
-      x: current.x,
-      y: current.y,
-    }));
-
-    let frame = 0;
-
-    const handlePointerMove = (event: PointerEvent) => {
-      target.x = event.clientX;
-      target.y = event.clientY;
-    };
-
-    const renderCursorField = () => {
-      current.x += (target.x - current.x) * 0.19;
-      current.y += (target.y - current.y) * 0.19;
-
-      gsap.set(cursorGlow, {
-        x: current.x,
-        y: current.y,
-      });
-
-      let leaderX = current.x;
-      let leaderY = current.y;
-
-      trailPoints.forEach((point, index) => {
-        const follower = previous[index];
-        const followStrength = Math.max(0.1, 0.24 - index * 0.018);
-
-        follower.x += (leaderX - follower.x) * followStrength;
-        follower.y += (leaderY - follower.y) * followStrength;
-
-        gsap.set(point, {
-          x: follower.x,
-          y: follower.y,
-          scale: 1 - index * 0.085,
-          opacity: Math.max(0.05, 0.34 - index * 0.042),
-        });
-
-        leaderX = follower.x;
-        leaderY = follower.y;
-      });
-
-      frame = requestAnimationFrame(renderCursorField);
-    };
-
-    window.addEventListener("pointermove", handlePointerMove, {
-      passive: true,
-    });
-    frame = requestAnimationFrame(renderCursorField);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("pointermove", handlePointerMove);
-    };
-  }, []);
-
-  //The authored intro is independent from Spline's actual loading time. If the
-  //scene is fast, ASSEMBLING / EXPERIENCE still gets a short readable entrance.
-  //If the scene is slow, the low-cost optical/watery loops continue until onLoad.
-  useEffect(() => {
-    const shell = shellRef.current;
-
-    if (!shell) return;
 
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
     const context = gsap.context(() => {
-      const revealLines = shell.querySelectorAll<HTMLElement>(
-        ".spline-loader-reveal-line",
+      const seeds = shell.querySelectorAll<HTMLElement>(".spline-loader-seed");
+      const seedCores = shell.querySelectorAll<HTMLElement>(
+        ".spline-loader-ripple-core",
       );
-      const fadeItems = shell.querySelectorAll<HTMLElement>(
-        ".spline-loader-fade-item",
-      );
-      const mechanic = shell.querySelector<HTMLElement>(
-        ".spline-loader-mechanic",
-      );
-      const eyes = shell.querySelectorAll<SVGElement>(".spline-loader-eye");
-      const orbitA = shell.querySelector<SVGElement>(".spline-loader-orbit-a");
-      const orbitB = shell.querySelector<SVGElement>(".spline-loader-orbit-b");
-      const scanner = shell.querySelector<HTMLElement>(
-        ".spline-loader-scanner",
+      const seedRings = shell.querySelectorAll<HTMLElement>(
+        ".spline-loader-ripple-ring",
       );
       const fieldSweep = shell.querySelector<HTMLElement>(
         ".spline-loader-field-sweep",
@@ -183,155 +90,168 @@ export default function SplineLoadingScreen({
         ".spline-loader-water-bloom-c",
       );
 
-      gsap.set(revealLines, { yPercent: 108 });
-      gsap.set(fadeItems, { autoAlpha: 0, y: 10 });
-      gsap.set(mechanic, { autoAlpha: 0, scale: 0.965, rotation: -1.5 });
-      gsap.set(eyes, { scaleY: 0.12, transformOrigin: "50% 50%" });
-      gsap.set(progressFillRef.current, {
-        scaleX: 0.025,
-        transformOrigin: "left center",
+      gsap.set(seeds, {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        transformOrigin: "50% 50%",
       });
-      gsap.set(progressSignalRef.current, { xPercent: -145 });
+
+      gsap.set(seedCores, {
+        autoAlpha: 0,
+        scale: 0.42,
+        transformOrigin: "50% 50%",
+      });
+
+      gsap.set(seedRings, {
+        autoAlpha: 0,
+        scale: 0.55,
+        transformOrigin: "50% 50%",
+      });
 
       const intro = gsap.timeline({
-        defaults: { ease: "power3.out" },
+        defaults: {
+          ease: "power3.out",
+        },
         onComplete: () => setIntroComplete(true),
       });
 
       if (prefersReducedMotion) {
         intro
-          .set(revealLines, { yPercent: 0 })
-          .set(fadeItems, { autoAlpha: 1, y: 0 })
-          .set(mechanic, { autoAlpha: 1, scale: 1, rotation: 0 })
-          .set(eyes, { scaleY: 1 })
-          .to(
-            progressFillRef.current,
-            {
-              scaleX: 0.72,
-              duration: 0.18,
-            },
-            0,
-          );
+          .set(seedCores, {
+            autoAlpha: 0.38,
+            scale: 1,
+          })
+          .set(seedRings, {
+            autoAlpha: 0.12,
+            scale: 1,
+          })
+          .to({}, { duration: 0.12 });
 
         return;
       }
 
       intro
         .to(
-          revealLines,
+          seedCores,
           {
-            yPercent: 0,
-            duration: 0.78,
-            stagger: 0.065,
-          },
-          0.02,
-        )
-        .to(
-          mechanic,
-          {
-            autoAlpha: 1,
+            autoAlpha: 0.4,
             scale: 1,
-            rotation: 0,
-            duration: 0.82,
+            duration: 0.42,
+            stagger: 0.075,
           },
-          0.14,
+          0.05,
         )
         .to(
-          fadeItems,
+          seedRings,
           {
-            autoAlpha: 1,
-            y: 0,
+            autoAlpha: 0.14,
+            scale: 1,
             duration: 0.5,
-            stagger: 0.04,
+            stagger: 0.075,
           },
-          0.2,
+          0.12,
         )
         .to(
-          eyes,
+          {},
           {
-            scaleY: 1,
-            duration: 0.4,
-            stagger: 0.055,
-            ease: "back.out(1.9)",
-          },
-          0.58,
-        )
-        .to(
-          progressFillRef.current,
-          {
-            scaleX: 0.72,
             duration: LOADER_INTRO_DURATION_SECONDS,
-            ease: "power2.out",
           },
           0,
         );
 
-      if (orbitA) {
+      //The dots do not become a conventional spinner. Each one traces a small,
+      //slightly imperfect elliptical orbit around its own future perforation
+      //anchor. Different radii, directions, phases and durations keep the six
+      //marks feeling like suspended droplets rather than synchronized UI dots.
+      const baseOrbitRadius = Math.min(
+        Math.max(window.innerWidth * 0.012, 10),
+        20,
+      );
+
+      seeds.forEach((seed, index) => {
+        const state = {
+          angle: (index / Math.max(seeds.length, 1)) * Math.PI * 2,
+        };
+        const direction = index % 2 === 0 ? 1 : -1;
+        const radiusX = baseOrbitRadius * (0.72 + (index % 3) * 0.2);
+        const radiusY = baseOrbitRadius * (0.48 + ((index + 1) % 3) * 0.16);
+        const setX = gsap.quickSetter(seed, "x", "px");
+        const setY = gsap.quickSetter(seed, "y", "px");
+        const setRotation = gsap.quickSetter(seed, "rotation", "deg");
+
         loopTweensRef.current.push(
-          gsap.to(orbitA, {
-            rotation: 360,
-            duration: 13,
+          gsap.to(state, {
+            angle: state.angle + direction * Math.PI * 2,
+            duration: 3.7 + index * 0.42,
             ease: "none",
             repeat: -1,
-            transformOrigin: "50% 50%",
-          }),
-        );
-      }
+            onUpdate: () => {
+              const organicRadius =
+                1 + Math.sin(state.angle * 2.15 + index * 0.83) * 0.12;
 
-      if (orbitB) {
-        loopTweensRef.current.push(
-          gsap.to(orbitB, {
-            rotation: -360,
-            duration: 18,
-            ease: "none",
-            repeat: -1,
-            transformOrigin: "50% 50%",
-          }),
-        );
-      }
-
-      if (scanner) {
-        const scannerWindowHeight = scanner.parentElement?.clientHeight ?? 72;
-
-        loopTweensRef.current.push(
-          gsap.fromTo(
-            scanner,
-            { y: -1 },
-            {
-              y: scannerWindowHeight + 1,
-              duration: 2.1,
-              ease: "power1.inOut",
-              repeat: -1,
-              repeatDelay: 0.22,
+              setX(Math.cos(state.angle) * radiusX * organicRadius);
+              setY((Math.sin(state.angle) * radiusY) / organicRadius);
+              setRotation(Math.sin(state.angle + index) * 8);
             },
-          ),
-        );
-      }
-
-      if (progressSignalRef.current) {
-        loopTweensRef.current.push(
-          gsap.to(progressSignalRef.current, {
-            xPercent: 520,
-            duration: 1.65,
-            ease: "power2.inOut",
-            repeat: -1,
-            repeatDelay: 0.1,
           }),
         );
-      }
+      });
 
+      //The orbiting cores still breathe independently so motion exists at two
+      //scales: positional drift from the parent seed and tiny surface tension at
+      //the center. It stays intentionally quiet and never becomes a progress UI.
+      loopTweensRef.current.push(
+        gsap.to(seedCores, {
+          scale: 0.72,
+          autoAlpha: 0.22,
+          duration: 1.15,
+          stagger: {
+            each: 0.18,
+            repeat: -1,
+            yoyo: true,
+          },
+          ease: "sine.inOut",
+        }),
+      );
+
+      loopTweensRef.current.push(
+        gsap.fromTo(
+          seedRings,
+          {
+            scale: 0.72,
+            autoAlpha: 0.14,
+          },
+          {
+            scale: 2.7,
+            autoAlpha: 0,
+            duration: 1.7,
+            stagger: {
+              each: 0.24,
+              repeat: -1,
+            },
+            ease: "power2.out",
+          },
+        ),
+      );
+
+      //A single broad sweep is enough to keep the otherwise-flat field from
+      //feeling frozen. It is deliberately low contrast.
       if (fieldSweep) {
         loopTweensRef.current.push(
           gsap.fromTo(
             fieldSweep,
-            { xPercent: -125, autoAlpha: 0 },
             {
-              xPercent: 125,
-              autoAlpha: 0.9,
-              duration: 3.1,
-              ease: "power1.inOut",
+              xPercent: -135,
+              autoAlpha: 0,
+            },
+            {
+              xPercent: 135,
+              autoAlpha: 0.42,
+              duration: 4.4,
+              ease: "sine.inOut",
               repeat: -1,
-              repeatDelay: 0.4,
+              repeatDelay: 0.8,
             },
           ),
         );
@@ -340,11 +260,10 @@ export default function SplineLoadingScreen({
       if (waterBloomA) {
         loopTweensRef.current.push(
           gsap.to(waterBloomA, {
-            xPercent: 18,
-            yPercent: -12,
-            scale: 1.16,
-            rotation: 14,
-            duration: 7.2,
+            xPercent: 13,
+            yPercent: -9,
+            scale: 1.12,
+            duration: 8.4,
             ease: "sine.inOut",
             repeat: -1,
             yoyo: true,
@@ -355,11 +274,10 @@ export default function SplineLoadingScreen({
       if (waterBloomB) {
         loopTweensRef.current.push(
           gsap.to(waterBloomB, {
-            xPercent: -16,
-            yPercent: 14,
-            scale: 1.2,
-            rotation: -18,
-            duration: 8.6,
+            xPercent: -12,
+            yPercent: 11,
+            scale: 1.15,
+            duration: 9.6,
             ease: "sine.inOut",
             repeat: -1,
             yoyo: true,
@@ -370,11 +288,10 @@ export default function SplineLoadingScreen({
       if (waterBloomC) {
         loopTweensRef.current.push(
           gsap.to(waterBloomC, {
-            xPercent: 12,
-            yPercent: 12,
-            scale: 1.12,
-            rotation: 10,
-            duration: 6.8,
+            xPercent: 9,
+            yPercent: 10,
+            scale: 1.1,
+            duration: 7.8,
             ease: "sine.inOut",
             repeat: -1,
             yoyo: true,
@@ -390,10 +307,10 @@ export default function SplineLoadingScreen({
     };
   }, []);
 
-  //Spline's onLoad is the only scene-readiness gate. Once both the real scene
-  //and the short authored intro are ready, ripple impacts punch transparent holes
-  //through the loader surface and those holes grow until the page underneath is
-  //fully exposed. onComplete then makes SplineScene unmount ONLY this layer.
+  //Spline's onLoad remains the only real readiness signal. Once both that signal
+  //and the tiny minimum intro have completed, the six moving seeds glide back to
+  //their exact anchors, settle like droplets touching a surface, and then become
+  //actual perforations whose SVG mask holes grow until nothing opaque remains.
   useEffect(() => {
     const shell = shellRef.current;
 
@@ -402,6 +319,7 @@ export default function SplineLoadingScreen({
     }
 
     exitStartedRef.current = true;
+
     loopTweensRef.current.forEach((tween) => tween.kill());
     loopTweensRef.current = [];
 
@@ -409,34 +327,33 @@ export default function SplineLoadingScreen({
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const content = shell.querySelector<HTMLElement>(
-      ".spline-loader-content-layer",
+    const ambientLayer = shell.querySelector<HTMLElement>(
+      ".spline-loader-ambient-layer",
     );
     const surface = shell.querySelector<SVGElement>(".spline-loader-surface");
-    const eyes = shell.querySelectorAll<SVGElement>(".spline-loader-eye");
     const perforations = Array.from(
       shell.querySelectorAll<SVGCircleElement>(".spline-loader-perforation"),
     );
+    const seeds = shell.querySelectorAll<HTMLElement>(".spline-loader-seed");
     const rippleRings = shell.querySelectorAll<HTMLElement>(
       ".spline-loader-ripple-ring",
     );
     const rippleCores = shell.querySelectorAll<HTMLElement>(
       ".spline-loader-ripple-core",
     );
-    const cursorLayer = shell.querySelector<HTMLElement>(
-      ".spline-loader-cursor-layer",
-    );
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const finalRadius = Math.hypot(viewportWidth, viewportHeight) * 1.08;
 
-    //The mask uses real viewport pixels so the perforations remain circular even
-    //on very wide/tall screens instead of stretching into objectBoundingBox ellipses.
+    //Use real viewport pixels so the mask circles remain genuinely circular on
+    //wide and tall displays rather than stretching with the SVG aspect ratio.
     perforations.forEach((circle, index) => {
       const point = PERFORATION_POINTS[index];
 
-      if (!point) return;
+      if (!point) {
+        return;
+      }
 
       gsap.set(circle, {
         attr: {
@@ -453,14 +370,9 @@ export default function SplineLoadingScreen({
 
     if (prefersReducedMotion) {
       exit
-        .to(progressFillRef.current, {
-          scaleX: 1,
-          duration: 0.12,
-          ease: "none",
-        })
-        .to([content, cursorLayer], {
+        .to(ambientLayer, {
           autoAlpha: 0,
-          duration: 0.12,
+          duration: 0.1,
           ease: "none",
         })
         .to(surface, {
@@ -474,131 +386,107 @@ export default function SplineLoadingScreen({
       };
     }
 
-    gsap.set(rippleRings, {
-      autoAlpha: 0,
-      scale: 0.18,
-      transformOrigin: "50% 50%",
-    });
-    gsap.set(rippleCores, {
-      autoAlpha: 0,
-      scale: 0.4,
-      transformOrigin: "50% 50%",
-    });
-
+    //Do not snap the dancing seeds back to their anchors when readiness arrives.
+    //Their looping tweens are already stopped above, leaving every seed wherever
+    //it happened to be in its orbit. The exit timeline now eases each one home.
+    //Only after that convergence is nearly complete do the true mask holes begin.
     exit
-      .to(progressFillRef.current, {
-        scaleX: 1,
-        duration: 0.34,
-        ease: "power3.inOut",
-      })
       .to(
-        progressSignalRef.current,
+        ambientLayer,
         {
           autoAlpha: 0,
-          duration: 0.16,
-          ease: "power2.out",
+          filter: "blur(5px)",
+          duration: 0.72,
+          ease: "sine.inOut",
         },
-        "<0.12",
+        0,
       )
       .to(
-        eyes,
+        seeds,
         {
-          scaleX: 1.2,
-          scaleY: 0.72,
-          duration: 0.18,
-          stagger: 0.03,
-          ease: "power3.out",
+          x: 0,
+          y: 0,
+          rotation: 0,
+          duration: 0.72,
+          stagger: 0.035,
+          ease: "power3.inOut",
         },
-        "<0.02",
+        0,
       )
-      .to(
-        [content, cursorLayer],
-        {
-          autoAlpha: 0,
-          scale: 0.992,
-          filter: "blur(2px)",
-          duration: 0.38,
-          ease: "power2.inOut",
-        },
-        "+=0.06",
-      )
+      //Normalize the tiny droplet cores as the moving seeds settle. Because we
+      //tween from their current looped values, there is no visual reset/pop.
       .to(
         rippleCores,
         {
-          autoAlpha: 0.78,
+          autoAlpha: 0.72,
           scale: 1,
-          duration: 0.16,
-          stagger: 0.055,
-          ease: "back.out(2.2)",
+          duration: 0.48,
+          stagger: 0.03,
+          ease: "sine.inOut",
         },
-        "-=0.05",
+        0.16,
       )
       .to(
         rippleRings,
         {
-          autoAlpha: 0.42,
+          autoAlpha: 0.2,
           scale: 1,
-          duration: 0.2,
-          stagger: 0.055,
-          ease: "power2.out",
+          duration: 0.48,
+          stagger: 0.03,
+          ease: "sine.inOut",
         },
-        "<",
+        0.16,
       )
+      //The settled droplets create one broad, very smooth surface ripple. The
+      //real mask perforations begin during this ripple rather than after it, so
+      //the opening reads as one continuous liquid event instead of three steps.
       .to(
         rippleRings,
         {
           autoAlpha: 0,
-          scale: 3.4,
-          duration: 0.72,
-          stagger: 0.055,
+          scale: 4.2,
+          duration: 1.05,
+          stagger: 0.04,
           ease: "power2.out",
         },
-        "<0.07",
+        0.48,
       )
+      //Grow directly from zero to a meaningful droplet aperture. A longer
+      //sine-in-out tween removes the old pinhole -> droplet snap.
       .to(
         perforations,
         {
           attr: {
-            r: (index: number) => 8 + (index % 3) * 3,
+            r: (index: number) => 68 + (index % 4) * 18,
           },
-          duration: 0.17,
-          stagger: 0.055,
-          ease: "power3.out",
+          duration: 0.92,
+          stagger: 0.04,
+          ease: "sine.inOut",
         },
-        "<0.03",
+        0.58,
       )
-      .to(
-        perforations,
-        {
-          attr: {
-            r: (index: number) => 52 + (index % 4) * 18,
-          },
-          duration: 0.46,
-          stagger: 0.045,
-          ease: "power3.inOut",
-        },
-        ">-0.06",
-      )
+      //The apertures then accelerate gently into one another. The overlap keeps
+      //their edges moving continuously while the underlying Spline scene emerges.
       .to(
         perforations,
         {
           attr: {
             r: finalRadius,
           },
-          duration: 1.12,
-          stagger: 0.035,
-          ease: "power4.inOut",
+          duration: 1.48,
+          stagger: 0.025,
+          ease: "power3.inOut",
         },
-        ">-0.1",
+        ">-0.18",
       )
       .to(
         rippleCores,
         {
           autoAlpha: 0,
-          scale: 1.8,
-          duration: 0.28,
-          stagger: 0.025,
-          ease: "power2.out",
+          scale: 1.65,
+          duration: 0.48,
+          stagger: 0.02,
+          ease: "sine.out",
         },
         "<0.18",
       );
@@ -611,7 +499,7 @@ export default function SplineLoadingScreen({
   return (
     <div
       ref={shellRef}
-      className="spline-loader-shell fixed inset-0 z-[9999] overflow-hidden text-[#171717]"
+      className="spline-loader-shell fixed inset-0 z-[9999] overflow-hidden"
       role="status"
       aria-busy={!sceneReady}
       aria-live="polite"
@@ -619,8 +507,9 @@ export default function SplineLoadingScreen({
       style={{ touchAction: "none" }}
     >
       {/*
-        One real opaque SVG surface covers the page. Black circles inside its
-        mask become transparent holes during the final perforation animation.
+        The SVG is now purely structural. It contains no decorative illustration:
+        it is simply the opaque #E3E3E3 surface and the six true transparent
+        perforations that reveal the already-running Spline scene underneath.
       */}
       <svg
         aria-hidden="true"
@@ -662,197 +551,47 @@ export default function SplineLoadingScreen({
         />
       </svg>
 
-      {/*Soft moving blooms create a watery/caustic field without adding text.*/}
+      {/*
+        Very low-energy ambient movement only. These layers are intentionally
+        soft enough that the eye mostly reads an empty loading surface.
+      */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-[1] overflow-hidden opacity-70"
+        className="spline-loader-ambient-layer pointer-events-none absolute inset-0 z-10 overflow-hidden"
       >
-        <div className="spline-loader-water-bloom-a absolute -left-[10vw] top-[6vh] size-[clamp(20rem,46vw,48rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.11)_31%,transparent_70%)] blur-[34px]" />
-        <div className="spline-loader-water-bloom-b absolute -right-[12vw] top-[30vh] size-[clamp(18rem,40vw,42rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.32)_0%,rgba(255,255,255,0.08)_34%,transparent_72%)] blur-[40px]" />
-        <div className="spline-loader-water-bloom-c absolute bottom-[-20vh] left-[28vw] size-[clamp(22rem,48vw,52rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.28)_0%,rgba(255,255,255,0.07)_38%,transparent_72%)] blur-[46px]" />
-      </div>
-
-      <div className="spline-loader-content-layer absolute inset-0 z-10 overflow-hidden will-change-[transform,opacity,filter]">
-        {/*Fine drafting grid: static, subtle, and deliberately monochrome.*/}
-        <div className="spline-loader-grid pointer-events-none absolute inset-0 opacity-[0.31]" />
-        <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#171717]/[0.06]" />
-        <div className="pointer-events-none absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-[#171717]/[0.06]" />
-
-        <div className="absolute inset-y-0 left-0 w-full overflow-hidden opacity-55">
-          <div className="spline-loader-field-sweep absolute inset-y-0 left-1/2 w-[18vw] min-w-28 -translate-x-1/2 bg-linear-to-r from-transparent via-white/28 to-transparent blur-xl" />
+        <div className="absolute inset-0 opacity-45">
+          <div className="spline-loader-water-bloom-a absolute -left-[12vw] top-[2vh] size-[clamp(20rem,45vw,47rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.34)_0%,rgba(255,255,255,0.08)_33%,transparent_71%)] blur-[42px]" />
+          <div className="spline-loader-water-bloom-b absolute -right-[14vw] top-[31vh] size-[clamp(18rem,39vw,41rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.27)_0%,rgba(255,255,255,0.06)_36%,transparent_73%)] blur-[46px]" />
+          <div className="spline-loader-water-bloom-c absolute bottom-[-22vh] left-[27vw] size-[clamp(21rem,46vw,50rem)] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.23)_0%,rgba(255,255,255,0.05)_39%,transparent_74%)] blur-[50px]" />
         </div>
 
-        {/*ASSEMBLING / EXPERIENCE remains the single dominant textual element.*/}
-        <div className="pointer-events-none absolute inset-x-[clamp(1rem,3.25vw,4rem)] top-1/2 z-10 -translate-y-1/2 select-none">
-          <div className="overflow-hidden pb-[0.055em]">
-            <div className="spline-loader-reveal-line whitespace-nowrap text-[clamp(4.15rem,11vw,12.8rem)] font-semibold uppercase leading-[0.74] tracking-[-0.082em]">
-              Assembling
-            </div>
-          </div>
-          <div className="mt-[clamp(0.34rem,0.62vw,0.72rem)] overflow-hidden pb-[0.08em]">
-            <div className="spline-loader-reveal-line whitespace-nowrap text-[clamp(4.15rem,11vw,12.8rem)] font-semibold uppercase leading-[0.74] tracking-[-0.082em] text-transparent [-webkit-text-stroke:1px_#171717]">
-              Experience
-            </div>
-          </div>
-        </div>
-
-        {/*Abstract optical unit retained from the original loader.*/}
-        <div className="spline-loader-mechanic pointer-events-none absolute left-1/2 top-1/2 z-20 w-[clamp(10rem,18vw,17rem)] -translate-x-1/2 -translate-y-1/2 will-change-transform">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 360 260"
-            className="block h-auto w-full overflow-visible"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle
-              className="spline-loader-orbit-a"
-              cx="180"
-              cy="130"
-              r="118"
-              stroke="currentColor"
-              strokeOpacity="0.14"
-              strokeWidth="1"
-              strokeDasharray="5 12 1 17"
-            />
-            <circle
-              className="spline-loader-orbit-b"
-              cx="180"
-              cy="130"
-              r="101"
-              stroke="currentColor"
-              strokeOpacity="0.18"
-              strokeWidth="1"
-              strokeDasharray="31 14 3 9"
-            />
-
-            <path
-              d="M89 89L113 66H247L271 89V171L247 194H113L89 171V89Z"
-              fill="#E3E3E3"
-              stroke="currentColor"
-              strokeWidth="1.25"
-            />
-            <path
-              d="M106 104L122 88H238L254 104V156L238 172H122L106 156V104Z"
-              stroke="currentColor"
-              strokeOpacity="0.38"
-              strokeWidth="1"
-            />
-            <path
-              d="M73 111H89M73 149H89M271 111H287M271 149H287"
-              stroke="currentColor"
-              strokeOpacity="0.45"
-              strokeWidth="1"
-            />
-            <path
-              d="M144 65V50H216V65M144 195V210H216V195"
-              stroke="currentColor"
-              strokeOpacity="0.26"
-              strokeWidth="1"
-            />
-
-            <rect
-              x="130"
-              y="116"
-              width="42"
-              height="27"
-              rx="13.5"
-              fill="currentColor"
-              fillOpacity="0.08"
-            />
-            <rect
-              x="188"
-              y="116"
-              width="42"
-              height="27"
-              rx="13.5"
-              fill="currentColor"
-              fillOpacity="0.08"
-            />
-            <rect
-              className="spline-loader-eye"
-              x="138"
-              y="123"
-              width="26"
-              height="13"
-              rx="6.5"
-              fill="currentColor"
-            />
-            <rect
-              className="spline-loader-eye"
-              x="196"
-              y="123"
-              width="26"
-              height="13"
-              rx="6.5"
-              fill="currentColor"
-            />
-            <circle
-              cx="180"
-              cy="130"
-              r="3"
-              fill="currentColor"
-              fillOpacity="0.38"
-            />
-          </svg>
-
-          <div className="absolute left-[25%] right-[25%] top-[29.5%] h-[40%] overflow-hidden rounded-[1.4rem] opacity-35">
-            <div className="spline-loader-scanner h-px w-full bg-[#171717] shadow-[0_0_12px_rgba(23,23,23,0.18)] will-change-transform" />
-          </div>
-        </div>
-
-        {/*One quiet progress line remains as the only bottom UI.*/}
-        <div className="spline-loader-fade-item absolute inset-x-[clamp(1rem,3.25vw,4rem)] bottom-[clamp(1.1rem,3vw,3rem)]">
-          <div className="relative h-px overflow-hidden bg-[#171717]/14">
-            <div
-              ref={progressFillRef}
-              className="absolute inset-y-0 left-0 w-full bg-[#171717] will-change-transform"
-            />
-            <div
-              ref={progressSignalRef}
-              className="absolute inset-y-0 left-0 w-[18%] bg-[#F4F2EB] will-change-transform"
-            />
-          </div>
+        <div className="absolute inset-0 overflow-hidden opacity-35">
+          <div className="spline-loader-field-sweep absolute inset-y-0 left-1/2 w-[16vw] min-w-24 -translate-x-1/2 bg-linear-to-r from-transparent via-white/24 to-transparent blur-2xl" />
         </div>
       </div>
 
-      {/*Cursor streak / liquid focus. It belongs only to this loader layer.*/}
-      <div
-        ref={cursorGlowRef}
-        aria-hidden="true"
-        className="spline-loader-cursor-layer pointer-events-none absolute left-0 top-0 z-20 size-[clamp(6rem,10vw,10rem)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.66)_0%,rgba(255,255,255,0.18)_24%,rgba(23,23,23,0.05)_44%,transparent_70%)] blur-[8px] mix-blend-soft-light"
-      />
-
-      <div
-        aria-hidden="true"
-        className="spline-loader-cursor-layer pointer-events-none absolute inset-0 z-20"
-      >
-        {CURSOR_TRAIL_POINTS.map((_, index) => (
-          <span
-            className="spline-loader-cursor-trail absolute left-0 top-0 size-[clamp(0.42rem,0.7vw,0.7rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/35 bg-white/20 blur-[1px] will-change-transform"
-            key={`cursor-trail-${index}`}
-          />
-        ))}
-      </div>
-
-      {/*Visible ripple rings sell the droplet-impact moment; the SVG mask above
-          owns the actual transparent holes.*/}
+      {/*
+        These six tiny marks are the entire visible loader UI. During the wait
+        each seed circles softly around its anchor while its rings breathe. Once
+        Spline is ready, every seed glides back to this CSS left/top coordinate,
+        settles, ripples, and becomes the real perforation in the SVG mask.
+      */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-30"
       >
         {PERFORATION_POINTS.map((point, index) => (
           <span
-            className="absolute size-3 -translate-x-1/2 -translate-y-1/2"
-            key={`ripple-${index}`}
+            className="spline-loader-seed absolute size-3 -translate-x-1/2 -translate-y-1/2"
+            key={`loader-seed-${index}`}
             style={{
               left: `${point.x * 100}%`,
               top: `${point.y * 100}%`,
             }}
           >
-            <span className="spline-loader-ripple-core absolute inset-[3px] rounded-full bg-[#171717]/75" />
-            <span className="spline-loader-ripple-ring absolute inset-0 rounded-full border border-[#171717]/55" />
-            <span className="spline-loader-ripple-ring absolute -inset-1 rounded-full border border-[#171717]/28" />
+            <span className="spline-loader-ripple-core absolute inset-[3px] rounded-full bg-[#171717]/75 opacity-0" />
+            <span className="spline-loader-ripple-ring absolute inset-0 rounded-full border border-[#171717]/42 opacity-0" />
+            <span className="spline-loader-ripple-ring absolute -inset-1 rounded-full border border-[#171717]/18 opacity-0" />
           </span>
         ))}
       </div>
@@ -860,40 +599,7 @@ export default function SplineLoadingScreen({
       <style>{`
         .spline-loader-shell {
           background: transparent;
-          font-variant-numeric: tabular-nums;
           isolation: isolate;
-        }
-
-        .spline-loader-grid {
-          background-image:
-            linear-gradient(rgba(23, 23, 23, 0.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(23, 23, 23, 0.045) 1px, transparent 1px);
-          background-size: clamp(42px, 5vw, 78px) clamp(42px, 5vw, 78px);
-          -webkit-mask-image: linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(0, 0, 0, 0.72) 12%,
-            rgba(0, 0, 0, 0.72) 88%,
-            transparent 100%
-          );
-          mask-image: linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(0, 0, 0, 0.72) 12%,
-            rgba(0, 0, 0, 0.72) 88%,
-            transparent 100%
-          );
-        }
-
-        @media (max-width: 680px) {
-          .spline-loader-grid {
-            background-size: 42px 42px;
-            opacity: 0.2;
-          }
-
-          .spline-loader-mechanic {
-            width: clamp(9rem, 38vw, 12.5rem);
-          }
         }
       `}</style>
     </div>

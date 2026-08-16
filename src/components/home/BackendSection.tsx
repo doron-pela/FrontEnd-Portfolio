@@ -1,4 +1,3 @@
-// src/components/home/BackendSection.tsx
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -1136,7 +1135,7 @@ export default function BackendSection({
       runtimeRef.current?.revealedProgress ?? BACKEND_REVEALED_PROGRESS;
     const lockedProgressRange = Math.max(1 - revealedProgress, 0.0001);
 
-    return (window.innerHeight * BACKEND_PROJECTS.length) / lockedProgressRange;
+    return (window.innerHeight * 0.5 * BACKEND_PROJECTS.length) / lockedProgressRange;
   }, []);
 
   const getBackendLockY = useCallback(() => {
@@ -2264,10 +2263,10 @@ export default function BackendSection({
                 left-side safe column (4vw left gutter, 27vw right gutter) and
                 reserves the top ~11vh for the future navbar.
               */}
-            <div className="absolute bottom-[3.25vh] left-[4.35vw] top-[clamp(5.75rem,9vh,8.25rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:left-[4.5vw] max-[900px]:top-[clamp(5.5rem,8.5vh,7rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[4vw] max-[680px]:right-[27vw] max-[680px]:top-[clamp(5.75rem,11vh,7rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
+            <div className="absolute bottom-[3.25vh] left-[4.35vw] top-[clamp(5.5rem,8.6vh,7.8rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:left-[4.5vw] max-[900px]:top-[clamp(5.25rem,8vh,6.5rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[4vw] max-[680px]:right-[27vw] max-[680px]:top-[clamp(5.15rem,9.8vh,6.25rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
               <div className="backend-browser-zoom-compensated z-40 mr-auto flex w-full shrink-0 flex-col items-start text-left">
                 <h2
-                  className="m-0 font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.35rem,3.8vw,3rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.95rem,4vh,2.2rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]"
+                  className="m-0 font-sans text-[clamp(2.35rem,3.7vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
                   aria-label="Backend Engineering"
                 >
                   <span className="block overflow-y-clip pb-[0.08em]">

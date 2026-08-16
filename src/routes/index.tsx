@@ -6,6 +6,7 @@ import BackendSection from "@/components/home/BackendSection";
 import ContactSection from "@/components/home/ContactSection";
 import FrontendSection from "@/components/home/FrontendSection";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
+import Navbar from "@/components/Navbar";
 import type { HomeSection } from "@/@types/home-section.types";
 import type {
   RegisterScrollSection,
@@ -190,6 +191,16 @@ function HomePage() {
 
   return (
     <>
+      {/*
+        Navbar intentionally belongs to the homepage route, not __root.tsx.
+        SplineScene mounts this entire <Outlet /> only after its loading screen
+        has completed, so the navbar cannot appear during loading and enters the
+        DOM at the exact same lifecycle boundary as the homepage controller and
+        section overlays. Project-detail routes never mount this index route, so
+        they naturally remain navbar-free and keep their dedicated Back control.
+      */}
+      <Navbar />
+
       {/* <p className="max-w-[200px] absolute top-11/20 left-8/17 z-10 font-bold font-[white] text-lg">
         I am a fullstack engineer based in Ghana
       </p> */}

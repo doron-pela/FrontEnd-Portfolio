@@ -1,4 +1,3 @@
-// src/routes/experience/frontend/$projectSlug.tsx
 import {
   createFileRoute,
   useNavigate,

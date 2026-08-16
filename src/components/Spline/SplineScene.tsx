@@ -1,4 +1,3 @@
-// src/components/Spline/SplineScene.tsx
 import { Outlet, useLocation } from "@tanstack/react-router";
 import Spline from "@splinetool/react-spline";
 import { useCallback, useEffect, useRef, useState } from "react";

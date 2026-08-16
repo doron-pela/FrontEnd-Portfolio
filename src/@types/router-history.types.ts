@@ -1,4 +1,3 @@
-// src/@types/router-history.types.ts
 import type { HomeSection } from "@/@types/home-section.types";
 
 export type PortfolioReturnState = {
