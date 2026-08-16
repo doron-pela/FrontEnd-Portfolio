@@ -1,7 +1,8 @@
+// src/@types/router-history.types.ts
 import type { HomeSection } from "@/@types/home-section.types";
 
 export type PortfolioReturnState = {
-  section: Extract<HomeSection, "experience">;
+  section: Extract<HomeSection, "experience" | "systems">;
   projectIndex: number;
   locked: true;
 };

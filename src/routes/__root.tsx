@@ -1,3 +1,4 @@
+// src/routes/__root.tsx
 import { Outlet, createRootRoute, useLocation } from "@tanstack/react-router";
 
 import SplineScene from "@/components/Spline/SplineScene";
@@ -8,13 +9,9 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const location = useLocation();
-  const isFrontendProjectDetailRoute = location.pathname.startsWith(
-    "/experience/frontend/",
-  );
+  const isPortfolioProjectDetailRoute =
+    location.pathname.startsWith("/experience/frontend/") ||
+    location.pathname.startsWith("/experience/backend/");
 
-  return (
-    <>
-      {isFrontendProjectDetailRoute ? <Outlet /> : <SplineScene />}
-    </>
-  );
+  return <>{isPortfolioProjectDetailRoute ? <Outlet /> : <SplineScene />}</>;
 }

@@ -3,6 +3,7 @@ import { createFileRoute, useLocation } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
+import BackendSection from "@/components/home/BackendSection";
 import FrontendSection from "@/components/home/FrontendSection";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
 import type { HomeSection } from "@/@types/home-section.types";
@@ -22,7 +23,7 @@ const HOME_SECTIONS: Record<HomeSection, number> = {
   init: 0,
   about: 820,
   experience: 2550,
-  systems: 4408,
+  systems: 4000,
   projects: 5900,
 };
 
@@ -62,7 +63,11 @@ function HomePage() {
       portfolioReturnStateRef.current?.locked
         ? {
             section: portfolioReturnStateRef.current.section,
-            timelineLabel: `frontend-scene-${portfolioReturnStateRef.current.projectIndex}`,
+            timelineLabel: `${
+              portfolioReturnStateRef.current.section === "systems"
+                ? "backend"
+                : "frontend"
+            }-scene-${portfolioReturnStateRef.current.projectIndex}`,
           }
         : null,
     );
@@ -207,6 +212,12 @@ function HomePage() {
 
       <FrontendSection
         startY={HOME_SECTIONS.experience}
+        registerSection={registerSection}
+        programmaticScrollRef={programmaticScrollRef}
+      />
+
+      <BackendSection
+        startY={HOME_SECTIONS.systems}
         registerSection={registerSection}
         programmaticScrollRef={programmaticScrollRef}
       />
