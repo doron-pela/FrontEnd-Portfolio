@@ -56,6 +56,12 @@ export function ScrollLockedSectionController<Section extends string>({
     null,
   );
 
+  //Browser/TanStack history restoration can establish window.scrollY before the
+  //freshly mounted section runtimes have rebuilt their GSAP timelines. Until we
+  //explicitly hydrate those runtimes from the restored Y, no scroll event is
+  //allowed to be interpreted as organic boundary-crossing input.
+  const controllerReadyRef = useRef(false);
+
   const getRegisteredSections = useCallback(() => {
     return Array.from(runtimesRef.current.values());
   }, [runtimesRef]);
@@ -88,6 +94,49 @@ export function ScrollLockedSectionController<Section extends string>({
         activeSection !== null && !isActiveSection ? "none" : "";
     });
   }, []);
+
+  //Opacity/visibility remain GSAP's responsibility INSIDE a section's reveal
+  //range. Outside that range, the section should not participate in rendering at
+  //all. This hard display gate makes the global window Y the final authority over
+  //whether a manual section is even eligible to exist visually.
+  //
+  //That matters on browser-history remounts: ScrollTrigger may initialise at an
+  //already-deep scroll position before its directional refs have been rebuilt.
+  //Even if a stale onUpdate tries to place an old section at revealedProgress,
+  //display:none prevents that completed section from appearing over the current
+  //one.
+  const syncSectionDisplayForWindowY = useCallback(
+    (windowY: number, activeSection: Section | null = null) => {
+      const sectionElements = document.querySelectorAll<HTMLElement>(
+        "[data-scroll-locked-section]",
+      );
+
+      sectionElements.forEach((element) => {
+        const sectionName = element.dataset.scrollLockedSection;
+        const runtime = Array.from(runtimesRef.current.values()).find(
+          (candidate) => candidate.section === sectionName,
+        );
+
+        if (!runtime) {
+          element.style.display = "";
+          return;
+        }
+
+        if (activeSection !== null) {
+          element.style.display =
+            runtime.section === activeSection ? "" : "none";
+          return;
+        }
+
+        const lockY = runtime.getLockY();
+        const isInsideGlobalRevealRange =
+          windowY > runtime.startY && windowY <= lockY;
+
+        element.style.display = isInsideGlobalRevealRange ? "" : "none";
+      });
+    },
+    [runtimesRef],
+  );
 
   const snapWindowToSectionLock = useCallback(
     (runtime: ScrollSectionRuntime<Section>) => {
@@ -122,10 +171,14 @@ export function ScrollLockedSectionController<Section extends string>({
 
       if (activeLockedSectionRef.current === runtime.section) {
         activeLockedSectionRef.current = null;
-        isolateLockedSection(null);
+
+        //Do not blindly restore display for every manual section. Only sections
+        //whose reveal range actually contains the current global Y are eligible
+        //to exist once the active lock releases.
+        syncSectionDisplayForWindowY(window.scrollY, null);
       }
     },
-    [isolateLockedSection],
+    [syncSectionDisplayForWindowY],
   );
 
   const releaseSectionScroll = useCallback(
@@ -255,6 +308,51 @@ export function ScrollLockedSectionController<Section extends string>({
     setScrollSectionProgressImmediately(runtime, 0);
   }, []);
 
+  //When controller state is reconstructed at an already-established global
+  //window Y, every non-active manual section must be rebuilt to the timeline
+  //state that corresponds to that Y. Resetting every other section to 0 is only
+  //correct when the restored window is above those sections. If the restored
+  //window is already past a section's lock point, that section has logically
+  //completed forward and must stay at progress 1 with the forward-release guard
+  //restored so its ScrollTrigger cannot pull it back into the visible reveal
+  //range. If the window is inside the reveal range, derive that reveal progress
+  //directly from the global Y position.
+  const settleSectionForWindowY = useCallback(
+    (runtime: ScrollSectionRuntime<Section>, windowY: number) => {
+      const lockY = runtime.getLockY();
+
+      runtime.lockedRef.current = false;
+      runtime.releasingRef.current = false;
+      runtime.lockYRef.current = null;
+      runtime.snapRef.current = false;
+
+      if (windowY <= runtime.startY) {
+        runtime.releasedDirectionRef.current = null;
+        setScrollSectionProgressImmediately(runtime, 0);
+        return;
+      }
+
+      if (windowY >= lockY) {
+        runtime.releasedDirectionRef.current = "forward";
+        setScrollSectionProgressImmediately(runtime, 1);
+        return;
+      }
+
+      const revealDistance = Math.max(lockY - runtime.startY, 1);
+      const revealRatio = Math.min(
+        Math.max((windowY - runtime.startY) / revealDistance, 0),
+        1,
+      );
+
+      runtime.releasedDirectionRef.current = null;
+      setScrollSectionProgressImmediately(
+        runtime,
+        revealRatio * runtime.revealedProgress,
+      );
+    },
+    [],
+  );
+
   //Scroll to a section
   const scrollTo = useCallback(
     (section: Section) => {
@@ -270,6 +368,7 @@ export function ScrollLockedSectionController<Section extends string>({
       });
 
       programmaticScrollRef.current = true;
+      controllerReadyRef.current = true;
 
       registeredSections.forEach((runtime) => {
         runtime.releasingRef.current = false;
@@ -280,6 +379,15 @@ export function ScrollLockedSectionController<Section extends string>({
           resetSection(runtime);
         }
       });
+
+      //Programmatic navigation owns presentation while it is moving. Make only
+      //the destination manual section available; going to a non-manual target
+      //such as init keeps all manual sections hard-hidden.
+      if (destinationRuntime) {
+        isolateLockedSection(destinationRuntime.section);
+      } else {
+        syncSectionDisplayForWindowY(targetY, null);
+      }
 
       if (destinationRuntime?.timelineRef.current) {
         setScrollSectionProgressImmediately(destinationRuntime, 0);
@@ -330,10 +438,15 @@ export function ScrollLockedSectionController<Section extends string>({
           }
 
           registeredSections.forEach(resetSection);
+          syncSectionDisplayForWindowY(targetY, null);
         },
         onInterrupt: () => {
           lastWindowScrollYRef.current = window.scrollY;
           programmaticScrollRef.current = false;
+
+          //An interrupted authored scroll must not leave the destination's hard
+          //isolation behind. Recompute eligibility from the actual window Y.
+          syncSectionDisplayForWindowY(window.scrollY, null);
         },
       });
     },
@@ -346,7 +459,9 @@ export function ScrollLockedSectionController<Section extends string>({
       revealDelaySeconds,
       runtimesRef,
       scrollDurationSeconds,
+      syncSectionDisplayForWindowY,
       unlockSectionScroll,
+      isolateLockedSection
     ],
   );
 
@@ -401,15 +516,20 @@ export function ScrollLockedSectionController<Section extends string>({
       registeredSections.forEach((runtime) => {
         gsap.killTweensOf(runtime.timelineRef.current);
 
-        runtime.releasingRef.current = false;
-        runtime.releasedDirectionRef.current = null;
-        runtime.lockedRef.current = false;
-        runtime.lockYRef.current = null;
-        runtime.snapRef.current = false;
-
-        if (runtime !== destinationRuntime) {
-          resetSection(runtime);
+        if (runtime === destinationRuntime) {
+          runtime.releasingRef.current = false;
+          runtime.releasedDirectionRef.current = null;
+          runtime.lockedRef.current = false;
+          runtime.lockYRef.current = null;
+          runtime.snapRef.current = false;
+          return;
         }
+
+        //Do not blindly reset previous/next sections to 0 during a route return.
+        //Reconstruct each one from the same global Y we are restoring so sections
+        //already completed above the destination remain completed/hidden instead
+        //of being revived by their ScrollTrigger at revealedProgress.
+        settleSectionForWindowY(runtime, targetY);
       });
 
       //Own the synthetic route-restoration scroll so the global scroll handler
@@ -434,8 +554,20 @@ export function ScrollLockedSectionController<Section extends string>({
       hasRestoredStateRef.current = true;
 
       restoreFrame = requestAnimationFrame(() => {
+        //Reassert both the completed state of every non-destination section and
+        //the active DOM isolation after the synthetic scroll has committed. This
+        //closes the small route-mount timing window where ScrollTrigger can run an
+        //update between restoration setup and the next painted frame.
+        getRegisteredSections().forEach((runtime) => {
+          if (runtime !== destinationRuntime) {
+            settleSectionForWindowY(runtime, targetY);
+          }
+        });
+
+        isolateLockedSection(destinationRuntime.section);
         destinationRuntime.snapRef.current = false;
         programmaticScrollRef.current = false;
+        controllerReadyRef.current = true;
       });
     };
 
@@ -451,19 +583,101 @@ export function ScrollLockedSectionController<Section extends string>({
     getRegisteredSections,
     isolateLockedSection,
     programmaticScrollRef,
-    resetSection,
     restoreState,
     runtimesRef,
+    settleSectionForWindowY,
   ]);
 
-  //Never leave an inline isolation style behind across route unmounts / HMR.
+  //Not every history/navigation restoration has a custom restoreState. Normal
+  //TanStack/browser scroll restoration can remount this controller at an
+  //already-established window.scrollY. ScrollTrigger then initialises against
+  //that deep Y immediately, so every fresh runtime must be hydrated from the
+  //global scroll coordinate BEFORE organic crossing logic is allowed to run.
+  //
+  //If the restored Y is exactly one manual section's lock point, infer that the
+  //user was sitting inside that section and rebuild the lock at revealedProgress.
+  //Explicit project restoreState takes precedence above because it can recover a
+  //more precise local timeline label such as frontend-scene-N.
   useEffect(() => {
-    isolateLockedSection(null);
+    if (restoreState || controllerReadyRef.current) {
+      return;
+    }
+
+    let hydrationFrame = 0;
+    let cancelled = false;
+
+    const hydrateWhenReady = () => {
+      if (cancelled || controllerReadyRef.current) {
+        return;
+      }
+
+      const registeredSections = getRegisteredSections();
+
+      //Wait for the section components to register their actual GSAP timelines.
+      //Hydrating before that would only update refs and leave a later
+      //ScrollTrigger creation free to overwrite the visual state again.
+      if (
+        registeredSections.length === 0 ||
+        registeredSections.some((runtime) => !runtime.timelineRef.current)
+      ) {
+        hydrationFrame = requestAnimationFrame(hydrateWhenReady);
+        return;
+      }
+
+      const restoredY = window.scrollY;
+      const inferredLockedSection =
+        registeredSections.find(
+          (runtime) => Math.abs(restoredY - runtime.getLockY()) <= 2,
+        ) ?? null;
+
+      registeredSections.forEach((runtime) => {
+        gsap.killTweensOf(runtime.timelineRef.current);
+
+        if (runtime !== inferredLockedSection) {
+          settleSectionForWindowY(runtime, restoredY);
+        }
+      });
+
+      if (inferredLockedSection) {
+        const lockY = inferredLockedSection.getLockY();
+
+        inferredLockedSection.releasingRef.current = false;
+        inferredLockedSection.releasedDirectionRef.current = null;
+        inferredLockedSection.lockYRef.current = lockY;
+        inferredLockedSection.lockedRef.current = true;
+        inferredLockedSection.snapRef.current = false;
+
+        activeLockedSectionRef.current = inferredLockedSection.section;
+
+        setScrollSectionProgressImmediately(
+          inferredLockedSection,
+          inferredLockedSection.revealedProgress,
+        );
+
+        isolateLockedSection(inferredLockedSection.section);
+        lastWindowScrollYRef.current = lockY;
+      } else {
+        activeLockedSectionRef.current = null;
+        syncSectionDisplayForWindowY(restoredY, null);
+        lastWindowScrollYRef.current = restoredY;
+      }
+
+      controllerReadyRef.current = true;
+    };
+
+    hydrationFrame = requestAnimationFrame(hydrateWhenReady);
 
     return () => {
-      isolateLockedSection(null);
+      cancelled = true;
+      cancelAnimationFrame(hydrationFrame);
     };
-  }, [isolateLockedSection]);
+  }, [
+    getRegisteredSections,
+    isolateLockedSection,
+    restoreState,
+    settleSectionForWindowY,
+    syncSectionDisplayForWindowY,
+  ]);
 
   //Viewport resizing can make the browser adjust window.scrollY even though
   //the user did not intentionally scroll. While a manual-scroll section is
@@ -570,12 +784,24 @@ export function ScrollLockedSectionController<Section extends string>({
       const movingBackward = currentY < previousY;
       const registeredSections = getRegisteredSections();
 
+      //A restored native scroll position is not user input. Until the fresh
+      //runtimes have been hydrated from that position, merely record the Y and
+      //refuse to infer that the user organically crossed every lock point.
+      if (!controllerReadyRef.current) {
+        lastWindowScrollYRef.current = currentY;
+        return;
+      }
+
       if (programmaticScrollRef.current) {
         lastWindowScrollYRef.current = currentY;
         return;
       }
 
       const activeSection = getActiveLockedSection();
+
+      if (!activeSection?.lockedRef.current) {
+        syncSectionDisplayForWindowY(currentY, null);
+      }
 
       if (activeSection?.snapRef.current) {
         lastWindowScrollYRef.current = currentY;
@@ -719,6 +945,7 @@ export function ScrollLockedSectionController<Section extends string>({
     lockSectionScroll,
     programmaticScrollRef,
     snapWindowToSectionLock,
+    syncSectionDisplayForWindowY,
   ]);
 
   //Applying the functions to event listeners

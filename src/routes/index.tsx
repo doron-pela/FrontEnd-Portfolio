@@ -67,16 +67,17 @@ function HomePage() {
         : null,
     );
 
-  //The project-return state is a one-shot instruction, not persistent homepage
-  //state. We copy it into routeRestoreStateRef synchronously above, then remove
-  //only our custom key from this history entry. TanStack's own history keys are
-  //left untouched, so its normal scroll restoration remains free to restore the
-  //actual window position on later homepage refreshes or history navigations.
-  useEffect(() => {
-    if (!portfolioReturnStateRef.current) {
-      return;
-    }
-
+  //The project-return metadata must survive pure browser Back/Forward cycling.
+  //If it is deleted immediately on the first return, a later Alt+Forward followed
+  //by Alt+Back reaches the same HOME history entry without enough information to
+  //reconstruct the locally locked Frontend scene. Keep the metadata on that exact
+  //history entry until the user actually starts interacting with the homepage.
+  //
+  //This still solves the older stale-refresh problem: once the user scrolls,
+  //touches, uses section-navigation keys, or clicks into the live homepage, the
+  //return instruction is consumed from THIS home entry. A later refresh from a
+  //different section therefore cannot incorrectly jump back to the old project.
+  const clearPortfolioReturnState = useCallback(() => {
     const currentHistoryState = (window.history.state ?? {}) as Record<
       string,
       unknown
@@ -91,7 +92,82 @@ function HomePage() {
     delete nextHistoryState.portfolioReturn;
 
     window.history.replaceState(nextHistoryState, "", window.location.href);
+    portfolioReturnStateRef.current = undefined;
   }, []);
+
+  useEffect(() => {
+    if (!portfolioReturnStateRef.current) {
+      return;
+    }
+
+    function handleHomepagePointerDown(event: PointerEvent) {
+      const target = event.target;
+
+      //The loading screen is only a visual overlay. Clicking/tapping it must not
+      //consume route-return metadata before the restored homepage is presented.
+      if (target instanceof Element && target.closest(".spline-loader-shell")) {
+        return;
+      }
+
+      clearPortfolioReturnState();
+    }
+
+    function handleHomepageWheel() {
+      clearPortfolioReturnState();
+    }
+
+    function handleHomepageTouchStart() {
+      clearPortfolioReturnState();
+    }
+
+    function handleHomepageKeyDown(event: KeyboardEvent) {
+      //Alt+Left / Alt+Right are browser-history commands. They are specifically
+      //the navigation path that needs this metadata to remain on the home entry.
+      if (event.altKey || event.metaKey || event.ctrlKey) {
+        return;
+      }
+
+      const consumesReturnState =
+        event.key in SECTION_KEY_MAP ||
+        event.key === "ArrowDown" ||
+        event.key === "ArrowUp" ||
+        event.key === "PageDown" ||
+        event.key === "PageUp" ||
+        event.key === " " ||
+        event.key === "Home" ||
+        event.key === "End";
+
+      if (consumesReturnState) {
+        clearPortfolioReturnState();
+      }
+    }
+
+    window.addEventListener("pointerdown", handleHomepagePointerDown, {
+      capture: true,
+    });
+    window.addEventListener("wheel", handleHomepageWheel, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("touchstart", handleHomepageTouchStart, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("keydown", handleHomepageKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", handleHomepagePointerDown, {
+        capture: true,
+      });
+      window.removeEventListener("wheel", handleHomepageWheel, {
+        capture: true,
+      });
+      window.removeEventListener("touchstart", handleHomepageTouchStart, {
+        capture: true,
+      });
+      window.removeEventListener("keydown", handleHomepageKeyDown);
+    };
+  }, [clearPortfolioReturnState]);
 
   //Called, this function is our actual effect in every section component
   const registerSection = useCallback<RegisterScrollSection<HomeSection>>(
