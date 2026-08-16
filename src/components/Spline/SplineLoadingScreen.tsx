@@ -17,10 +17,12 @@ type PerforationPoint = {
 const LOADER_INTRO_DURATION_SECONDS = 0.82;
 
 //These points remain the final real mask perforation anchors. During loading,
-//the visible dots temporarily leave those anchors and gather onto ONE shared
-//circular orbit around the viewport center. They chase one another around that
-//same path at equal angular spacing. When Spline is ready, each dot returns to
-//its own anchor, disappears completely, and only the mask holes expand.
+//the visible dots temporarily leave those anchors and gather into ONE shared
+//circular flow around the viewport center. They still chase one another around
+//the same orbit, but each dot has a tiny deterministic radial/angular drift so
+//the motion feels organic instead of mechanically perfect. When Spline is ready,
+//each dot returns to its own anchor, disappears completely, and only the mask
+//holes expand.
 const PERFORATION_POINTS: readonly PerforationPoint[] = [
   { x: 0.17, y: 0.25 },
   { x: 0.73, y: 0.18 },
@@ -28,6 +30,78 @@ const PERFORATION_POINTS: readonly PerforationPoint[] = [
   { x: 0.84, y: 0.61 },
   { x: 0.28, y: 0.75 },
   { x: 0.64, y: 0.83 },
+] as const;
+
+type OrbitVariation = {
+  radiusBias: number;
+  radialWobble: number;
+  radialFrequency: number;
+  radialPhase: number;
+  angularWobble: number;
+  angularFrequency: number;
+  angularPhase: number;
+};
+
+//These values are intentionally authored instead of generated with Math.random().
+//True per-frame randomness would create tiny discontinuities and visible jitter.
+//Each seed therefore gets its own stable "personality": it drifts a few percent
+//inward/outward and a degree or two ahead/behind the ideal circular path while
+//remaining unmistakably part of the same shared orbit.
+const ORBIT_VARIATIONS: readonly OrbitVariation[] = [
+  {
+    radiusBias: -0.012,
+    radialWobble: 0.026,
+    radialFrequency: 1.21,
+    radialPhase: 0.4,
+    angularWobble: 0.022,
+    angularFrequency: 0.83,
+    angularPhase: 0.2,
+  },
+  {
+    radiusBias: 0.015,
+    radialWobble: 0.021,
+    radialFrequency: 1.47,
+    radialPhase: 1.1,
+    angularWobble: 0.026,
+    angularFrequency: 1.11,
+    angularPhase: 2,
+  },
+  {
+    radiusBias: -0.005,
+    radialWobble: 0.032,
+    radialFrequency: 0.91,
+    radialPhase: 2.3,
+    angularWobble: 0.018,
+    angularFrequency: 1.37,
+    angularPhase: 0.8,
+  },
+  {
+    radiusBias: 0.009,
+    radialWobble: 0.024,
+    radialFrequency: 1.63,
+    radialPhase: 3.4,
+    angularWobble: 0.03,
+    angularFrequency: 0.74,
+    angularPhase: 1.7,
+  },
+  {
+    radiusBias: -0.016,
+    radialWobble: 0.028,
+    radialFrequency: 1.16,
+    radialPhase: 4.5,
+    angularWobble: 0.024,
+    angularFrequency: 1.29,
+    angularPhase: 2.8,
+  },
+  {
+    radiusBias: 0.012,
+    radialWobble: 0.02,
+    radialFrequency: 1.38,
+    radialPhase: 5.2,
+    angularWobble: 0.028,
+    angularFrequency: 0.96,
+    angularPhase: 4,
+  },
 ] as const;
 
 export default function SplineLoadingScreen({
@@ -56,9 +130,10 @@ export default function SplineLoadingScreen({
   */
 
   //The waiting state stays minimal, but the motion is now deliberately legible.
-  //Instead of six almost-static local orbits, the dots gather onto one large
-  //shared circle around the viewport center and chase one another around it at
-  //equal spacing. This gives the loader a clear "dance" without introducing text.
+  //Instead of six almost-static local orbits, the dots gather into one large
+  //shared circular flow around the viewport center. Their spacing remains close
+  //enough to read as one choreography, while tiny per-dot radial/angular drift
+  //keeps the movement from feeling mathematically rigid.
   useEffect(() => {
     const shell = shellRef.current;
 
@@ -183,53 +258,79 @@ export default function SplineLoadingScreen({
         mix: 0,
       };
 
-      const seedSetters = seeds.map((seed) => ({
-        x: gsap.quickSetter(seed, "x", "px"),
-        y: gsap.quickSetter(seed, "y", "px"),
-        rotation: gsap.quickSetter(seed, "rotation", "deg"),
-      }));
+      //Precompute every value that never changes during the orbit. This keeps the
+      //hot render loop focused on a few trigonometric calculations and transform
+      //writes instead of repeatedly resolving anchors, variations and setters.
+      const seedMotion = seeds.map((seed, index) => {
+        const point = PERFORATION_POINTS[index];
+        const variation = ORBIT_VARIATIONS[index % ORBIT_VARIATIONS.length];
+
+        if (!point || !variation) {
+          return null;
+        }
+
+        return {
+          anchorX: point.x * viewportWidth,
+          anchorY: point.y * viewportHeight,
+          variation,
+          x: gsap.quickSetter(seed, "x", "px"),
+          y: gsap.quickSetter(seed, "y", "px"),
+          rotation: gsap.quickSetter(seed, "rotation", "deg"),
+        };
+      });
 
       function renderSharedOrbit() {
         const globalRadiusPulse = 1 + Math.sin(orbitState.angle * 2) * 0.045;
+        const seedCount = Math.max(seedMotion.length, 1);
 
-        seeds.forEach((_, index) => {
-          const point = PERFORATION_POINTS[index];
+        for (let index = 0; index < seedMotion.length; index += 1) {
+          const motion = seedMotion[index];
 
-          if (!point) {
-            return;
+          if (!motion) {
+            continue;
           }
 
-          const phase =
-            orbitState.angle +
-            (index / Math.max(seeds.length, 1)) * Math.PI * 2;
+          const { variation } = motion;
+          const basePhase =
+            orbitState.angle + (index / seedCount) * Math.PI * 2;
 
-          const targetX =
-            orbitCenterX + Math.cos(phase) * orbitRadius * globalRadiusPulse;
-          const targetY =
-            orbitCenterY + Math.sin(phase) * orbitRadius * globalRadiusPulse;
+          //The seed still follows the shared circle, but its own low-frequency
+          //radial wobble lets it gently breathe inward/outward around that line.
+          const localRadiusScale =
+            1 +
+            variation.radiusBias +
+            Math.sin(
+              orbitState.angle * variation.radialFrequency +
+                variation.radialPhase,
+            ) *
+              variation.radialWobble;
 
-          const anchorX = point.x * viewportWidth;
-          const anchorY = point.y * viewportHeight;
+          //A separate angular wobble lets it drift a degree or two ahead/behind
+          //its mathematically perfect slot. Because this is sinusoidal rather
+          //than random-per-frame, the veer remains continuous and silky smooth.
+          const localPhase =
+            basePhase +
+            Math.sin(
+              orbitState.angle * variation.angularFrequency +
+                variation.angularPhase,
+            ) *
+              variation.angularWobble;
 
-          const targetOffsetX = targetX - anchorX;
-          const targetOffsetY = targetY - anchorY;
+          const localRadius =
+            orbitRadius * globalRadiusPulse * localRadiusScale;
+          const targetX = orbitCenterX + Math.cos(localPhase) * localRadius;
+          const targetY = orbitCenterY + Math.sin(localPhase) * localRadius;
 
-          const setter = seedSetters[index];
+          motion.x((targetX - motion.anchorX) * orbitState.mix);
+          motion.y((targetY - motion.anchorY) * orbitState.mix);
 
-          if (!setter) {
-            return;
-          }
-
-          setter.x(targetOffsetX * orbitState.mix);
-          setter.y(targetOffsetY * orbitState.mix);
-
-          //A tiny tangent-facing rotation makes the dots feel as if they are
-          //flowing along the circular path rather than randomly translating.
-          setter.rotation((phase * 180) / Math.PI + 90);
-        });
+          //Keep the tiny tangent-facing rotation aligned with the seed's local
+          //path rather than the idealized base circle.
+          motion.rotation((localPhase * 180) / Math.PI + 90);
+        }
       }
 
-      //Gather the six scattered anchor dots into the shared orbital line quickly
+      //Gather the six scattered anchor dots into the shared circular band quickly
       //enough that even a fast Spline load visibly communicates the choreography.
       loopTweensRef.current.push(
         gsap.to(orbitState, {
@@ -240,8 +341,9 @@ export default function SplineLoadingScreen({
         }),
       );
 
-      //All dots use ONE angle state. Their fixed 60-degree phase difference is
-      //what makes them visibly chase one another around the same circle.
+      //All dots still share ONE master angle state. Their base spacing keeps the
+      //chase readable, while each authored wobble signature makes that spacing
+      //and radius breathe by a very small amount throughout the orbit.
       loopTweensRef.current.push(
         gsap.to(orbitState, {
           angle: orbitState.angle + Math.PI * 2,
@@ -568,9 +670,10 @@ export default function SplineLoadingScreen({
 
       {/*
         These six dots are the entire visible loader UI. They temporarily leave
-        these anchor coordinates, gather onto one shared central circle, and chase
-        one another around it. Once Spline is ready they return here, disappear,
-        and the invisible SVG mask circles at these same anchors simply expand.
+        these anchor coordinates, gather into one shared central circular flow,
+        and chase one another with a tiny amount of individual veer. Once Spline
+        is ready they return here, disappear, and the invisible SVG mask circles
+        at these same anchors simply expand.
       */}
       <div
         aria-hidden="true"
