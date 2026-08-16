@@ -1,9 +1,9 @@
-// src/routes/index.tsx
 import { createFileRoute, useLocation } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
 import BackendSection from "@/components/home/BackendSection";
+import ContactSection from "@/components/home/ContactSection";
 import FrontendSection from "@/components/home/FrontendSection";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
 import type { HomeSection } from "@/@types/home-section.types";
@@ -24,7 +24,7 @@ const HOME_SECTIONS: Record<HomeSection, number> = {
   about: 820,
   experience: 2550,
   systems: 4000,
-  projects: 5900,
+  contact: 5900,
 };
 
 const SECTION_REVEAL_DELAY_SECONDS: Record<HomeSection, number> = {
@@ -32,7 +32,7 @@ const SECTION_REVEAL_DELAY_SECONDS: Record<HomeSection, number> = {
   about: 1,
   experience: 1,
   systems: 1,
-  projects: 1,
+  contact: 1,
 };
 
 const SECTION_SCROLL_DURATION_SECONDS = 3;
@@ -42,7 +42,7 @@ const SECTION_KEY_MAP: Record<string, HomeSection> = {
   "1": "about",
   "2": "experience",
   "3": "systems",
-  "4": "projects",
+  "4": "contact",
 };
 
 function HomePage() {
@@ -218,6 +218,12 @@ function HomePage() {
 
       <BackendSection
         startY={HOME_SECTIONS.systems}
+        registerSection={registerSection}
+        programmaticScrollRef={programmaticScrollRef}
+      />
+
+      <ContactSection
+        startY={HOME_SECTIONS.contact}
         registerSection={registerSection}
         programmaticScrollRef={programmaticScrollRef}
       />

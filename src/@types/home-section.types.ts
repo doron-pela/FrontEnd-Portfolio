@@ -1,2 +1,2 @@
 export type HomeSection =
-  "init" | "about" | "experience" | "systems" | "projects";
+  "init" | "about" | "experience" | "systems" | "contact";
