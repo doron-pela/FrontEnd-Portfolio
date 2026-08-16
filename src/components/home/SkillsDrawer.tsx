@@ -9,61 +9,16 @@ import {
   type SVGProps,
 } from "react";
 
+import {
+  SKILLS_DATA,
+  type TechnologyKind,
+} from "@/data/home/skills/data-skills";
+
 type SkillsDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  yearsOfExperience?: string;
 };
 
-type TechnologyKind =
-  | "react"
-  | "typescript"
-  | "tanstack"
-  | "next"
-  | "gsap"
-  | "dotnet"
-  | "aws"
-  | "postgres";
-
-type Technology = {
-  kind: TechnologyKind;
-  name: string;
-};
-
-const PRIMARY_TECHNOLOGIES: readonly Technology[] = [
-  {
-    kind: "react",
-    name: "React",
-  },
-  {
-    kind: "typescript",
-    name: "TypeScript",
-  },
-  {
-    kind: "tanstack",
-    name: "TanStack",
-  },
-  {
-    kind: "next",
-    name: "Next.js",
-  },
-  {
-    kind: "gsap",
-    name: "GSAP",
-  },
-  {
-    kind: "dotnet",
-    name: "C# / .NET",
-  },
-  {
-    kind: "aws",
-    name: "AWS",
-  },
-  {
-    kind: "postgres",
-    name: "PostgreSQL",
-  },
-] as const;
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -278,7 +233,6 @@ function DrawerSection({
 export default function SkillsDrawer({
   open,
   onOpenChange,
-  yearsOfExperience,
 }: SkillsDrawerProps) {
   const drawerRef = useRef<HTMLElement | null>(null);
   const handleRef = useRef<HTMLButtonElement | null>(null);
@@ -786,59 +740,67 @@ export default function SkillsDrawer({
         <div className="skills-drawer-scroll h-full overflow-y-auto px-[clamp(1.5rem,3vw,2.6rem)] pb-[clamp(1.5rem,4vh,2.8rem)] pt-[clamp(1.4rem,3vh,2.2rem)] max-[680px]:px-5">
           <header className="mb-[clamp(1.6rem,3vh,2.35rem)]">
             <h2 className="font-sans text-[clamp(2.45rem,4.2vw,4.2rem)] font-semibold uppercase leading-[0.82] tracking-[-0.075em] max-[680px]:text-[2.65rem]">
-              Skills
+              {SKILLS_DATA.title}
             </h2>
 
             <div className="mt-4 h-px bg-[#171717]/12" />
           </header>
 
-          <DrawerSection eyebrow="Current role" showRule={false} useColon>
+          <DrawerSection
+            eyebrow={SKILLS_DATA.currentRole.eyebrow}
+            showRule={false}
+            useColon
+          >
             <div>
               <div className="font-sans text-[clamp(1.35rem,2vw,1.75rem)] font-medium tracking-[-0.045em]">
-                Software Engineer
+                {SKILLS_DATA.currentRole.title}
               </div>
 
               <p className="mt-1.5 max-w-[25rem] font-[Garamond,_'Times_New_Roman',_serif] text-[0.94rem] leading-[1.45] text-[#171717]/52">
-                React / TypeScript product interfaces with C# / .NET API and
-                backend systems.
+                {SKILLS_DATA.currentRole.description}
               </p>
             </div>
           </DrawerSection>
 
-          <DrawerSection eyebrow="Location" showRule={false} useColon>
+          <DrawerSection
+            eyebrow={SKILLS_DATA.location.eyebrow}
+            showRule={false}
+            useColon
+          >
             <div className="font-sans text-[1rem] font-medium tracking-[-0.025em] text-[#171717]/78">
-              Ghana
+              {SKILLS_DATA.location.value}
             </div>
           </DrawerSection>
 
-          <DrawerSection eyebrow="Experience">
+          <DrawerSection eyebrow={SKILLS_DATA.experience.eyebrow}>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="rounded-[1rem] bg-[#171717]/[0.035] p-4">
                 <div className="font-mono text-[0.5rem] uppercase tracking-[0.15em] text-[#171717]/38">
-                  Years
+                  {SKILLS_DATA.experience.yearsLabel}
                 </div>
 
                 <div className="mt-2 font-sans text-[clamp(1.8rem,3vw,2.5rem)] font-semibold tracking-[-0.06em]">
-                  {yearsOfExperience ?? "—"}
+                  {SKILLS_DATA.experience.years}
                 </div>
               </div>
 
               <div className="rounded-[1rem] bg-[#171717]/[0.035] p-4">
                 <div className="font-mono text-[0.5rem] uppercase tracking-[0.15em] text-[#171717]/38">
-                  Focus
+                  {SKILLS_DATA.experience.focusLabel}
                 </div>
 
                 <div className="mt-2 font-sans text-[1rem] font-medium leading-[1.2] tracking-[-0.025em]">
-                  Front-end
-                  <br />+ Backend
+                  {SKILLS_DATA.experience.focusLines[0]}
+                  <br />
+                  {SKILLS_DATA.experience.focusLines[1]}
                 </div>
               </div>
             </div>
           </DrawerSection>
 
-          <DrawerSection eyebrow="Primary technologies">
+          <DrawerSection eyebrow={SKILLS_DATA.technologiesEyebrow}>
             <div className="grid grid-cols-2 gap-2.5 max-[420px]:grid-cols-1">
-              {PRIMARY_TECHNOLOGIES.map((technology) => (
+              {SKILLS_DATA.primaryTechnologies.map((technology) => (
                 <div
                   className="skills-drawer-tech flex min-w-0 items-center gap-3 rounded-[1rem] bg-[#171717]/[0.018] p-3"
                   key={technology.name}
@@ -855,40 +817,9 @@ export default function SkillsDrawer({
             </div>
           </DrawerSection>
 
-          <DrawerSection eyebrow="Contact">
+          <DrawerSection eyebrow={SKILLS_DATA.contactEyebrow}>
             <div className="space-y-1">
-              {[
-                {
-                  label: "Email",
-                  value: "alepnorod@gmail.com",
-                  href: "mailto:alepnorod@gmail.com",
-                  external: false,
-                },
-                {
-                  label: "WhatsApp",
-                  value: "+234 906 410 8594",
-                  href: "https://wa.me/2349064108594",
-                  external: true,
-                },
-                {
-                  label: "Call",
-                  value: "+233 257 880 061",
-                  href: "tel:+233257880061",
-                  external: false,
-                },
-                {
-                  label: "LinkedIn",
-                  value: "doron-pela-48aa62170",
-                  href: "https://www.linkedin.com/in/doron-pela-48aa62170/",
-                  external: true,
-                },
-                {
-                  label: "GitHub",
-                  value: "doron-pela",
-                  href: "https://github.com/doron-pela/",
-                  external: true,
-                },
-              ].map((contact) => (
+              {SKILLS_DATA.contacts.map((contact) => (
                 <a
                   className="skills-drawer-contact grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[0.85rem] px-2.5 py-2.5 max-[420px]:grid-cols-[4.5rem_minmax(0,1fr)_auto]"
                   href={contact.href}
@@ -914,3 +845,4 @@ export default function SkillsDrawer({
     </>
   );
 }
+

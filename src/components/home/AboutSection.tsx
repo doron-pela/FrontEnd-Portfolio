@@ -8,6 +8,7 @@ import type {
   ManualScrollSectionProps,
   ScrollSectionRuntime,
 } from "@/@types/scroll-locked-section.types";
+import { ABOUT_DATA } from "@/data/home/about/data-about";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
 // import reactLogo from "../assets/react.svg";
@@ -40,14 +41,6 @@ const ABOUT_MOBILE_SECTION_Y = 0;
 // 0.19; //From 0 to 0.19 of the timeline, about is revealing... after 0.19 until 1, global scroll is locked.
 //The point in the about timeline (0-1) when the about is fully visible
 //More content to the about section means more timeline stretch. So we need to REDUCE this value as we add content so we lock at the same visual point.
-
-const ABOUT_LINES = ["I'm a Product-minded", "software Engineer"];
-
-const ABOUT_BODY =
-  "I build fast, reliable software from interface to infrastructure, " +
-  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
-  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
-  "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. ";
 
 function splitTextIntoWords(text: string) {
   return text.split(" ").map((word) => word.split(""));
@@ -97,7 +90,7 @@ export function AboutSection({
   }, []);
 
   const bodyWords = useMemo(() => {
-    return splitTextIntoWords(ABOUT_BODY);
+    return splitTextIntoWords(ABOUT_DATA.body);
   }, []);
 
   //The total scrollable distance the view port can travel
@@ -536,14 +529,14 @@ export function AboutSection({
             >
               <div className="about-blur-item">
                 <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)] max-[650px]:justify-end">
-                  <span>ABOUT / 01</span>
+                  <span>{ABOUT_DATA.eyebrow}</span>
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
                   className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance pointer-events-auto max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
-                  aria-label={ABOUT_LINES.join(" ")}
+                  aria-label={ABOUT_DATA.titleLines.join(" ")}
                 >
-                  {ABOUT_LINES.map((line, lineIndex) => (
+                  {ABOUT_DATA.titleLines.map((line, lineIndex) => (
                     <span className="block whitespace-nowrap" key={line}>
                       {line.split("").map((char, charIndex) => (
                         <span
@@ -564,7 +557,7 @@ export function AboutSection({
                   font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal]
                   max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right
                   max-[650px]:ml-auto max-[650px]:mr-0 max-[650px]:w-full max-[650px]:max-w-[15rem]"
-                aria-label={ABOUT_BODY}
+                aria-label={ABOUT_DATA.body}
               >
                 {bodyWords.map((word, wordIndex) => (
                   <span
@@ -619,3 +612,4 @@ export function AboutSection({
     </section>
   );
 }
+

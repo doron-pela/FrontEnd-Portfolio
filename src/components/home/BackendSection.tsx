@@ -1,3 +1,4 @@
+// src/components/home/BackendSection.tsx
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -10,10 +11,8 @@ import type {
   ScrollSectionRuntime,
 } from "@/@types/scroll-locked-section.types";
 import ProjectScreenshotGallery from "@/components/projects/ScreenshotGallery";
-import {
-  hasScreenshotSource,
-  type ProjectScreenshot,
-} from "@/components/projects/screenshot-gallery.utils";
+import { BACKEND_DATA, BACKEND_PROJECTS } from "@/data/home/backend/data-backend";
+import { hasScreenshotSource } from "@/components/projects/screenshot-gallery.utils";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -77,159 +76,6 @@ function getBackendBaseDevicePixelRatio() {
   return zoomAwareWindow.__backendSectionBaseDevicePixelRatio;
 }
 
-type BackendProject = {
-  title: string;
-  description: string | null;
-  contribution: string | null;
-  outcome: string | null;
-  technologies: readonly string[];
-  screenshots: readonly ProjectScreenshot[];
-  liveUrl: string | null;
-  repositoryUrl?: string | null;
-  detailsSlug?: string | null;
-};
-
-const BACKEND_PROJECTS: readonly BackendProject[] = [
-  {
-    title: "OWD Web Platform",
-    description:
-      "A multi-surface company platform spanning public content, administration, permissions, editorial workflows and reusable product experiences.",
-    contribution:
-      "I built and integrated frontend systems across authentication, data-heavy admin workflows, responsive public pages and reusable content architecture.",
-    outcome:
-      "A coherent frontend that can grow without every new page becoming a one-off implementation.",
-    technologies: ["React", "TypeScript", "TanStack", "Motion"],
-    liveUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    repositoryUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    detailsSlug: "owd-web-platform",
-    screenshots: [
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-        alt: "OWD platform primary interface",
-      },
-      {
-        src: "https://wallpaperaccess.com/full/630926.jpg",
-        alt: "OWD platform secondary interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZbtobzF1g7XjTcnL1fp4YyYGwebCCIK57-ASmI6J1PKugQDbxKhCuKMw&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://images.unsplash.com/photo-1722944982712-62e216333a31?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZXBpYyUyMHdhbGxwYXBlcnxlbnwwfHwwfHx8MA%3D%3D",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Dr85yiVhJYE298y-uDnWIy0MB3dZzXV1gHNMHBXVyfOaOgaMy8c1RB_p&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4AdSp_ZkorulQ42jxu1YpWbn5Eqki-sifCmhKcVZF0A&s=10",
-        alt: "OWD platform supporting interface",
-      },
-    ],
-  },
-  {
-    title: "Spline Portfolio",
-    description:
-      "A portfolio where the 3D Spline scene remains the visual stage while browser scroll becomes a timeline through the site's content.",
-    contribution:
-      "I engineered the scroll-lock controller, GSAP section timelines, direction-aware handoffs and programmatic navigation around the persistent 3D scene.",
-    outcome:
-      "A single continuous environment instead of disconnected sections layered over an unrelated 3D background.",
-    technologies: ["GSAP", "Spline", "ScrollTrigger", "React"],
-    liveUrl: null,
-    repositoryUrl: null,
-    detailsSlug: "spline-portfolio",
-    screenshots: [
-      {
-        src: null,
-        alt: "Spline portfolio hero sequence",
-        aspectRatio: 16 / 9,
-      },
-      {
-        src: null,
-        alt: "Spline portfolio scroll sequence",
-        aspectRatio: 4 / 3,
-      },
-    ],
-  },
-  // {
-  //   title: "Homepage Visual CMS",
-  //   description:
-  //     "A visual homepage editing experience where structured content remains type-safe while the administrator sees changes in the actual page composition.",
-  //   contribution:
-  //     "I worked on the editor architecture, live preview behavior, reusable section configuration and the bridge between structured values and presentation.",
-  //   outcome:
-  //     "Content editing feels visual without turning the production homepage into an unrestricted page builder.",
-  //   technologies: ["React", "Puck", "TipTap", "TypeScript"],
-  //   liveUrl: null,
-  //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Homepage visual editor canvas",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Homepage visual editor controls",
-  //       aspectRatio: 3 / 4,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Products + Case Studies",
-  //   description:
-  //     "Reusable product and case-study experiences driven by structured API data instead of duplicated presentation content.",
-  //   contribution:
-  //     "I translated backend contracts into client models, reusable cards, detail screens, media treatment and testimonial mappings while preserving the designed UI.",
-  //   outcome:
-  //     "One source of truth can now power multiple polished client experiences and their administration surfaces.",
-  //   technologies: ["React", "API", "Rich Text", "Schema"],
-  //   liveUrl: null,
-  //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Product and case studies index",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Product and case study detail",
-  //       aspectRatio: 4 / 5,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Events + Community",
-  //   description:
-  //     "Interactive event and publishing surfaces that combine discovery, registration intent, comments, reactions, filtering and rich content.",
-  //   contribution:
-  //     "I integrated the frontend data flows, optimistic interaction patterns, prefetch strategy, auth-aware routing and responsive presentation.",
-  //   outcome:
-  //     "The public experience remains immediate even when the workflows behind it involve authentication and server state.",
-  //   technologies: ["React Query", "Routing", "Optimistic UI", "Prefetch"],
-  //   liveUrl: null,
-  //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Events discovery interface",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Community discussion interface",
-  //       aspectRatio: 3 / 4,
-  //     },
-  //   ],
-  // },
-] as const;
-
 function rememberBackendProjectReturnState(projectIndex: number) {
   //TanStack's `state` option belongs to the DESTINATION history entry. For a
   //true Back restoration we need the metadata on the CURRENT home entry, so
@@ -287,9 +133,7 @@ export default function BackendSection({
       runtimeRef.current?.revealedProgress ?? BACKEND_REVEALED_PROGRESS;
     const lockedProgressRange = Math.max(1 - revealedProgress, 0.0001);
 
-    return (
-      (window.innerHeight * 0.5 * BACKEND_PROJECTS.length) / lockedProgressRange
-    );
+    return (window.innerHeight * 0.5 * BACKEND_PROJECTS.length) / lockedProgressRange;
   }, []);
 
   const getBackendLockY = useCallback(() => {
@@ -1186,22 +1030,22 @@ export default function BackendSection({
               <div className="backend-browser-zoom-compensated z-40 mr-auto flex w-full shrink-0 flex-col items-start text-left">
                 <h2
                   className="m-0 font-sans text-[clamp(2.35rem,3.7vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
-                  aria-label="Backend Engineering"
+                  aria-label={BACKEND_DATA.ariaLabel}
                 >
                   <span className="block overflow-y-clip pb-[0.08em]">
                     <span className="backend-title-line block will-change-transform">
-                      Back
+                      {BACKEND_DATA.titleLines[0]}
                     </span>
                   </span>
                   <span className="block overflow-y-clip pb-[0.08em]">
                     <span className="backend-title-line block will-change-transform">
-                      End
+                      {BACKEND_DATA.titleLines[1]}
                     </span>
                   </span>
                 </h2>
 
                 <p className="backend-intro-item mt-2 max-w-[24rem] font-mono text-[clamp(0.58rem,0.66vw,0.74rem)] uppercase leading-[1.6] tracking-[0.09em] text-[#171717]/44 min-[901px]:max-[1180px]:mt-[0.32rem] min-[901px]:max-[1180px]:text-[0.5rem] min-[901px]:max-[1180px]:leading-[1.45] max-[900px]:max-w-[18rem] max-[900px]:text-[0.5rem] max-[680px]:mt-2 max-[680px]:max-w-[16rem] max-[680px]:text-[0.47rem] max-[680px]:leading-[1.55]">
-                  Selected backend proof of work.
+                  {BACKEND_DATA.intro}
                 </p>
               </div>
 

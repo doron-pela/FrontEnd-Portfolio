@@ -1,18 +1,7 @@
-import type { CSSProperties } from "react";
-
-export type ProjectScreenshot = {
-  src: string | null;
-  alt: string;
-  objectPosition?: CSSProperties["objectPosition"];
-  aspectRatio?: number;
-};
-
-export type RenderableProjectScreenshot = ProjectScreenshot & { src: string };
+export type {
+  ProjectScreenshot,
+  RenderableProjectScreenshot,
+} from "@/data/projects/project.types";
+export { hasScreenshotSource } from "@/data/projects/project.utils";
 
 export type ProjectScreenshotGalleryOrientation = "frontend" | "backend";
-
-export function hasScreenshotSource(
-  screenshot: ProjectScreenshot,
-): screenshot is RenderableProjectScreenshot {
-  return Boolean(screenshot.src);
-}

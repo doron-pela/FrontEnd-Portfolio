@@ -1,69 +1,15 @@
 import { useCallback, useEffect, useRef, type SVGProps } from "react";
 
-import type { HomeSection } from "@/@types/home-section.types";
 import {
-  dispatchPortfolioSectionKey,
-  type PortfolioSectionKey,
-} from "@/utils/index-section-navigation";
-
-type NavbarSection = HomeSection | "skills";
-
-type NavbarItem =
-  | {
-      section: HomeSection;
-      key: PortfolioSectionKey;
-      label: string;
-      shortLabel: string;
-    }
-  | {
-      section: "skills";
-      key: null;
-      label: string;
-      shortLabel: string;
-    };
+  NAV_ITEMS,
+  type NavbarItem,
+  type NavbarSection,
+} from "@/data/home/navigation/data-navigation";
+import { dispatchPortfolioSectionKey } from "@/utils/index-section-navigation";
 
 type NavbarProps = {
   onSkillsOpen: () => void;
 };
-
-const NAV_ITEMS: readonly NavbarItem[] = [
-  {
-    section: "init",
-    key: "0",
-    label: "Home",
-    shortLabel: "Home",
-  },
-  {
-    section: "about",
-    key: "1",
-    label: "About me",
-    shortLabel: "About",
-  },
-  {
-    section: "experience",
-    key: "2",
-    label: "Frontend",
-    shortLabel: "Frontend work",
-  },
-  {
-    section: "systems",
-    key: "3",
-    label: "Backend",
-    shortLabel: "Backend work",
-  },
-  {
-    section: "skills",
-    key: null,
-    label: "Skills",
-    shortLabel: "Skills",
-  },
-  {
-    section: "contact",
-    key: "4",
-    label: "Contact",
-    shortLabel: "Contact me",
-  },
-] as const;
 
 type IconProps = SVGProps<SVGSVGElement>;
 

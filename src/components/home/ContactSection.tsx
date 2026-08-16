@@ -8,6 +8,10 @@ import type {
   ManualScrollSectionProps,
   ScrollSectionRuntime,
 } from "@/@types/scroll-locked-section.types";
+import {
+  CONTACT_DATA,
+  type SocialKind,
+} from "@/data/home/contact/data-contact";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -31,36 +35,6 @@ const CONTACT_LOCKED_STORY_TIME = 1.34;
 //is intentionally shorter than Frontend/Backend, but long enough for the optical
 //glass, links and primary email signal to resolve into a deliberate final state.
 const CONTACT_LOCKED_SCROLL_VIEWPORTS = 0.88;
-
-const CONTACT_EMAIL = "alepnorod@gmail.com";
-const CONTACT_EMAIL_HREF =
-  "mailto:alepnorod@gmail.com?subject=Hello%20Doron&body=Hi%20Doron%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20wanted%20to%20get%20in%20touch.%0A%0A";
-const CONTACT_WHATSAPP_HREF = "https://wa.me/2349064108594";
-const CONTACT_CALL_HREF = "tel:+233257880061";
-
-type SocialKind = "linkedin" | "github" | "instagram";
-
-const SOCIAL_LINKS: readonly {
-  kind: SocialKind;
-  label: string;
-  href: string;
-}[] = [
-  {
-    kind: "linkedin",
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/doron-pela-48aa62170/",
-  },
-  {
-    kind: "github",
-    label: "GitHub",
-    href: "https://github.com/doron-pela/",
-  },
-  {
-    kind: "instagram",
-    label: "Instagram",
-    href: "https://www.instagram.com/doron_pela/",
-  },
-] as const;
 
 function ArrowUpRightIcon() {
   return (
@@ -311,7 +285,7 @@ export default function ContactSection({
 
   const copyEmail = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(CONTACT_EMAIL);
+      await navigator.clipboard.writeText(CONTACT_DATA.email.value);
       setEmailCopied(true);
 
       if (copiedTimeoutRef.current) {
@@ -1093,13 +1067,13 @@ export default function ContactSection({
           <div className="select-none">
             <div className="overflow-hidden pb-[0.04em]">
               <div className="contact-title-line font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.35rem,3.8vw,3rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.95rem,4vh,2.2rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]">
-                Get in
+                {CONTACT_DATA.titleLines[0]}
               </div>
             </div>
 
             <div className="overflow-hidden pb-[0.09em]">
               <div className="contact-title-line font-sans text-[clamp(2.6rem,4.4vw,5.2rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] text-transparent [-webkit-text-stroke:1px_#171717] min-[681px]:max-[1180px]:text-[clamp(2.35rem,3.8vw,3rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.95rem,4vh,2.2rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.8rem,11.5vw,3.5rem)] max-[680px]:leading-[0.75]">
-                Touch
+                {CONTACT_DATA.titleLines[1]}
               </div>
             </div>
           </div>
@@ -1112,10 +1086,10 @@ export default function ContactSection({
           <div className="contact-reveal-item mt-[clamp(1rem,1.5vw,1.35rem)] flex items-center gap-3">
             <a
               className="contact-email-link group relative flex min-w-0 flex-1 items-center justify-between gap-4 py-3.5"
-              href={CONTACT_EMAIL_HREF}
+              href={CONTACT_DATA.email.href}
             >
               <span className="truncate font-sans text-[clamp(1.15rem,1.45vw,1.5rem)] font-medium tracking-[-0.04em] max-[1180px]:text-[clamp(1rem,1.7vw,1.25rem)] max-[680px]:text-[clamp(1rem,4.7vw,1.25rem)]">
-                {CONTACT_EMAIL}
+                {CONTACT_DATA.email.value}
               </span>
 
               <span className="contact-email-arrow shrink-0 text-[#171717]/68">
@@ -1140,7 +1114,7 @@ export default function ContactSection({
           <div className="contact-direct-grid contact-reveal-item mt-[clamp(0.9rem,1.2vw,1.1rem)] grid grid-cols-2 gap-3 max-[420px]:gap-2">
             <a
               className="contact-phone-link flex min-h-[4.65rem] items-center gap-3.5 rounded-[1.2rem] bg-[#171717]/[0.045] px-4 py-3.5 hover:bg-[#171717]/[0.075] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[680px]:min-h-[4.15rem] max-[680px]:gap-2.5 max-[680px]:rounded-[1rem] max-[680px]:px-3 max-[420px]:px-2.5"
-              href={CONTACT_WHATSAPP_HREF}
+              href={CONTACT_DATA.whatsapp.href}
               rel="noreferrer"
               target="_blank"
             >
@@ -1150,10 +1124,10 @@ export default function ContactSection({
 
               <span className="min-w-0 flex-1">
                 <span className="block font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.15em] text-[#171717]/44 max-[1180px]:text-[0.52rem] max-[680px]:text-[0.46rem]">
-                  WhatsApp
+                  {CONTACT_DATA.whatsapp.label}
                 </span>
                 <span className="mt-1 block truncate font-sans text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.55] text-[#171717]/82 max-[1180px]:text-[0.74rem] max-[680px]:text-[0.7rem]">
-                  +234 906 410 8594
+                  {CONTACT_DATA.whatsapp.value}
                 </span>
               </span>
 
@@ -1164,7 +1138,7 @@ export default function ContactSection({
 
             <a
               className="contact-phone-link flex min-h-[4.65rem] items-center gap-3.5 rounded-[1.2rem] bg-[#171717]/[0.045] px-4 py-3.5 hover:bg-[#171717]/[0.075] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[680px]:min-h-[4.15rem] max-[680px]:gap-2.5 max-[680px]:rounded-[1rem] max-[680px]:px-3 max-[420px]:px-2.5"
-              href={CONTACT_CALL_HREF}
+              href={CONTACT_DATA.call.href}
             >
               <span className="contact-phone-mark block size-10 shrink-0 max-[680px]:size-9">
                 <PhoneMark />
@@ -1172,10 +1146,10 @@ export default function ContactSection({
 
               <span className="min-w-0 flex-1">
                 <span className="block font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.15em] text-[#171717]/44 max-[1180px]:text-[0.52rem] max-[680px]:text-[0.46rem]">
-                  Call
+                  {CONTACT_DATA.call.label}
                 </span>
                 <span className="mt-1 block truncate font-sans text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.55] text-[#171717]/82 max-[1180px]:text-[0.74rem] max-[680px]:text-[0.7rem]">
-                  +233 257 880 061
+                  {CONTACT_DATA.call.value}
                 </span>
               </span>
 
@@ -1188,7 +1162,7 @@ export default function ContactSection({
           {/*Large brand links. The SVG marks carry their own real brand colors and
             therefore remain visually distinct from the monochrome portfolio UI.*/}
           <div className="contact-reveal-item mt-[clamp(0.95rem,1.25vw,1.2rem)] grid grid-cols-3 gap-3 max-[420px]:gap-2">
-            {SOCIAL_LINKS.map((social) => (
+            {CONTACT_DATA.socials.map((social) => (
               <a
                 aria-label={social.label}
                 className="contact-social-item contact-social-link flex min-h-[4.35rem] min-w-0 items-center gap-3 rounded-[1.1rem] bg-[#171717]/[0.035] px-3.5 py-3 hover:bg-[#171717]/[0.065] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[680px]:min-h-[4rem] max-[680px]:flex-col max-[680px]:justify-center max-[680px]:gap-1.5 max-[680px]:rounded-[1rem] max-[680px]:px-2 max-[420px]:min-h-[3.85rem]"
@@ -1214,7 +1188,7 @@ export default function ContactSection({
               aria-live="polite"
               className="font-mono text-[0.5rem] uppercase tracking-[0.13em] text-[#171717]/42"
             >
-              {emailCopied ? "Email copied" : "Doron Pela"}
+              {emailCopied ? "Email copied" : " "}
             </span>
           </div>
         </div>
@@ -1222,3 +1196,4 @@ export default function ContactSection({
     </section>
   );
 }
+
