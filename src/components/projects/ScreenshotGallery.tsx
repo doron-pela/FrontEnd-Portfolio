@@ -43,7 +43,7 @@ type GalleryMotionMetrics = {
   totalVirtualDistance: number;
 };
 
-const PROJECT_GALLERY_MASONRY_GAP_PX = 6;
+const PROJECT_GALLERY_MASONRY_GAP_PX = 1;
 const PROJECT_GALLERY_OVERFLOW_EPSILON_PX = 6;
 const PROJECT_GALLERY_MOBILE_QUERY = "(max-width: 680px)";
 const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";

@@ -1,4 +1,3 @@
-// src/components/home/FrontendSection.tsx
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -1141,7 +1140,7 @@ export default function FrontendSection({
                                         <span className="font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
                                           {detail.label}
                                         </span>
-                                        <p className="max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1.3vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
+                                        <p className="max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
                                           {detail.value}
                                         </p>
                                       </div>
