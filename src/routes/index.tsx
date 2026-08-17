@@ -39,8 +39,8 @@ const HOME_SECTIONS: Record<HomeSection, number> = {
 const SECTION_REVEAL_DELAY_SECONDS: Record<HomeSection, number> = {
   init: 1,
   about: 1,
-  experience: 1,
-  systems: 1,
+  experience: 1.3,
+  systems: 2,
   contact: 1,
 };
 
