@@ -6,11 +6,20 @@ export type TechnologyKind = string;
 
 export const SKILLS_DATA = {
   title: "Skills",
-  currentRole: {
+  currentRoles: {
     eyebrow: "Current roles",
-    title: "Atlassian Frontend Engineer",
-    description:
-      "Forge / Custom UI apps in React + TypeScript, alongside C# / ASP.NET Core APIs and Python agent/RAG systems with embeddings, vector retrieval, grounding and evals.",
+    roles: [
+      {
+        title: "Atlassian Frontend Engineer",
+        description:
+          "Build Forge / Custom UI apps in React + TypeScript across Atlassian products.",
+      },
+      {
+        title: "C# / .NET Backend & AI Engineer",
+        description:
+          "Build ASP.NET Core APIs and Python RAG/agent workflows for retrieval, grounding and evaluation.",
+      },
+    ],
   },
   location: {
     eyebrow: "Location",

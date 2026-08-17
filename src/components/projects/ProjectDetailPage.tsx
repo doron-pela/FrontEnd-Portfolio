@@ -5,7 +5,7 @@ import type {
   PortfolioProject,
   ProjectDomain,
 } from "@/data/projects/project.types";
-// import { hasScreenshotSource } from "@/data/projects/project.utils";
+import { hasScreenshotSource } from "@/data/projects/project.utils";
 
 type ProjectDetailPageProps = {
   domain: ProjectDomain;
@@ -98,12 +98,14 @@ export default function ProjectDetailPage({
   const projectDetails = [
     { label: "My work", value: project.contribution },
     { label: "Outcome", value: project.outcome },
-  ].filter(
-    (detail): detail is { label: string; value: string } =>
-      Boolean(detail.value?.trim()),
+  ].filter((detail): detail is { label: string; value: string } =>
+    Boolean(detail.value?.trim()),
   );
 
-  // const screenshotCount = project.screenshots.filter(hasScreenshotSource).length;
+  //Project screenshots are optional in the centralized project model. Normalize
+  //them once here so the masonry always receives a concrete array, and discard
+  //placeholder entries whose src is null before rendering the detail gallery.
+  const screenshots = (project.screenshots ?? []).filter(hasScreenshotSource);
   const hasDestinations = Boolean(project.liveUrl || project.repositoryUrl);
 
   return (
@@ -208,7 +210,7 @@ export default function ProjectDetailPage({
 
         <ProjectDetailMasonry
           projectTitle={project.title}
-          screenshots={project.screenshots}
+          screenshots={screenshots}
         />
 
         <footer className="mt-[clamp(4rem,9vw,9rem)] border-t border-white/12 pt-7">

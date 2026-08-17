@@ -47,7 +47,7 @@ const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";
 //composition: it begins translated LEFT underneath the copy and reveals RIGHT.
 //In both modalities the wrapper reveal happens before native screenshot scroll,
 //so there is no clipping/direction discontinuity at the reveal handoff.
-const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 57;
+const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 45;
 
 //A small amount of drag hysteresis prevents tiny pointer noise from needlessly
 //writing scrollLeft / transform values before the user has actually dragged.
