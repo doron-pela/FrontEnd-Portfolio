@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 const HOME_SIGNATURE_FADE_DISTANCE_PX = 320;
-const HOME_ROLE_TITLE = "Full-stack software engineer";
+const HOME_ROLE_TITLE = "End-to-End software engineer";
 
 export default function HomeRoleSignature() {
   const signatureRef = useRef<HTMLDivElement | null>(null);
@@ -74,7 +74,7 @@ export default function HomeRoleSignature() {
       <div
         ref={signatureRef}
         aria-hidden="true"
-        className="pointer-events-none fixed left-[52%] top-[54.5vh] z-[470] w-max -translate-x-1/2 opacity-0 text-center text-[rgba(23,23,23,0.48)] mix-blend-multiply will-change-[opacity]
+        className="pointer-events-none fixed left-[52.2%] top-[56vh] z-[470] w-max -translate-x-1/2 opacity-0 text-center text-[rgba(23,23,23,0.48)] mix-blend-multiply will-change-[opacity]
           min-[701px]:max-[1100px]:left-[18vw] min-[701px]:max-[1100px]:top-[31vh] min-[701px]:max-[1100px]:w-[min(52vw,30rem)]
           max-[700px]:left-1/2 max-[700px]:top-[34vh] max-[700px]:w-[88vw] max-[700px]:text-center max-[700px]:mix-blend-normal"
       >
