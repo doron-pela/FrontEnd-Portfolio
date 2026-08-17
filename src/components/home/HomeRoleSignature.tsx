@@ -75,7 +75,7 @@ export default function HomeRoleSignature() {
         ref={signatureRef}
         aria-hidden="true"
         className="pointer-events-none fixed left-[52%] top-[55.5vh] z-[470] w-max -translate-x-1/2 opacity-0 text-center 
-        text-black
+        text-[rgba(56,56,56,0.48)]
          mix-blend-multiply will-change-[opacity]
           min-[701px]:max-[1100px]:left-[18vw] min-[701px]:max-[1100px]:top-[31vh] min-[701px]:max-[1100px]:w-[min(52vw,30rem)]
           min-[950px]:max-[1100px]:left-[40vw]
