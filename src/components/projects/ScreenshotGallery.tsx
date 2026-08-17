@@ -5,13 +5,7 @@ import type {
   ReactNode,
   RefObject,
 } from "react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type {
   ProjectScreenshotGalleryOrientation,
@@ -43,7 +37,7 @@ type GalleryMotionMetrics = {
   totalVirtualDistance: number;
 };
 
-const PROJECT_GALLERY_MASONRY_GAP_PX = 1;
+const PROJECT_GALLERY_MASONRY_GAP_PX = 6;
 const PROJECT_GALLERY_OVERFLOW_EPSILON_PX = 6;
 const PROJECT_GALLERY_MOBILE_QUERY = "(max-width: 680px)";
 const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";
@@ -218,14 +212,8 @@ function LiquidGlass({
         const clampedX = Math.max(-1, Math.min(1, normalizedX));
         const clampedY = Math.max(-1, Math.min(1, normalizedY));
 
-        surface.style.setProperty(
-          "--glass-rotate-x",
-          `${clampedY * -2.7}deg`,
-        );
-        surface.style.setProperty(
-          "--glass-rotate-y",
-          `${clampedX * 3.05}deg`,
-        );
+        surface.style.setProperty("--glass-rotate-x", `${clampedY * -2.7}deg`);
+        surface.style.setProperty("--glass-rotate-y", `${clampedX * 3.05}deg`);
       });
     },
     [],
@@ -241,13 +229,13 @@ function LiquidGlass({
 
   return (
     <div
-      className={`${orientation}-liquid-glass project-gallery-liquid-glass relative isolate overflow-hidden ${className}`}
+      className={`${orientation}-liquid-glass project-gallery-liquid-glass relative isolate ${className}`}
       onPointerLeave={resetSurface}
       onPointerMove={handlePointerMove}
       ref={surfaceRef}
     >
       <div
-        className={`${orientation}-liquid-content project-gallery-liquid-content relative z-10 h-full w-full`}
+        className={`${orientation}-liquid-content project-gallery-liquid-content relative z-10 h-full w-full overflow-hidden rounded-[inherit]`}
       >
         {children}
       </div>
@@ -446,10 +434,7 @@ export default function ProjectScreenshotGallery({
   );
 
   const applyGalleryVirtualOffset = useCallback(
-    (
-      nextOffset: number,
-      metricsOverride?: GalleryMotionMetrics | null,
-    ) => {
+    (nextOffset: number, metricsOverride?: GalleryMotionMetrics | null) => {
       const metrics = metricsOverride ?? getGalleryMotionMetrics();
 
       if (!metrics) return;
@@ -519,10 +504,7 @@ export default function ProjectScreenshotGallery({
       return;
     }
 
-    if (
-      metrics.peekDistance > 0 &&
-      galleryRevealProgressRef.current < 1
-    ) {
+    if (metrics.peekDistance > 0 && galleryRevealProgressRef.current < 1) {
       const attemptedScroll = isMirrored
         ? metrics.maxScrollLeft - metrics.gallery.scrollLeft
         : metrics.gallery.scrollLeft;
@@ -638,10 +620,7 @@ export default function ProjectScreenshotGallery({
         ? direction === "left"
         : direction === "right";
       const targetOffset = Math.min(
-        Math.max(
-          currentOffset + (isForwardAction ? distance : -distance),
-          0,
-        ),
+        Math.max(currentOffset + (isForwardAction ? distance : -distance), 0),
         totalVirtualDistance,
       );
 
@@ -682,11 +661,13 @@ export default function ProjectScreenshotGallery({
 
     if (!shell) return;
 
-    const shots = shell.querySelectorAll<HTMLElement>(".project-gallery-shot");
+    const surfaces = shell.querySelectorAll<HTMLElement>(
+      ".project-gallery-liquid-glass",
+    );
 
-    shots.forEach((shot) => {
-      shot.style.setProperty("--glass-rotate-x", "0deg");
-      shot.style.setProperty("--glass-rotate-y", "0deg");
+    surfaces.forEach((surface) => {
+      surface.style.setProperty("--glass-rotate-x", "0deg");
+      surface.style.setProperty("--glass-rotate-y", "0deg");
     });
   }, []);
 
@@ -921,7 +902,10 @@ export default function ProjectScreenshotGallery({
     shouldInitializeDesktopPeekRef.current = true;
     galleryRevealProgressRef.current = 1;
     galleryMetricsRef.current = null;
-    galleryShellRef.current?.style.setProperty("--project-gallery-peek-x", "0%");
+    galleryShellRef.current?.style.setProperty(
+      "--project-gallery-peek-x",
+      "0%",
+    );
 
     const frame = requestAnimationFrame(() => {
       const metrics = measureGalleryMotionMetrics();
@@ -984,17 +968,19 @@ export default function ProjectScreenshotGallery({
     screenshot: RenderableProjectScreenshot,
     index: number,
   ) => (
-    <LiquidGlass
-      className={`${orientation}-project-shot project-gallery-shot h-full min-h-0 w-full rounded-[clamp(0.68rem,0.9vw,0.95rem)]`}
-      orientation={orientation}
+    <div
+      className={`${orientation}-project-shot project-gallery-shot h-full min-h-0 w-full`}
     >
-      <div className="absolute inset-[1px] overflow-hidden rounded-[inherit] bg-white/[0.025]">
+      <LiquidGlass
+        className="h-full min-h-0 w-full rounded-[clamp(0.68rem,0.9vw,0.95rem)]"
+        orientation={orientation}
+      >
         <img
           alt={screenshot.alt}
-          className="h-full w-full select-none object-contain max-[680px]:object-cover"
+          className="block h-full w-full select-none object-cover"
           decoding="async"
           draggable={false}
-          loading="lazy"
+          loading={index < 2 ? "eager" : "lazy"}
           onError={() => {
             setScreenshotRatio(index, 0, 0);
           }}
@@ -1010,8 +996,8 @@ export default function ProjectScreenshotGallery({
             objectPosition: screenshot.objectPosition ?? "center",
           }}
         />
-      </div>
-    </LiquidGlass>
+      </LiquidGlass>
+    </div>
   );
 
   const wrapScreenshot = (
@@ -1054,30 +1040,35 @@ export default function ProjectScreenshotGallery({
           --glass-rotate-y: 0deg;
 
           background: rgba(255, 255, 255, 0.025);
-          box-shadow:
-            inset 1.25px 1.25px 0 rgba(255, 255, 255, 0.72),
-            inset -1px -1px 0 rgba(255, 255, 255, 0.16),
-            inset 0 0 2px rgba(255, 255, 255, 0.34);
-        }
-
-        .project-gallery-shot {
-          transform-origin: center center;
-          contain: paint;
-        }
-
-        /*
-          The parent card remains exclusively owned by the section's GSAP x/y/
-          scale animation. Hover perspective lives on the inner content instead,
-          so CSS transform transitions can never fight the section timeline.
-        */
-        .project-gallery-liquid-content {
           backface-visibility: hidden;
           transform:
             perspective(900px)
             rotateX(var(--glass-rotate-x))
-            rotateY(var(--glass-rotate-y));
+            rotateY(var(--glass-rotate-y))
+            translateZ(0);
+          transform-origin: center center;
           transform-style: preserve-3d;
           transition: transform 135ms cubic-bezier(.18,.78,.2,1);
+          will-change: transform;
+          box-shadow:
+            inset 1px 1px 0 rgba(255, 255, 255, 0.5),
+            inset -1px -1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /*
+          The section timeline owns this wrapper's x/y/scale. The complete
+          screenshot surface lives one level deeper and owns the hover tilt, so
+          the image, rounded corners and optical edge all bend as one object
+          without a stationary outer frame clipping the transformed media.
+        */
+        .project-gallery-shot {
+          transform-origin: center center;
+          overflow: visible;
+        }
+
+        .project-gallery-liquid-content {
+          backface-visibility: hidden;
+          transform: translateZ(0);
         }
 
         /*
@@ -1085,12 +1076,9 @@ export default function ProjectScreenshotGallery({
           the hover tilt and its transition so the compositor is not resolving a
           second transform animation on every screenshot while scrollLeft moves.
         */
-        .project-gallery-shell[data-dragging="true"] .project-gallery-shot {
+        .project-gallery-shell[data-dragging="true"] .project-gallery-liquid-glass {
           --glass-rotate-x: 0deg !important;
           --glass-rotate-y: 0deg !important;
-        }
-
-        .project-gallery-shell[data-dragging="true"] .project-gallery-liquid-content {
           transition: none;
         }
 
@@ -1322,7 +1310,7 @@ export default function ProjectScreenshotGallery({
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .project-gallery-liquid-content {
+          .project-gallery-liquid-glass {
             transform: none;
             transition: none;
           }
@@ -1409,9 +1397,7 @@ export default function ProjectScreenshotGallery({
         data-orientation={orientation}
       >
         <button
-          aria-label={`Scroll ${projectTitle} screenshots ${
-            isMirrored ? "left" : "right"
-          }`}
+          aria-label={`Reveal ${projectTitle} screenshots`}
           className={`project-gallery-tug project-gallery-tug-open ${
             isMirrored
               ? "project-gallery-tug-left"
@@ -1421,24 +1407,20 @@ export default function ProjectScreenshotGallery({
           ref={isMirrored ? leftTugRef : rightTugRef}
           type="button"
         >
-          <GalleryArrowIcon direction={isMirrored ? "left" : "right"} />
+          <GalleryArrowIcon direction={isMirrored ? "right" : "left"} />
         </button>
       </div>
 
       <button
-        aria-label={`Scroll ${projectTitle} screenshots ${
-          isMirrored ? "right" : "left"
-        }`}
+        aria-label={`Move ${projectTitle} screenshots back`}
         className={`project-gallery-tug project-gallery-tug-close ${
-          isMirrored
-            ? "project-gallery-tug-right"
-            : "project-gallery-tug-left"
+          isMirrored ? "project-gallery-tug-right" : "project-gallery-tug-left"
         } pointer-events-auto cursor-pointer`}
         onClick={() => scrollGallery(isMirrored ? "right" : "left")}
         ref={isMirrored ? rightTugRef : leftTugRef}
         type="button"
       >
-        <GalleryArrowIcon direction={isMirrored ? "right" : "left"} />
+        <GalleryArrowIcon direction={isMirrored ? "left" : "right"} />
       </button>
     </div>
   );

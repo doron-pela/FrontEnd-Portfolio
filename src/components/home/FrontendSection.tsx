@@ -10,7 +10,10 @@ import type {
   ScrollSectionRuntime,
 } from "@/@types/scroll-locked-section.types";
 import ProjectScreenshotGallery from "@/components/projects/ScreenshotGallery";
-import { FRONTEND_DATA, FRONTEND_PROJECTS } from "@/data/home/frontend/data-frontend";
+import {
+  FRONTEND_DATA,
+  FRONTEND_PROJECTS,
+} from "@/data/home/frontend/data-frontend";
 import { hasScreenshotSource } from "@/components/projects/screenshot-gallery.utils";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
@@ -133,7 +136,8 @@ export default function FrontendSection({
     const lockedProgressRange = Math.max(1 - revealedProgress, 0.0001);
 
     return (
-      (window.innerHeight * 0.5 * FRONTEND_PROJECTS.length) / lockedProgressRange
+      (window.innerHeight * 0.5 * FRONTEND_PROJECTS.length) /
+      lockedProgressRange
     );
   }, []);
 
@@ -1055,8 +1059,9 @@ export default function FrontendSection({
                   //right-aligned copy on desktop. A small independent gap
                   //keeps the media visually related to the copy without
                   //forcing either side into a shared geometric "slot".
-                  const screenshots =
-                    project.screenshots.filter(hasScreenshotSource);
+                  const screenshots = (project.screenshots ?? []).filter(
+                    hasScreenshotSource,
+                  );
                   const hasScreenshots = screenshots.length > 0;
 
                   //Only render detail rows that actually have content. The

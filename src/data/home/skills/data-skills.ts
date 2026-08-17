@@ -1,45 +1,75 @@
+// src/data/home/skills/data-skills.ts
 import { CONTACT_DATA } from "@/data/home/contact/data-contact";
+import { getSkillAssetUrl } from "@/utils/home-asset-registry";
 
-export type TechnologyKind =
-  | "react"
-  | "typescript"
-  | "tanstack"
-  | "next"
-  | "gsap"
-  | "dotnet"
-  | "aws"
-  | "postgres";
+export type TechnologyKind = string;
 
 export const SKILLS_DATA = {
   title: "Skills",
   currentRole: {
-    eyebrow: "Current role",
-    title: "Software Engineer",
+    eyebrow: "Current roles",
+    title: "Atlassian Frontend Engineer",
     description:
-      "React / TypeScript product interfaces with C# / .NET API and backend systems.",
+      "Forge / Custom UI apps in React + TypeScript, alongside C# / ASP.NET Core APIs and Python agent/RAG systems with embeddings, vector retrieval, grounding and evals.",
   },
   location: {
     eyebrow: "Location",
-    value: "Ghana",
+    value: "East Legon, Accra, Ghana",
   },
   experience: {
     eyebrow: "Experience",
     yearsLabel: "Years",
-    years: "—",
+    years: "2+",
     focusLabel: "Focus",
-    focusLines: ["Front-end", "+ Backend"],
+    focusLines: ["Fullstack Web development"],
   },
   technologiesEyebrow: "Primary technologies",
   primaryTechnologies: [
-    { kind: "react", name: "React" },
-    { kind: "typescript", name: "TypeScript" },
-    { kind: "tanstack", name: "TanStack" },
-    { kind: "next", name: "Next.js" },
-    { kind: "gsap", name: "GSAP" },
-    { kind: "dotnet", name: "C# / .NET" },
-    { kind: "aws", name: "AWS" },
-    { kind: "postgres", name: "PostgreSQL" },
-  ] satisfies readonly { kind: TechnologyKind; name: string }[],
+    {
+      kind: "react",
+      name: "React",
+      iconSrc: getSkillAssetUrl("technologies/react.svg"),
+    },
+    {
+      kind: "typescript",
+      name: "TypeScript",
+      iconSrc: getSkillAssetUrl("technologies/typescript.svg"),
+    },
+    {
+      kind: "tanstack",
+      name: "TanStack Suite",
+      iconSrc: getSkillAssetUrl("technologies/tanstack.svg"),
+    },
+    {
+      kind: "next",
+      name: "Next.js",
+      iconSrc: getSkillAssetUrl("technologies/next.svg"),
+    },
+    {
+      kind: "gsap",
+      name: "GSAP",
+      iconSrc: getSkillAssetUrl("technologies/gsap.svg"),
+    },
+    {
+      kind: "dotnet",
+      name: "C# / ASP.NET Core",
+      iconSrc: getSkillAssetUrl("technologies/dotnet.svg"),
+    },
+    // {
+    //   kind: "aws",
+    //   name: "AWS / CI/CD",
+    //   iconSrc: getSkillAssetUrl("technologies/aws.svg"),
+    // },
+    {
+      kind: "postgres",
+      name: "PostgreSQL",
+      iconSrc: getSkillAssetUrl("technologies/postgres.svg"),
+    },
+  ] satisfies readonly {
+    kind: TechnologyKind;
+    name: string;
+    iconSrc: string;
+  }[],
   contactEyebrow: "Contact",
   contacts: [
     {

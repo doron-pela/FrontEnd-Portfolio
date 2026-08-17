@@ -1,75 +1,37 @@
 import type { PortfolioProject } from "@/data/projects/project.types";
+import { getProjectScreenshotsWithFallback } from "@/utils/home-asset-registry";
 
-//This is the single source of truth for every backend project. The homepage
-//story and the /experience/backend/$projectSlug detail route both consume this
-//same array, so editing project copy, links, technologies or screenshots here
-//updates every presentation of that project.
+//This is the single source of truth for every backend project's metadata. The
+//homepage story and the /experience/backend/$projectSlug detail route both
+//consume this same array. Screenshot files themselves are auto-discovered from
+//src/assets/home/projects/backend/<project-folder>/ so adding/removing local
+//images updates every presentation without maintaining screenshot imports.
 export const BACKEND_PROJECTS: readonly PortfolioProject[] = [
   {
-    title: "OWD Web Platform",
+    title: "Xceed365HR",
     description:
-      "A multi-surface company platform spanning public content, administration, permissions, editorial workflows and reusable product experiences.",
+      "Talpro Software's unified, AI-powered HR and payroll platform for African enterprises, spanning core HR, payroll, hiring, learning, talent and agentic workflows.",
     contribution:
-      "I built and integrated frontend systems across authentication, data-heavy admin workflows, responsive public pages and reusable content architecture.",
+      "I build C# / ASP.NET Core API endpoints and backend workflows, and contribute Python RAG/agent systems for retrieval, grounding and evaluation.",
     outcome:
-      "A coherent frontend that can grow without every new page becoming a one-off implementation.",
-    technologies: ["React", "TypeScript", "TanStack", "Motion"],
-    liveUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    repositoryUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    detailsSlug: "owd-web-platform",
-    screenshots: [
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-        alt: "OWD platform primary interface",
-      },
-      {
-        src: "https://wallpaperaccess.com/full/630926.jpg",
-        alt: "OWD platform secondary interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZbtobzF1g7XjTcnL1fp4YyYGwebCCIK57-ASmI6J1PKugQDbxKhCuKMw&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://images.unsplash.com/photo-1722944982712-62e216333a31?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZXBpYyUyMHdhbGxwYXBlcnxlbnwwfHwwfHx8MA%3D%3D",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Dr85yiVhJYE298y-uDnWIy0MB3dZzXV1gHNMHBXVyfOaOgaMy8c1RB_p&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4AdSp_ZkorulQ42jxu1YpWbn5Eqki-sifCmhKcVZF0A&s=10",
-        alt: "OWD platform supporting interface",
-      },
+      "Supports HR and payroll operations for 70,000+ employees across enterprise customers.",
+    technologies: [
+      "C#",
+      "ASP.NET Core",
+      "REST APIs",
+      "Python",
+      "RAG",
+      "Vector Retrieval",
     ],
-  },
-  {
-    title: "Spline Portfolio",
-    description:
-      "A portfolio where the 3D Spline scene remains the visual stage while browser scroll becomes a timeline through the site's content.",
-    contribution:
-      "I engineered the scroll-lock controller, GSAP section timelines, direction-aware handoffs and programmatic navigation around the persistent 3D scene.",
-    outcome:
-      "A single continuous environment instead of disconnected sections layered over an unrelated 3D background.",
-    technologies: ["GSAP", "Spline", "ScrollTrigger", "React"],
-    liveUrl: null,
+    liveUrl: "https://www.xceed365hr.com/",
     repositoryUrl: null,
-    detailsSlug: "spline-portfolio",
-    screenshots: [
-      {
-        src: null,
-        alt: "Spline portfolio hero sequence",
-        aspectRatio: 16 / 9,
-      },
-      {
-        src: null,
-        alt: "Spline portfolio scroll sequence",
-        aspectRatio: 4 / 3,
-      },
-    ],
+    detailsSlug: "xceed365hr",
+    screenshots: getProjectScreenshotsWithFallback(
+      "backend",
+      "xceed365hr",
+      "Xceed365HR",
+      [],
+    ),
   },
   // {
   //   title: "Homepage Visual CMS",
@@ -156,5 +118,7 @@ export const BACKEND_DATA = {
 export type BackendProject = PortfolioProject;
 
 export function getBackendProjectBySlug(projectSlug: string) {
-  return BACKEND_PROJECTS.find((project) => project.detailsSlug === projectSlug);
+  return BACKEND_PROJECTS.find(
+    (project) => project.detailsSlug === projectSlug,
+  );
 }

@@ -5,8 +5,7 @@ export const CONTACT_DATA = {
   email: {
     label: "Email",
     value: "alepnorod@gmail.com",
-    href:
-      "mailto:alepnorod@gmail.com?subject=Hello%20Doron&body=Hi%20Doron%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20wanted%20to%20get%20in%20touch.%0A%0A",
+    href: "mailto:alepnorod@gmail.com?subject=Hello%20Doron&body=Hi%20Doron%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20wanted%20to%20get%20in%20touch.%0A%0A",
     simpleHref: "mailto:alepnorod@gmail.com",
   },
   whatsapp: {

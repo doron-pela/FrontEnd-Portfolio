@@ -1,3 +1,4 @@
+// src/components/home/SkillsDrawer.tsx
 import gsap from "gsap";
 import {
   useCallback,
@@ -6,198 +7,16 @@ import {
   useRef,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
-  type SVGProps,
 } from "react";
 
-import {
-  SKILLS_DATA,
-  type TechnologyKind,
-} from "@/data/home/skills/data-skills";
+import arrowUpRightIcon from "@/assets/home/skills/ui/arrow-up-right.svg";
+import chevronRightIcon from "@/assets/home/skills/ui/chevron-right.svg";
+import { SKILLS_DATA } from "@/data/home/skills/data-skills";
 
 type SkillsDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
-
-
-type IconProps = SVGProps<SVGSVGElement>;
-
-function TechnologyMark({ kind }: { kind: TechnologyKind }) {
-  switch (kind) {
-    case "react":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <circle cx="20" cy="20" fill="#61DAFB" r="3.25" />
-          <g
-            fill="none"
-            stroke="#61DAFB"
-            strokeWidth="1.9"
-            transform="translate(20 20)"
-          >
-            <ellipse rx="16" ry="6.2" />
-            <ellipse rx="16" ry="6.2" transform="rotate(60)" />
-            <ellipse rx="16" ry="6.2" transform="rotate(120)" />
-          </g>
-        </svg>
-      );
-
-    case "typescript":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#3178C6" height="40" rx="8" width="40" />
-          <text
-            fill="white"
-            fontFamily="Arial, Helvetica, sans-serif"
-            fontSize="17"
-            fontWeight="700"
-            x="7.2"
-            y="28"
-          >
-            TS
-          </text>
-        </svg>
-      );
-
-    case "tanstack":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#111827" height="40" rx="8" width="40" />
-          <path
-            d="M7 11h26l-5.3 6.1H12.3L7 11Zm5.3 8.4h15.4l-4.6 5.3h-6.2l-4.6-5.3Zm4.6 7.7h6.2L20 31l-3.1-3.9Z"
-            fill="#F97316"
-          />
-          <path d="M7 11h13v6.1h-7.7L7 11Z" fill="#EF4444" />
-          <path d="M20 11h13l-5.3 6.1H20V11Z" fill="#22C55E" />
-        </svg>
-      );
-
-    case "next":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <circle cx="20" cy="20" fill="#0A0A0A" r="20" />
-          <path
-            d="M11 29V11h3.3l13 16.6"
-            fill="none"
-            stroke="white"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2.4"
-          />
-          <path
-            d="M26.5 11v12.1"
-            stroke="white"
-            strokeLinecap="round"
-            strokeWidth="2.4"
-          />
-        </svg>
-      );
-
-    case "gsap":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#0B0D0C" height="40" rx="8" width="40" />
-          <path
-            d="M8.5 12h23l-5.9 5.2H8.5V12Zm0 8.1h15l-5.9 5.1H8.5v-5.1Zm0 8h8.1l-4.4 3.9H8.5v-3.9Z"
-            fill="#88CE02"
-          />
-        </svg>
-      );
-
-    case "dotnet":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#512BD4" height="40" rx="8" width="40" />
-          <circle cx="9" cy="27.2" fill="white" r="1.9" />
-          <path
-            d="M13 14.2h3.3l8.3 12.3V14.2h3.2v17h-3.2L16.2 19v12.2H13v-17Zm16.8 0H38v2.8h-5v4.1h4.3v2.7H33v4.6h5.2v2.8h-8.4v-17Z"
-            fill="white"
-          />
-        </svg>
-      );
-
-    case "aws":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#FFFFFF" height="40" rx="8" width="40" />
-          <text
-            fill="#232F3E"
-            fontFamily="Arial, Helvetica, sans-serif"
-            fontSize="13.5"
-            fontWeight="700"
-            x="6.2"
-            y="22.2"
-          >
-            aws
-          </text>
-          <path
-            d="M8 27.1c6.4 3.1 14.1 3.2 21.1.4"
-            fill="none"
-            stroke="#FF9900"
-            strokeLinecap="round"
-            strokeWidth="2.1"
-          />
-          <path
-            d="m27.4 26.2 2.5 1.1-1.2 2.3"
-            fill="none"
-            stroke="#FF9900"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.7"
-          />
-        </svg>
-      );
-
-    case "postgres":
-      return (
-        <svg aria-hidden="true" className="size-full" viewBox="0 0 40 40">
-          <rect fill="#336791" height="40" rx="8" width="40" />
-          <ellipse
-            cx="20"
-            cy="12.2"
-            fill="none"
-            rx="9.8"
-            ry="4.2"
-            stroke="white"
-            strokeWidth="1.8"
-          />
-          <path
-            d="M10.2 12.2v14.5c0 2.3 4.4 4.2 9.8 4.2s9.8-1.9 9.8-4.2V12.2M10.2 19.5c0 2.3 4.4 4.2 9.8 4.2s9.8-1.9 9.8-4.2"
-            fill="none"
-            stroke="white"
-            strokeWidth="1.8"
-          />
-        </svg>
-      );
-  }
-}
-
-function ArrowUpRightIcon(props: IconProps) {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
-      <path
-        d="M7 17 17 7M9 7h8v8"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.55"
-      />
-    </svg>
-  );
-}
-
-function ChevronIcon(props: IconProps) {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
-      <path
-        d="m9 5 7 7-7 7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
 
 function DrawerSection({
   eyebrow,
@@ -384,8 +203,8 @@ export default function SkillsDrawer({
 
     const timeline = gsap.timeline({
       delay: 0.85,
-    //   repeat: -1,
-    //   repeatDelay: 5,
+      //   repeat: -1,
+      //   repeatDelay: 5,
     });
 
     idleStretchTimelineRef.current = timeline;
@@ -720,10 +539,13 @@ export default function SkillsDrawer({
             Skills
           </span>
 
-          <ChevronIcon
-            className={`relative z-10 mt-2 size-3 transition-transform duration-300 ${
+          <img
+            alt=""
+            aria-hidden="true"
+            className={`relative z-10 mt-2 size-3 opacity-80 transition-transform duration-300 ${
               open ? "rotate-180" : ""
             }`}
+            src={chevronRightIcon}
           />
         </button>
 
@@ -790,9 +612,14 @@ export default function SkillsDrawer({
                 </div>
 
                 <div className="mt-2 font-sans text-[1rem] font-medium leading-[1.2] tracking-[-0.025em]">
-                  {SKILLS_DATA.experience.focusLines[0]}
-                  <br />
-                  {SKILLS_DATA.experience.focusLines[1]}
+                  {SKILLS_DATA.experience.focusLines.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < SKILLS_DATA.experience.focusLines.length - 1 ? (
+                        <br />
+                      ) : null}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -806,7 +633,12 @@ export default function SkillsDrawer({
                   key={technology.name}
                 >
                   <span className="block size-10 shrink-0">
-                    <TechnologyMark kind={technology.kind} />
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      className="size-full object-contain"
+                      src={technology.iconSrc}
+                    />
                   </span>
 
                   <span className="min-w-0 truncate font-sans text-[0.92rem] font-semibold tracking-[-0.025em]">
@@ -835,7 +667,12 @@ export default function SkillsDrawer({
                     {contact.value}
                   </span>
 
-                  <ArrowUpRightIcon className="size-3.5 text-[#171717]/38" />
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="size-3.5 opacity-[0.38]"
+                    src={arrowUpRightIcon}
+                  />
                 </a>
               ))}
             </div>
@@ -845,4 +682,3 @@ export default function SkillsDrawer({
     </>
   );
 }
-

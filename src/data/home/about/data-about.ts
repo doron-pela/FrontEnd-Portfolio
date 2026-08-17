@@ -1,9 +1,6 @@
 export const ABOUT_DATA = {
   eyebrow: "ABOUT / 01",
-  titleLines: ["I'm a Product-minded", "software Engineer"],
+  titleLines: ["I build software", "end to end"],
   body:
-    "I build fast, reliable software from interface to infrastructure, " +
-    "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
-    "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. " +
-    "and everything in-between. Backend workflows, motion, and product logic turn complex ideas into software that has a direct impact on the end-user. ",
+    "I'm a full-stack software engineer with 2+ years of hands-on experience shipping production software across React, TypeScript, Next.js and TanStack frontends, Atlassian Forge applications, C# / ASP.NET Core APIs, Node / Express services, PostgreSQL data systems, and Python-powered AI workflows. "
 } as const;

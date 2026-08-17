@@ -12,11 +12,11 @@ export type RenderableProjectScreenshot = ProjectScreenshot & {
 export type PortfolioProject = {
   title: string;
   description: string | null;
-  contribution: string | null;
-  outcome: string | null;
+  contribution?: string | null;
+  outcome?: string | null;
   technologies: readonly string[];
-  screenshots: readonly ProjectScreenshot[];
-  liveUrl: string | null;
+  screenshots?: readonly ProjectScreenshot[];
+  liveUrl?: string | null;
   repositoryUrl?: string | null;
   detailsSlug?: string | null;
 };

@@ -1,75 +1,39 @@
 import type { PortfolioProject } from "@/data/projects/project.types";
+import { getProjectScreenshots } from "@/utils/home-asset-registry";
 
-//This is the single source of truth for every frontend project. The homepage
-//story and the /experience/frontend/$projectSlug detail route both consume this
-//same array, so editing project copy, links, technologies or screenshots here
-//updates every presentation of that project.
+//This is the single source of truth for every frontend project's metadata. The
+//homepage story and the /experience/frontend/$projectSlug detail route both
+//consume this same array. Screenshot files themselves are auto-discovered from
+//src/assets/home/projects/frontend/<project-folder>/ so adding/removing local
+//images updates every presentation without maintaining screenshot imports.
 export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   {
-    title: "OWD Web Platform",
+    title: "Cybervylle",
     description:
-      "A multi-surface company platform spanning public content, administration, permissions, editorial workflows and reusable product experiences.",
-    contribution:
-      "I built and integrated frontend systems across authentication, data-heavy admin workflows, responsive public pages and reusable content architecture.",
+      "A cinematic game discovery and catalogue experience for exploring releases, filtering by platform and release window, searching titles, saving games, and moving into rich game-detail views without losing the product's visual identity.",
     outcome:
-      "A coherent frontend that can grow without every new page becoming a one-off implementation.",
-    technologies: ["React", "TypeScript", "TanStack", "Motion"],
-    liveUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    repositoryUrl:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-    detailsSlug: "owd-web-platform",
-    screenshots: [
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGJLht7PMLiAUqQDL7ZgMtRelOBVbaXEYNLte-qqB2w&s=10",
-        alt: "OWD platform primary interface",
-      },
-      {
-        src: "https://wallpaperaccess.com/full/630926.jpg",
-        alt: "OWD platform secondary interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZbtobzF1g7XjTcnL1fp4YyYGwebCCIK57-ASmI6J1PKugQDbxKhCuKMw&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://images.unsplash.com/photo-1722944982712-62e216333a31?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZXBpYyUyMHdhbGxwYXBlcnxlbnwwfHwwfHx8MA%3D%3D",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2Dr85yiVhJYE298y-uDnWIy0MB3dZzXV1gHNMHBXVyfOaOgaMy8c1RB_p&s=10",
-        alt: "OWD platform supporting interface",
-      },
-      {
-        src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4AdSp_ZkorulQ42jxu1YpWbn5Eqki-sifCmhKcVZF0A&s=10",
-        alt: "OWD platform supporting interface",
-      },
-    ],
+      "A large external game catalogue becomes a focused discovery journey that moves users from browsing to deeper game context and saved intent through one coherent interface.ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ",
+    technologies: ["React", "TanStack Query", "RAWG API", "Axios", "Motion "],
+    liveUrl: "https://cybervylle.vercel.app/",
+    repositoryUrl: "https://github.com/doron-pela/Cyberville",
+    detailsSlug: "cybervylle",
+    screenshots: getProjectScreenshots("frontend", "cybervylle", "Cybervylle"),
   },
   {
-    title: "Spline Portfolio",
+    title: "Ashesi CV Generator",
     description:
-      "A portfolio where the 3D Spline scene remains the visual stage while browser scroll becomes a timeline through the site's content.",
-    contribution:
-      "I engineered the scroll-lock controller, GSAP section timelines, direction-aware handoffs and programmatic navigation around the persistent 3D scene.",
+      "A web-based CV builder for Ashesi University students that turns form entries into a consistently formatted CV ready to download.",
     outcome:
-      "A single continuous environment instead of disconnected sections layered over an unrelated 3D background.",
-    technologies: ["GSAP", "Spline", "ScrollTrigger", "React"],
-    liveUrl: null,
+      "Helped my Alma mater's Career Services center to make CV formatting faster, simpler and consistent without repeatedly editing document templates.",
+    technologies: [],
+    liveUrl: "https://ashesi-cv-generator.vercel.app",
     repositoryUrl: null,
-    detailsSlug: "spline-portfolio",
-    screenshots: [
-      {
-        src: null,
-        alt: "Spline portfolio hero sequence",
-        aspectRatio: 16 / 9,
-      },
-      {
-        src: null,
-        alt: "Spline portfolio scroll sequence",
-        aspectRatio: 4 / 3,
-      },
-    ],
+    detailsSlug: "ashesi-cv-generator",
+    screenshots: getProjectScreenshots(
+      "frontend",
+      "ashesi-cv-generator",
+      "Ashesi CV Generator",
+    ),
   },
   // {
   //   title: "Homepage Visual CMS",
@@ -82,18 +46,12 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   //   technologies: ["React", "Puck", "TipTap", "TypeScript"],
   //   liveUrl: null,
   //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Homepage visual editor canvas",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Homepage visual editor controls",
-  //       aspectRatio: 3 / 4,
-  //     },
-  //   ],
+  //   detailsSlug: "homepage-visual-cms",
+  //   screenshots: getProjectScreenshots(
+  //     "frontend",
+  //     "homepage-visual-cms",
+  //     "Homepage Visual CMS",
+  //   ),
   // },
   // {
   //   title: "Products + Case Studies",
@@ -106,18 +64,12 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   //   technologies: ["React", "API", "Rich Text", "Schema"],
   //   liveUrl: null,
   //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Product and case studies index",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Product and case study detail",
-  //       aspectRatio: 4 / 5,
-  //     },
-  //   ],
+  //   detailsSlug: "products-case-studies",
+  //   screenshots: getProjectScreenshots(
+  //     "frontend",
+  //     "products-case-studies",
+  //     "Products + Case Studies",
+  //   ),
   // },
   // {
   //   title: "Events + Community",
@@ -130,18 +82,12 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   //   technologies: ["React Query", "Routing", "Optimistic UI", "Prefetch"],
   //   liveUrl: null,
   //   repositoryUrl: null,
-  //   screenshots: [
-  //     {
-  //       src: null,
-  //       alt: "Events discovery interface",
-  //       aspectRatio: 16 / 10,
-  //     },
-  //     {
-  //       src: null,
-  //       alt: "Community discussion interface",
-  //       aspectRatio: 3 / 4,
-  //     },
-  //   ],
+  //   detailsSlug: "events-community",
+  //   screenshots: getProjectScreenshots(
+  //     "frontend",
+  //     "events-community",
+  //     "Events + Community",
+  //   ),
   // },
 ] as const;
 
@@ -156,5 +102,7 @@ export const FRONTEND_DATA = {
 export type FrontendProject = PortfolioProject;
 
 export function getFrontendProjectBySlug(projectSlug: string) {
-  return FRONTEND_PROJECTS.find((project) => project.detailsSlug === projectSlug);
+  return FRONTEND_PROJECTS.find(
+    (project) => project.detailsSlug === projectSlug,
+  );
 }
