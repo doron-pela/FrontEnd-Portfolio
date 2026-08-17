@@ -782,13 +782,13 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
 
             <span className="portfolio-nav__label">{item.label}</span>
 
-            <span
+            {/* <span
               aria-hidden="true"
               className="portfolio-nav__tooltip"
               role="tooltip"
             >
               {item.shortLabel}
-            </span>
+            </span> */}
           </button>
         ))}
       </div>
