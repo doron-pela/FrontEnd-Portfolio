@@ -1,20 +1,15 @@
 import { createFileRoute, useLocation } from "@tanstack/react-router";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AboutSection } from "@/components/home/AboutSection";
 import BackendSection from "@/components/home/BackendSection";
 import ContactSection from "@/components/home/ContactSection";
 import FrontendSection from "@/components/home/FrontendSection";
+import HomeRoleSignature from "@/components/home/HomeRoleSignature";
+import ResumeDownloadButton from "@/components/home/ResumeDownloadButton";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
 import SkillsDrawer from "@/components/home/SkillsDrawer";
 import Navbar from "@/components/Navbar";
-import { HOME_DATA } from "@/data/home/data-home";
 import type { HomeSection } from "@/@types/home-section.types";
 import type {
   RegisterScrollSection,
@@ -53,86 +48,6 @@ const SECTION_KEY_MAP: Record<string, HomeSection> = {
   "3": "systems",
   "4": "contact",
 };
-
-const HOME_RESUME_FADE_DISTANCE_PX = 320;
-
-function ResumeDownloadButton() {
-  const linkRef = useRef<HTMLAnchorElement | null>(null);
-
-  //This is intentionally derived directly from the browser's real scrollY
-  //rather than HomeSection state. "Home" here means exactly the visual base:
-  //scrollY === 0. As soon as the user leaves that base, the button continuously
-  //fades away without entering the ScrollLockedSection controller at all.
-  useLayoutEffect(() => {
-    const link = linkRef.current;
-
-    if (!link) {
-      return;
-    }
-
-    let frame = 0;
-
-    const syncVisibility = () => {
-      cancelAnimationFrame(frame);
-
-      frame = requestAnimationFrame(() => {
-        const progress = Math.min(
-          Math.max(window.scrollY / HOME_RESUME_FADE_DISTANCE_PX, 0),
-          1,
-        );
-        const opacity = 1 - progress;
-        const translateY = progress * 10;
-        const scale = 1 - progress * 0.025;
-        const isInteractive = opacity > 0.08;
-
-        link.style.opacity = opacity.toFixed(4);
-        link.style.transform = `translate3d(0, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
-        link.style.pointerEvents = isInteractive ? "auto" : "none";
-        link.style.visibility = opacity <= 0.001 ? "hidden" : "visible";
-        link.tabIndex = isInteractive ? 0 : -1;
-        link.setAttribute("aria-hidden", isInteractive ? "false" : "true");
-      });
-    };
-
-    syncVisibility();
-
-    window.addEventListener("scroll", syncVisibility, {
-      passive: true,
-    });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", syncVisibility);
-    };
-  }, []);
-
-  return (
-    <a
-      ref={linkRef}
-      aria-label={HOME_DATA.resume.ariaLabel}
-      className="group pointer-events-none fixed bottom-[clamp(0.9rem,2.4vh,1.7rem)] right-[clamp(0.85rem,1vw,2.2rem)] z-[480] flex min-h-11 items-center gap-3 rounded-full border border-white/72 bg-white/58 px-[clamp(0.95rem,1.5vw,1.3rem)] py-3 font-mono text-[clamp(0.56rem,0.62vw,0.68rem)] font-bold uppercase tracking-[0.13em] text-[#171717]/78 opacity-0 shadow-[0_12px_34px_rgba(23,23,23,0.07)] backdrop-blur-[20px] transition-[background-color,box-shadow] duration-200 hover:bg-white/78 hover:shadow-[0_14px_38px_rgba(23,23,23,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16 max-[680px]:bottom-3 max-[680px]:right-3 max-[680px]:min-h-10 max-[680px]:gap-2.5 max-[680px]:px-3.5 max-[680px]:py-2.5 max-[680px]:text-[0.53rem]"
-      download={HOME_DATA.resume.downloadName}
-      href={HOME_DATA.resume.href}
-    >
-      <span>{HOME_DATA.resume.label}</span>
-
-      <svg
-        aria-hidden="true"
-        className="size-4 shrink-0 transition-transform duration-200 group-hover:translate-y-0.5"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          d="M12 4v11M7.5 11.5 12 16l4.5-4.5M5 20h14"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.65"
-        />
-      </svg>
-    </a>
-  );
-}
 
 function HomePage() {
   const location = useLocation();
@@ -296,6 +211,13 @@ function HomePage() {
         window.scrollY, fading away continuously as the visitor leaves scrollY 0.
       */}
       <ResumeDownloadButton />
+
+      {/*
+        The professional role signature belongs to the same homepage base
+        composition as the resume action. It remains independent from the
+        scroll-section controller and simply fades with the real window scroll.
+      */}
+      <HomeRoleSignature />
 
       {/*
         Skills is an overlay owned by the homepage, not another HomeSection.
