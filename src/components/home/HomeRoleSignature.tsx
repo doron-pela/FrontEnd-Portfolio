@@ -74,16 +74,18 @@ export default function HomeRoleSignature() {
       <div
         ref={signatureRef}
         aria-hidden="true"
-        className="pointer-events-none fixed left-[52.2%] top-[56vh] z-[470] w-max -translate-x-1/2 opacity-0 text-center text-[rgba(23,23,23,0.48)] mix-blend-multiply will-change-[opacity]
+        className="pointer-events-none fixed left-[52%] top-[55.5vh] z-[470] w-max -translate-x-1/2 opacity-0 text-center 
+        text-black
+         mix-blend-multiply will-change-[opacity]
           min-[701px]:max-[1100px]:left-[18vw] min-[701px]:max-[1100px]:top-[31vh] min-[701px]:max-[1100px]:w-[min(52vw,30rem)]
+          min-[950px]:max-[1100px]:left-[40vw]
           max-[700px]:left-1/2 max-[700px]:top-[34vh] max-[700px]:w-[88vw] max-[700px]:text-center max-[700px]:mix-blend-normal"
       >
         <span
           className="inline-block whitespace-nowrap text-[clamp(1.28rem,1.2vw,2.45rem)] font-[500] leading-none tracking-[0.1em]
             min-[1101px]:text-[min(1.1vw,2.8vh)] min-[1101px]:tracking-[0.015em]"
           style={{
-            fontFamily:
-              '"Monotype Corsiva", "Pinyon Script", cursive',
+            fontFamily: '"Monotype Corsiva", "Pinyon Script", cursive',
           }}
         >
           {HOME_ROLE_TITLE}
