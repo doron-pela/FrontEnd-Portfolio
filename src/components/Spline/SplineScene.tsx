@@ -12,19 +12,10 @@ import {
 } from "./constants";
 import type { SplineApplication } from "./@types";
 
-//A real physical wheel tick already forces the locked Frontend/Backend timeline
-//to commit correctly after responsive route restoration. Reproduce only that
-//existing controller path with an imperceptible positive pixel delta once the
-//returned index scene is fully exposed. Synthetic wheel events do not perform
-//native browser scrolling; the ScrollLockedSection controller consumes this.
-const RESPONSIVE_ROUTE_RETURN_NUDGE_DELTA_PX = 0.1;
-
 export default function SplineScene() {
   const location = useLocation();
   const splineRef = useRef<SplineApplication | null>(null);
   const responsiveFrameRef = useRef<number | null>(null);
-  const responsiveRestoreNudgeFrameRef = useRef<number | null>(null);
-  const hasIssuedResponsiveRestoreNudgeRef = useRef(false);
   const pendingIsDissectedRef = useRef<boolean | null>(null);
   const [sceneReady, setSceneReady] = useState(false);
 
@@ -33,9 +24,6 @@ export default function SplineScene() {
   //an index loader. Returning from a project-detail route remounts SplineScene
   //at "/", so that real scene load gets one fresh gate automatically.
   const isIndexRoute = location.pathname === "/";
-  const hasLockedProjectReturnState = Boolean(
-    location.state.portfolioReturn?.locked,
-  );
   const [loaderComplete, setLoaderComplete] = useState(() => !isIndexRoute);
 
   //Match the original responsive rules exactly:
@@ -111,51 +99,6 @@ export default function SplineScene() {
     //overlay, pointer layer, GSAP loop, or loader DOM above the live Spline scene.
     setLoaderComplete(true);
   }, []);
-
-  useEffect(() => {
-    if (
-      !isIndexRoute ||
-      !sceneReady ||
-      !loaderComplete ||
-      !hasLockedProjectReturnState ||
-      getResponsiveBaseState() === CAMERA_STATES.base ||
-      hasIssuedResponsiveRestoreNudgeRef.current
-    ) {
-      return;
-    }
-
-    //The route and all scroll runtimes are mounted behind the loader. Wait two
-    //paint frames after the loader has actually completed so React, Spline and
-    //the responsive layout have all committed before nudging the already-locked
-    //manual timeline through the same wheel path that succeeds for a real user.
-    responsiveRestoreNudgeFrameRef.current = requestAnimationFrame(() => {
-      responsiveRestoreNudgeFrameRef.current = requestAnimationFrame(() => {
-        responsiveRestoreNudgeFrameRef.current = null;
-
-        if (hasIssuedResponsiveRestoreNudgeRef.current) {
-          return;
-        }
-
-        hasIssuedResponsiveRestoreNudgeRef.current = true;
-
-        window.dispatchEvent(
-          new WheelEvent("wheel", {
-            deltaY: RESPONSIVE_ROUTE_RETURN_NUDGE_DELTA_PX,
-            deltaMode: WheelEvent.DOM_DELTA_PIXEL,
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
-      });
-    });
-
-    return () => {
-      if (responsiveRestoreNudgeFrameRef.current !== null) {
-        cancelAnimationFrame(responsiveRestoreNudgeFrameRef.current);
-        responsiveRestoreNudgeFrameRef.current = null;
-      }
-    };
-  }, [hasLockedProjectReturnState, isIndexRoute, loaderComplete, sceneReady]);
 
   useEffect(() => {
     const mobileMaxWidth = Math.max(SPLINE_BREAKPOINTS.mobile - 0.02, 0);
