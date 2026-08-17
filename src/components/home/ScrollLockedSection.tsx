@@ -38,6 +38,23 @@ function clampSectionProgress(value: number, revealedProgress: number) {
   return Math.min(Math.max(value, revealedProgress), 1);
 }
 
+//A hard document refresh destroys every in-memory runtime/ref even though the
+//browser may preserve window.scrollY. The homepage has a second local scroll
+//coordinate inside a locked GSAP timeline, so persist that extra coordinate in
+//sessionStorage. This snapshot is read ONLY when the current document itself was
+//loaded by a real reload, keeping ordinary SPA Back/Forward restoration on its
+//existing history-state path.
+const HOME_REFRESH_SCROLL_STORAGE_KEY =
+  "portfolio-home-refresh-scroll-state-v1";
+
+type PersistedHomeRefreshScrollState<Section extends string> = {
+  documentTimeOrigin: number;
+  scrollY: number;
+  lockedSection: Section | null;
+  localProgress: number | null;
+  registeredSections: Section[];
+};
+
 export function ScrollLockedSectionController<Section extends string>({
   positions,
   revealDelaySeconds,
@@ -55,6 +72,7 @@ export function ScrollLockedSectionController<Section extends string>({
   const resizeEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const refreshPersistFrameRef = useRef<number | null>(null);
 
   //Browser/TanStack history restoration can establish window.scrollY before the
   //freshly mounted section runtimes have rebuilt their GSAP timelines. Until we
@@ -76,6 +94,105 @@ export function ScrollLockedSectionController<Section extends string>({
 
     return runtimesRef.current.get(activeSection) ?? null;
   }, [runtimesRef]);
+
+  //Persist the controller-owned two-level state for Ctrl+R / hard refresh.
+  //Do not write while initial route/history hydration is still in progress, or
+  //a transient scrollY 0 could overwrite the valid snapshot we are about to read.
+  const persistRefreshScrollState = useCallback(() => {
+    if (!controllerReadyRef.current) {
+      return;
+    }
+
+    const activeSection = getActiveLockedSection();
+    const lockedSection = activeSection?.lockedRef.current
+      ? activeSection
+      : null;
+
+    const state: PersistedHomeRefreshScrollState<Section> = {
+      documentTimeOrigin: performance.timeOrigin,
+      scrollY: window.scrollY,
+      lockedSection: lockedSection?.section ?? null,
+      //progressRef is the logical local destination. It is more authoritative
+      //than timeline.progress() while the short smoothing tween is catching up.
+      localProgress: lockedSection ? lockedSection.progressRef.current : null,
+      registeredSections: getRegisteredSections().map(
+        (runtime) => runtime.section,
+      ),
+    };
+
+    try {
+      sessionStorage.setItem(
+        HOME_REFRESH_SCROLL_STORAGE_KEY,
+        JSON.stringify(state),
+      );
+    } catch {
+      //Storage can be unavailable under restrictive browser/privacy settings.
+      //Refresh then falls back to the existing browser/TanStack Y restoration.
+    }
+  }, [getActiveLockedSection, getRegisteredSections]);
+
+  const queueRefreshScrollStatePersistence = useCallback(() => {
+    if (
+      !controllerReadyRef.current ||
+      refreshPersistFrameRef.current !== null
+    ) {
+      return;
+    }
+
+    refreshPersistFrameRef.current = requestAnimationFrame(() => {
+      refreshPersistFrameRef.current = null;
+      persistRefreshScrollState();
+    });
+  }, [persistRefreshScrollState]);
+
+  const readReloadRefreshScrollState = useCallback(() => {
+    const navigationEntry = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
+
+    //The session snapshot must never participate in ordinary SPA navigation.
+    //Also verify that THIS route was the document URL that was refreshed. This
+    //prevents a later SPA navigation to Home from reusing a snapshot when the
+    //browser document itself was originally refreshed on a project-detail URL.
+    if (!navigationEntry || navigationEntry.type !== "reload") {
+      return null;
+    }
+
+    try {
+      const navigationPathname = new URL(navigationEntry.name).pathname;
+
+      if (navigationPathname !== window.location.pathname) {
+        return null;
+      }
+
+      const rawState = sessionStorage.getItem(HOME_REFRESH_SCROLL_STORAGE_KEY);
+
+      if (!rawState) {
+        return null;
+      }
+
+      const state = JSON.parse(
+        rawState,
+      ) as PersistedHomeRefreshScrollState<Section>;
+
+      //After this document has restored once, persistence rewrites the snapshot
+      //with its new timeOrigin. Rejecting same-document snapshots prevents that
+      //state from acting like a second navigation restoration mechanism later.
+      if (state.documentTimeOrigin === performance.timeOrigin) {
+        return null;
+      }
+
+      if (
+        !Number.isFinite(state.scrollY) ||
+        !Array.isArray(state.registeredSections)
+      ) {
+        return null;
+      }
+
+      return state;
+    } catch {
+      return null;
+    }
+  }, []);
 
   //When one manual-scroll section owns the global lock, hard-hide every other
   //manual-scroll section at the DOM level. GSAP timelines only animate opacity /
@@ -194,6 +311,7 @@ export function ScrollLockedSectionController<Section extends string>({
       );
 
       unlockSectionScroll(runtime);
+      queueRefreshScrollStatePersistence();
 
       //Allow scroll events to settle (act as debouncer before declaring lock release), then force the timeline back to 0 when we scroll past about section
       setTimeout(() => {
@@ -205,7 +323,7 @@ export function ScrollLockedSectionController<Section extends string>({
         }
       }, 0);
     },
-    [unlockSectionScroll],
+    [queueRefreshScrollStatePersistence, unlockSectionScroll],
   );
 
   //Globally locking the window for about section
@@ -240,12 +358,17 @@ export function ScrollLockedSectionController<Section extends string>({
 
       lastWindowScrollYRef.current = lockY;
       setScrollSectionProgressImmediately(runtime, startProgress);
+      queueRefreshScrollStatePersistence();
 
       requestAnimationFrame(() => {
         runtime.snapRef.current = false;
       });
     },
-    [isolateLockedSection, programmaticScrollRef],
+    [
+      isolateLockedSection,
+      programmaticScrollRef,
+      queueRefreshScrollStatePersistence,
+    ],
   );
 
   //Locally advancing about section while global window is locked
@@ -287,8 +410,14 @@ export function ScrollLockedSectionController<Section extends string>({
           overwrite: true,
         });
       }
+
+      queueRefreshScrollStatePersistence();
     },
-    [programmaticScrollRef, releaseSectionScroll],
+    [
+      programmaticScrollRef,
+      queueRefreshScrollStatePersistence,
+      releaseSectionScroll,
+    ],
   );
 
   const getSectionScrollTarget = useCallback(
@@ -461,9 +590,44 @@ export function ScrollLockedSectionController<Section extends string>({
       scrollDurationSeconds,
       syncSectionDisplayForWindowY,
       unlockSectionScroll,
-      isolateLockedSection
+      isolateLockedSection,
     ],
   );
+
+  //Keep the refresh snapshot current and flush one final synchronous copy when
+  //the browser is about to replace this document. Reading remains reload-only,
+  //so these writes do not alter the existing SPA history-return behavior.
+  useEffect(() => {
+    const saveImmediately = () => {
+      if (refreshPersistFrameRef.current !== null) {
+        cancelAnimationFrame(refreshPersistFrameRef.current);
+        refreshPersistFrameRef.current = null;
+      }
+
+      persistRefreshScrollState();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        saveImmediately();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", saveImmediately);
+    window.addEventListener("beforeunload", saveImmediately);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", saveImmediately);
+      window.removeEventListener("beforeunload", saveImmediately);
+
+      if (refreshPersistFrameRef.current !== null) {
+        cancelAnimationFrame(refreshPersistFrameRef.current);
+        refreshPersistFrameRef.current = null;
+      }
+    };
+  }, [persistRefreshScrollState]);
 
   //Route restoration is intentionally separate from scrollTo(). Numeric key
   //navigation still performs the authored reveal/scroll animation. A route
@@ -594,10 +758,11 @@ export function ScrollLockedSectionController<Section extends string>({
   //that deep Y immediately, so every fresh runtime must be hydrated from the
   //global scroll coordinate BEFORE organic crossing logic is allowed to run.
   //
-  //If the restored Y is exactly one manual section's lock point, infer that the
-  //user was sitting inside that section and rebuild the lock at revealedProgress.
-  //Explicit project restoreState takes precedence above because it can recover a
-  //more precise local timeline label such as frontend-scene-N.
+  //A real document reload is the one case where window Y is not enough: a
+  //locked Frontend/Backend section also owns local GSAP progress. For reloads,
+  //hydrate that second coordinate from the reload-only session snapshot above.
+  //Explicit project restoreState still takes precedence because it can recover
+  //a more precise route-return label such as frontend-scene-N.
   useEffect(() => {
     if (restoreState || controllerReadyRef.current) {
       return;
@@ -605,6 +770,15 @@ export function ScrollLockedSectionController<Section extends string>({
 
     let hydrationFrame = 0;
     let cancelled = false;
+    let attempts = 0;
+    const refreshState = readReloadRefreshScrollState();
+
+    //The DOM isolation does not depend on the GSAP timeline being ready. If a
+    //hard refresh happened while a manual section owned the lock, hide the
+    //other attributed sections immediately while its runtime is rebuilding.
+    if (refreshState?.lockedSection) {
+      isolateLockedSection(refreshState.lockedSection);
+    }
 
     const hydrateWhenReady = () => {
       if (cancelled || controllerReadyRef.current) {
@@ -612,19 +786,91 @@ export function ScrollLockedSectionController<Section extends string>({
       }
 
       const registeredSections = getRegisteredSections();
+      const expectedRefreshSections = refreshState?.registeredSections ?? [];
+      const hasExpectedRefreshRuntimes = expectedRefreshSections.every(
+        (section) =>
+          Boolean(runtimesRef.current.get(section)?.timelineRef.current),
+      );
 
       //Wait for the section components to register their actual GSAP timelines.
-      //Hydrating before that would only update refs and leave a later
-      //ScrollTrigger creation free to overwrite the visual state again.
+      //When restoring a hard refresh, also wait for the same runtime set that
+      //existed in the saved document so a partially mounted page cannot overwrite
+      //the snapshot with an incomplete reconstruction.
       if (
         registeredSections.length === 0 ||
-        registeredSections.some((runtime) => !runtime.timelineRef.current)
+        registeredSections.some((runtime) => !runtime.timelineRef.current) ||
+        !hasExpectedRefreshRuntimes
       ) {
-        hydrationFrame = requestAnimationFrame(hydrateWhenReady);
+        attempts += 1;
+
+        if (attempts < 120) {
+          hydrationFrame = requestAnimationFrame(hydrateWhenReady);
+          return;
+        }
+      }
+
+      const lockedRefreshRuntime = refreshState?.lockedSection
+        ? (runtimesRef.current.get(refreshState.lockedSection) ?? null)
+        : null;
+
+      if (refreshState && lockedRefreshRuntime?.timelineRef.current) {
+        const lockY = lockedRefreshRuntime.getLockY();
+        const restoredProgress = clampSectionProgress(
+          refreshState.localProgress ?? lockedRefreshRuntime.revealedProgress,
+          lockedRefreshRuntime.revealedProgress,
+        );
+
+        registeredSections.forEach((runtime) => {
+          gsap.killTweensOf(runtime.timelineRef.current);
+
+          if (runtime !== lockedRefreshRuntime) {
+            settleSectionForWindowY(runtime, lockY);
+          }
+        });
+
+        lockedRefreshRuntime.releasingRef.current = false;
+        lockedRefreshRuntime.releasedDirectionRef.current = null;
+        lockedRefreshRuntime.lockYRef.current = lockY;
+        lockedRefreshRuntime.lockedRef.current = true;
+        lockedRefreshRuntime.snapRef.current = true;
+        activeLockedSectionRef.current = lockedRefreshRuntime.section;
+        isolateLockedSection(lockedRefreshRuntime.section);
+
+        window.scrollTo({
+          top: lockY,
+          left: 0,
+          behavior: "auto",
+        });
+
+        lastWindowScrollYRef.current = lockY;
+        setScrollSectionProgressImmediately(
+          lockedRefreshRuntime,
+          restoredProgress,
+        );
+        lockedRefreshRuntime.progressRef.current = restoredProgress;
+        lockedRefreshRuntime.snapRef.current = false;
+        controllerReadyRef.current = true;
+
+        //Stamp the snapshot with this document's timeOrigin now that restoration
+        //is complete. That makes it ineligible for any later SPA remount in the
+        //same document while keeping it ready for the next real Ctrl+R.
+        persistRefreshScrollState();
         return;
       }
 
-      const restoredY = window.scrollY;
+      //For a normal browser/TanStack restoration, keep the current browser Y.
+      //For an unlocked hard refresh, explicitly recover the Y saved immediately
+      //before the old document was replaced.
+      const restoredY = Math.max(refreshState?.scrollY ?? window.scrollY, 0);
+
+      if (refreshState) {
+        window.scrollTo({
+          top: restoredY,
+          left: 0,
+          behavior: "auto",
+        });
+      }
+
       const inferredLockedSection =
         registeredSections.find(
           (runtime) => Math.abs(restoredY - runtime.getLockY()) <= 2,
@@ -663,6 +909,10 @@ export function ScrollLockedSectionController<Section extends string>({
       }
 
       controllerReadyRef.current = true;
+
+      if (refreshState) {
+        persistRefreshScrollState();
+      }
     };
 
     hydrationFrame = requestAnimationFrame(hydrateWhenReady);
@@ -674,7 +924,10 @@ export function ScrollLockedSectionController<Section extends string>({
   }, [
     getRegisteredSections,
     isolateLockedSection,
+    persistRefreshScrollState,
+    readReloadRefreshScrollState,
     restoreState,
+    runtimesRef,
     settleSectionForWindowY,
     syncSectionDisplayForWindowY,
   ]);
@@ -783,6 +1036,8 @@ export function ScrollLockedSectionController<Section extends string>({
       const movingForward = currentY > previousY;
       const movingBackward = currentY < previousY;
       const registeredSections = getRegisteredSections();
+
+      queueRefreshScrollStatePersistence();
 
       //A restored native scroll position is not user input. Until the fresh
       //runtimes have been hydrated from that position, merely record the Y and
@@ -944,6 +1199,7 @@ export function ScrollLockedSectionController<Section extends string>({
     isolateLockedSection,
     lockSectionScroll,
     programmaticScrollRef,
+    queueRefreshScrollStatePersistence,
     snapWindowToSectionLock,
     syncSectionDisplayForWindowY,
   ]);
