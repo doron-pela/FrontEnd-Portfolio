@@ -354,7 +354,6 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
           position: relative;
           z-index: 4;
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
           width: 100%;
           height: 100%;
           gap: 0.24rem;
@@ -764,7 +763,12 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
         }
       `}</style>
 
-      <div className="portfolio-nav__items">
+      <div
+        className="portfolio-nav__items"
+        style={{
+          gridTemplateColumns: `repeat(${NAV_ITEMS.length}, minmax(0, 1fr))`,
+        }}
+      >
         {NAV_ITEMS.map((item) => (
           <button
             aria-label={item.shortLabel}
