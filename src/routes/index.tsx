@@ -6,7 +6,7 @@ import BackendSection from "@/components/home/BackendSection";
 import ContactSection from "@/components/home/ContactSection";
 import FrontendSection from "@/components/home/FrontendSection";
 import HomeRoleSignature from "@/components/home/HomeRoleSignature";
-import ResumeDownloadButton from "@/components/home/ResumeDownloadButton";
+// import ResumeDownloadButton from "@/components/home/ResumeDownloadButton";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
 import SkillsDrawer from "@/components/home/SkillsDrawer";
 import Navbar from "@/components/Navbar";
@@ -210,7 +210,7 @@ function HomePage() {
         of the scroll-section controller and derives its visibility directly from
         window.scrollY, fading away continuously as the visitor leaves scrollY 0.
       */}
-      <ResumeDownloadButton />
+      {/* <ResumeDownloadButton /> */}
 
       {/*
         The professional role signature belongs to the same homepage base
