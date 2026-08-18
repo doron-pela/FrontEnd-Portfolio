@@ -506,9 +506,9 @@ export function AboutSection({
     <section
       ref={sectionRef}
       data-scroll-locked-section="about"
-      // Remove pointer events to interract with content and debug
-      className="absolute z-20 top-0 left-0 w-full
-      "
+      //About is presentation-only: pointer input passes through to the Spline
+      //canvas, while select-none prevents the rendered copy from being highlighted.
+      className="pointer-events-none select-none absolute z-20 top-0 left-0 w-full"
     >
       <div
         ref={planeRef}
@@ -523,12 +523,12 @@ export function AboutSection({
           ref={viewportRef}
           className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] max-[650px]:h-[min(44vh,24rem)] max-[650px]:w-full overflow-y-clip"
         >
-          <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
+          <div className="absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
 
           <div className="relative h-full">
             <div
               ref={contentRef}
-              className="pointer-events-none absolute right-10 z-10 pt-12 will-change-transform
+              className="absolute right-10 z-10 pt-12 will-change-transform
                 min-[651px]:max-[700px]:mr-[10vw]
                 max-[650px]:right-0 max-[650px]:mr-0 max-[650px]:w-full
                 pb-[40vh]"
@@ -539,7 +539,7 @@ export function AboutSection({
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
-                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance pointer-events-auto max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
+                  className="m-0 font-sans text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
                   aria-label={ABOUT_DATA.titleLines.join(" ")}
                 >
                   {ABOUT_DATA.titleLines.map((line, lineIndex) => (
