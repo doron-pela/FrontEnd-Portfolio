@@ -525,10 +525,10 @@ export function AboutSection({
         >
           <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
 
-          <div className="pointer-events-none relative h-full">
+          <div className="relative h-full">
             <div
               ref={contentRef}
-              className="absolute right-10 z-10 pt-12 will-change-transform
+              className="pointer-events-none absolute right-10 z-10 pt-12 will-change-transform
                 min-[651px]:max-[700px]:mr-[10vw]
                 max-[650px]:right-0 max-[650px]:mr-0 max-[650px]:w-full
                 pb-[40vh]"
