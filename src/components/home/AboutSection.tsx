@@ -29,7 +29,8 @@ const ABOUT_GSAP_HMR_REVISION = import.meta.hot
 
 const ABOUT_REVEAL_SCROLL_DISTANCE = 555;
 const ABOUT_REVEALED_PROGRESS = 0.19;
-const ABOUT_LOCAL_PROGRESS_TWEEN_DURATION = 0.14;
+const ABOUT_LOCAL_PROGRESS_TWEEN_DURATION = 0.8;
+const ABOUT_LOCAL_SCROLL_DISTANCE_MULTIPLIER = 4;
 
 //The outer About section owns the persistent responsive composition offset.
 //The inner plane still owns only its local 3D reveal motion (42px -> 0).
@@ -106,9 +107,15 @@ export function AboutSection({
     return Math.max(content.scrollHeight - viewport.clientHeight, 0);
   }, []);
 
-  //About's timeline's total pxs distance (from its 0 to its 1)
+  //About's timeline's total pxs distance (from its 0 to its 1).
+  //Multiplying the physical distance makes each wheel/touch delta advance a
+  //smaller fraction of the local About timeline without changing the shared
+  //ScrollLockedSection controller or the visual GSAP timeline itself.
   const getAboutPxDuration = useCallback(() => {
-    return Math.max(getAboutInternalScrollDistance(), 1);
+    return Math.max(
+      getAboutInternalScrollDistance() * ABOUT_LOCAL_SCROLL_DISTANCE_MULTIPLIER,
+      1,
+    );
   }, [getAboutInternalScrollDistance]);
 
   //Global Y px height when about locks
@@ -518,8 +525,7 @@ export function AboutSection({
         >
           <div className="pointer-events-none absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
 
-          <div className="relative h-full">
-            {/* If the content disappears too fast, pad the bottom */}
+          <div className="pointer-events-none relative h-full">
             <div
               ref={contentRef}
               className="absolute right-10 z-10 pt-12 will-change-transform
@@ -612,4 +618,3 @@ export function AboutSection({
     </section>
   );
 }
-

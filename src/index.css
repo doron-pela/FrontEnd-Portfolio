@@ -7,6 +7,8 @@ body,
   padding: 0;
   overflow-x: clip;
   scroll-behavior: auto;
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scroll-scene {

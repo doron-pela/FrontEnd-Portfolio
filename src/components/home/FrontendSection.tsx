@@ -977,6 +977,91 @@ export default function FrontendSection({
           }
         }
 
+        /*
+          Compact-phone mode is intentionally based on BOTH width and height.
+          A 375px-wide phone can still have a tall viewport, so width alone
+          should not throw away project information. On short phone viewports
+          (including the 377 x 758 case), keep Description and collapse the two
+          secondary editorial rows so the gallery and actions retain real space.
+        */
+        @media (max-width: 390px) and (max-height: 820px) {
+          .frontend-project-detail-secondary {
+            display: none !important;
+          }
+
+          .frontend-compact-phone-composition {
+            bottom: 3.1vh !important;
+            gap: 0.5rem !important;
+          }
+
+          .frontend-compact-phone-heading {
+            font-size: clamp(1.85rem, 8.5vw, 2.1rem) !important;
+            line-height: 0.78 !important;
+          }
+
+          .frontend-compact-phone-intro {
+            margin-top: 0.35rem !important;
+            font-size: 0.44rem !important;
+            line-height: 1.4 !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            font-size: clamp(1.25rem, 5.8vw, 1.5rem) !important;
+            line-height: 0.94 !important;
+          }
+
+          .frontend-compact-phone-project-row {
+            margin-top: 0.45rem !important;
+            gap: 0.55rem !important;
+          }
+
+          .frontend-compact-phone-detail {
+            gap: 0.18rem !important;
+            padding-block: 0.42rem !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: 0.8rem !important;
+            line-height: 1.4 !important;
+          }
+
+          .frontend-compact-phone-technology {
+            margin-top: 0.42rem !important;
+            font-size: 0.64rem !important;
+            line-height: 1.45 !important;
+          }
+
+          .frontend-compact-phone-links {
+            margin-top: 0.5rem !important;
+            column-gap: 0.45rem !important;
+            row-gap: 0.35rem !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: 0.38rem 0.64rem !important;
+            font-size: 0.48rem !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            height: min(17vh, 8rem) !important;
+          }
+        }
+
+        /*
+          If the browser chrome leaves an even shorter usable viewport, the
+          section-level intro is the next least-important item. Project title,
+          Description, technologies, destinations and media stay available.
+        */
+        @media (max-width: 390px) and (max-height: 700px) {
+          .frontend-compact-phone-intro {
+            display: none !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            height: min(15vh, 6.75rem) !important;
+          }
+        }
+
         .frontend-timeline-progress-horizontal {
           transform: scaleX(var(--frontend-timeline-progress, 0));
           transform-origin: left center;
@@ -1028,10 +1113,10 @@ export default function FrontendSection({
                 right-side safe column (27vw left gutter, 4vw right gutter) and
                 reserves the top ~11vh for the future navbar.
               */}
-            <div className="absolute bottom-[3.25vh] right-[4.35vw] top-[clamp(5.5rem,8.6vh,7.8rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:right-[4.5vw] max-[900px]:top-[clamp(5.25rem,8vh,6.5rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[27vw] max-[680px]:right-[4vw] max-[680px]:top-[clamp(5.15rem,9.8vh,6.25rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
+            <div className="frontend-compact-phone-composition absolute bottom-[3.25vh] right-[4.35vw] top-[clamp(5.5rem,8.6vh,7.8rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:right-[4.5vw] max-[900px]:top-[clamp(5.25rem,8vh,6.5rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[27vw] max-[680px]:right-[4vw] max-[680px]:top-[clamp(5.15rem,9.8vh,6.25rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
               <div className="frontend-browser-zoom-compensated z-40 ml-auto flex w-full shrink-0 flex-col items-end text-right">
                 <h2
-                  className="m-0 font-sans text-[clamp(2.35rem,3.7vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
+                  className="frontend-compact-phone-heading m-0 font-sans text-[clamp(2.35rem,3.7vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
                   aria-label={FRONTEND_DATA.ariaLabel}
                 >
                   <span className="block overflow-y-clip pb-[0.08em]">
@@ -1046,7 +1131,7 @@ export default function FrontendSection({
                   </span>
                 </h2>
 
-                <p className="frontend-intro-item mt-2 max-w-[24rem] font-mono text-[clamp(0.58rem,0.66vw,0.74rem)] uppercase leading-[1.6] tracking-[0.09em] text-[#171717]/44 min-[901px]:max-[1180px]:mt-[0.32rem] min-[901px]:max-[1180px]:text-[0.5rem] min-[901px]:max-[1180px]:leading-[1.45] max-[900px]:max-w-[18rem] max-[900px]:text-[0.5rem] max-[680px]:mt-2 max-[680px]:max-w-[16rem] max-[680px]:text-[0.47rem] max-[680px]:leading-[1.55]">
+                <p className="frontend-intro-item frontend-compact-phone-intro mt-2 max-w-[24rem] font-mono text-[clamp(0.58rem,0.66vw,0.74rem)] uppercase leading-[1.6] tracking-[0.09em] text-[#171717]/44 min-[901px]:max-[1180px]:mt-[0.32rem] min-[901px]:max-[1180px]:text-[0.5rem] min-[901px]:max-[1180px]:leading-[1.45] max-[900px]:max-w-[18rem] max-[900px]:text-[0.5rem] max-[680px]:mt-2 max-[680px]:max-w-[16rem] max-[680px]:text-[0.47rem] max-[680px]:leading-[1.55]">
                   {FRONTEND_DATA.intro}
                 </p>
               </div>
@@ -1067,6 +1152,9 @@ export default function FrontendSection({
                   //Only render detail rows that actually have content. The
                   //divider belongs to the row itself, so an empty optional
                   //field can never leave behind an orphan h-px rule or label.
+                  //On short phone viewports the CSS compact mode keeps only
+                  //Description visible; My work and Outcome remain available
+                  //everywhere else without changing the data model or timeline.
                   const projectDetails = [
                     { label: "Description", value: project.description },
                     { label: "My work", value: project.contribution },
@@ -1103,14 +1191,14 @@ export default function FrontendSection({
                       */}
                       <div className="flex h-full min-h-0 w-full flex-col justify-end max-[1180px]:justify-center max-[680px]:-translate-y-[clamp(0.35rem,1.2vh,0.75rem)]">
                         <div className="frontend-browser-zoom-compensated frontend-project-copy relative z-30 ml-auto w-full max-w-[23rem] text-right max-[1180px]:max-w-[31rem] min-[901px]:max-[1180px]:shrink-0 max-[680px]:max-w-none">
-                          <h3 className="ml-auto max-w-[23rem] text-[clamp(1.85rem,1.05vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
+                          <h3 className="frontend-compact-phone-project-title ml-auto max-w-[23rem] text-[clamp(1.85rem,1.05vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
                             {project.title}
                           </h3>
                         </div>
 
-                        <div className="mt-[clamp(1.15rem,1.75vh,1.55rem)] flex min-h-0 w-full items-stretch justify-end gap-[clamp(0.42rem,0.62vw,0.72rem)] max-[1180px]:flex-col max-[1180px]:items-end max-[1180px]:gap-[clamp(1rem,1.65vh,1.4rem)] min-[901px]:max-[1180px]:mt-[clamp(0.42rem,0.85vh,0.58rem)] min-[901px]:max-[1180px]:shrink-0 min-[901px]:max-[1180px]:gap-[clamp(0.56rem,1vh,0.72rem)] max-[680px]:mt-[0.72rem] max-[680px]:gap-[clamp(0.88rem,1.45vh,1.12rem)]">
+                        <div className="frontend-compact-phone-project-row mt-[clamp(1.15rem,1.75vh,1.55rem)] flex min-h-0 w-full items-stretch justify-end gap-[clamp(0.42rem,0.62vw,0.72rem)] max-[1180px]:flex-col max-[1180px]:items-end max-[1180px]:gap-[clamp(1rem,1.65vh,1.4rem)] min-[901px]:max-[1180px]:mt-[clamp(0.42rem,0.85vh,0.58rem)] min-[901px]:max-[1180px]:shrink-0 min-[901px]:max-[1180px]:gap-[clamp(0.56rem,1vh,0.72rem)] max-[680px]:mt-[0.72rem] max-[680px]:gap-[clamp(0.88rem,1.45vh,1.12rem)]">
                           {hasScreenshots ? (
-                            <div className="relative z-20 order-1 flex min-h-0 min-w-0 flex-1 self-stretch items-stretch overflow-visible min-[1181px]:basis-[60%] min-[1181px]:min-h-[min(56vh,35rem)] max-[1180px]:order-2 max-[1180px]:ml-auto max-[1180px]:h-[min(27vh,17rem)] max-[1180px]:w-full max-[1180px]:max-w-[34rem] max-[1180px]:flex-none max-[1180px]:self-auto min-[901px]:max-[1180px]:h-[min(24vh,15rem)] max-[900px]:h-[min(25vh,15.5rem)] max-[680px]:h-[min(19vh,11.25rem)] max-[680px]:max-w-none">
+                            <div className="frontend-compact-phone-gallery relative z-20 order-1 flex min-h-0 min-w-0 flex-1 self-stretch items-stretch overflow-visible min-[1181px]:basis-[60%] min-[1181px]:min-h-[min(56vh,35rem)] max-[1180px]:order-2 max-[1180px]:ml-auto max-[1180px]:h-[min(27vh,17rem)] max-[1180px]:w-full max-[1180px]:max-w-[34rem] max-[1180px]:flex-none max-[1180px]:self-auto min-[901px]:max-[1180px]:h-[min(24vh,15rem)] max-[900px]:h-[min(25vh,15.5rem)] max-[680px]:h-[min(19vh,11.25rem)] max-[680px]:max-w-none">
                               <div className="h-full min-h-0 w-full">
                                 <ProjectScreenshotGallery
                                   orientation="frontend"
@@ -1132,7 +1220,14 @@ export default function FrontendSection({
                               {projectDetails.length > 0 ? (
                                 <div className="frontend-project-copy ml-auto w-full max-w-[23rem] max-[1180px]:max-w-[31rem] max-[680px]:max-w-none">
                                   {projectDetails.map((detail, detailIndex) => (
-                                    <div key={detail.label}>
+                                    <div
+                                      className={
+                                        detail.label === "Description"
+                                          ? "frontend-project-detail-row frontend-project-detail-primary"
+                                          : "frontend-project-detail-row frontend-project-detail-secondary"
+                                      }
+                                      key={detail.label}
+                                    >
                                       <div
                                         className={`frontend-project-rule h-px w-full ${
                                           detailIndex === 0
@@ -1141,11 +1236,11 @@ export default function FrontendSection({
                                         }`}
                                       />
 
-                                      <div className="frontend-project-copy flex flex-col items-end gap-[clamp(0.45rem,0.7vh,0.62rem)] py-[clamp(0.92rem,1.35vh,1.18rem)] text-right max-[1180px]:gap-[0.32rem] max-[1180px]:py-[0.7rem] min-[901px]:max-[1180px]:gap-[0.22rem] min-[901px]:max-[1180px]:py-[clamp(0.42rem,0.8vh,0.5rem)] max-[680px]:gap-[0.3rem] max-[680px]:py-[0.66rem]">
+                                      <div className="frontend-project-copy frontend-compact-phone-detail flex flex-col items-end gap-[clamp(0.45rem,0.7vh,0.62rem)] py-[clamp(0.92rem,1.35vh,1.18rem)] text-right max-[1180px]:gap-[0.32rem] max-[1180px]:py-[0.7rem] min-[901px]:max-[1180px]:gap-[0.22rem] min-[901px]:max-[1180px]:py-[clamp(0.42rem,0.8vh,0.5rem)] max-[680px]:gap-[0.3rem] max-[680px]:py-[0.66rem]">
                                         <span className="font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
                                           {detail.label}
                                         </span>
-                                        <p className="max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
+                                        <p className="frontend-compact-phone-detail-value max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
                                           {detail.value}
                                         </p>
                                       </div>
@@ -1154,7 +1249,7 @@ export default function FrontendSection({
                                 </div>
                               ) : null}
 
-                              <p className="frontend-technology-text ml-auto mt-[clamp(1rem,1.5vh,1.3rem)] w-full max-w-[23rem] text-right font-mono text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.65] tracking-[0.035em] text-[#171717]/68 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:text-[0.74rem] min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:text-[0.66rem] min-[901px]:max-[1180px]:leading-[1.5] max-[680px]:mt-[0.72rem] max-[680px]:max-w-none max-[680px]:text-[0.7rem] max-[680px]:leading-[1.6]">
+                              <p className="frontend-technology-text frontend-compact-phone-technology ml-auto mt-[clamp(1rem,1.5vh,1.3rem)] w-full max-w-[23rem] text-right font-mono text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.65] tracking-[0.035em] text-[#171717]/68 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:text-[0.74rem] min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:text-[0.66rem] min-[901px]:max-[1180px]:leading-[1.5] max-[680px]:mt-[0.72rem] max-[680px]:max-w-none max-[680px]:text-[0.7rem] max-[680px]:leading-[1.6]">
                                 {project.technologies.join(", ")}
                               </p>
 
@@ -1167,10 +1262,10 @@ export default function FrontendSection({
                               {(project.liveUrl ||
                                 project.repositoryUrl ||
                                 project.detailsSlug) && (
-                                <div className="frontend-project-copy ml-auto mt-[clamp(1.05rem,1.6vh,1.4rem)] flex w-full max-w-[23rem] flex-wrap items-center justify-end gap-x-[clamp(1.2rem,1.8vw,1.95rem)] gap-y-3 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:gap-x-3 max-[1180px]:gap-y-2 min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:gap-x-2.5 min-[901px]:max-[1180px]:gap-y-1.5 max-[680px]:mt-[0.82rem] max-[680px]:max-w-none">
+                                <div className="frontend-project-copy frontend-compact-phone-links ml-auto mt-[clamp(1.05rem,1.6vh,1.4rem)] flex w-full max-w-[23rem] flex-wrap items-center justify-end gap-x-[clamp(1.2rem,1.8vw,1.95rem)] gap-y-3 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:gap-x-3 max-[1180px]:gap-y-2 min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:gap-x-2.5 min-[901px]:max-[1180px]:gap-y-1.5 max-[680px]:mt-[0.82rem] max-[680px]:max-w-none">
                                   {project.liveUrl ? (
                                     <a
-                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/14 bg-white/[0.08] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/72 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/20 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
+                                      className="frontend-project-link frontend-compact-phone-action pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/14 bg-white/[0.08] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/72 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/20 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/16 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
                                       href={project.liveUrl}
                                       rel="noreferrer"
                                       target="_blank"
@@ -1181,7 +1276,7 @@ export default function FrontendSection({
 
                                   {project.repositoryUrl ? (
                                     <a
-                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
+                                      className="frontend-project-link frontend-compact-phone-action pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(0.8rem,1vw,1.05rem)] py-[clamp(0.48rem,0.58vw,0.62rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.68rem] min-[901px]:max-[1180px]:py-[0.42rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
                                       href={project.repositoryUrl}
                                       rel="noreferrer"
                                       target="_blank"
@@ -1192,7 +1287,7 @@ export default function FrontendSection({
 
                                   {project.detailsSlug ? (
                                     <Link
-                                      className="frontend-project-link pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/78 bg-[#171717] px-[clamp(0.88rem,1.08vw,1.12rem)] py-[clamp(0.5rem,0.62vw,0.66rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#f4f2eb] shadow-[0_8px_22px_rgba(23,23,23,0.08)] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-[#171717]/88 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/22 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.72rem] min-[901px]:max-[1180px]:py-[0.44rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
+                                      className="frontend-project-link frontend-compact-phone-action pointer-events-auto inline-flex items-center justify-center rounded-full border border-[#171717]/78 bg-[#171717] px-[clamp(0.88rem,1.08vw,1.12rem)] py-[clamp(0.5rem,0.62vw,0.66rem)] font-mono text-[clamp(0.6rem,0.68vw,0.76rem)] uppercase tracking-[0.12em] text-[#f4f2eb] shadow-[0_8px_22px_rgba(23,23,23,0.08)] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-[#171717]/88 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/22 max-[1180px]:px-3 max-[1180px]:py-2 max-[1180px]:text-[0.56rem] min-[901px]:max-[1180px]:px-[0.72rem] min-[901px]:max-[1180px]:py-[0.44rem] min-[901px]:max-[1180px]:text-[0.5rem] max-[680px]:text-[0.54rem]"
                                       onClick={(event) => {
                                         //Modified clicks may open a new tab and
                                         //leave this home entry active, so only

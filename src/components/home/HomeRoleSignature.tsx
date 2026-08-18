@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 const HOME_SIGNATURE_FADE_DISTANCE_PX = 320;
-const HOME_ROLE_TITLE = "End-to-End software engineer";
+const HOME_ROLE_TITLE = "Fullstack software engineer";
 
 export default function HomeRoleSignature() {
   const signatureRef = useRef<HTMLDivElement | null>(null);
@@ -86,6 +86,7 @@ export default function HomeRoleSignature() {
             min-[1101px]:text-[min(1.1vw,2.8vh)] min-[1101px]:tracking-[0.015em]"
           style={{
             fontFamily: '"Monotype Corsiva", "Pinyon Script", cursive',
+            wordSpacing: "0.3em"
           }}
         >
           {HOME_ROLE_TITLE}
