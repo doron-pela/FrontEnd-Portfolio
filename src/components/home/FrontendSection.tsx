@@ -1157,7 +1157,7 @@ export default function FrontendSection({
                   //everywhere else without changing the data model or timeline.
                   const projectDetails = [
                     { label: "Description", value: project.description },
-                    { label: "My work", value: project.contribution },
+                    // { label: "My work", value: project.contribution },
                     { label: "Outcome", value: project.outcome },
                   ].filter(
                     (detail): detail is { label: string; value: string } =>
