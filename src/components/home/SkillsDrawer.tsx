@@ -1,4 +1,3 @@
-// src/components/home/SkillsDrawer.tsx
 import gsap from "gsap";
 import {
   useCallback,
