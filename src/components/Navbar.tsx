@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, type SVGProps } from "react";
 
+import type { HomeSection } from "@/@types/home-section.types";
 import {
   NAV_ITEMS,
   type NavbarItem,
@@ -8,6 +9,7 @@ import {
 import { dispatchPortfolioSectionKey } from "@/utils/index-section-navigation";
 
 type NavbarProps = {
+  currentSection: HomeSection;
   onSkillsOpen: () => void;
 };
 
@@ -200,7 +202,7 @@ function SectionIcon({
   }
 }
 
-export default function Navbar({ onSkillsOpen }: NavbarProps) {
+export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
   const navRef = useRef<HTMLElement | null>(null);
 
   const handleSectionNavigation = useCallback(
@@ -210,13 +212,17 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
         return;
       }
 
+      if (currentSection === item.section) {
+        return;
+      }
+
       //Navbar is mounted by the homepage route itself. SplineScene does not mount
       //that route until its loading screen has completely finished, so section
       //clicks always have access to ScrollLockedSectionController and dispatch
       //the exact same numeric key used by the existing keyboard-navigation path.
       dispatchPortfolioSectionKey(item.key);
     },
-    [onSkillsOpen],
+    [currentSection, onSkillsOpen],
   );
 
   //Keep the liquid-glass shell responsive to pointer position. The page's actual
@@ -471,6 +477,20 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
 
         .portfolio-nav__item:hover::after,
         .portfolio-nav__item:focus-visible::after {
+          opacity: 0.72;
+          transform: translateY(0) scaleX(1);
+        }
+
+        .portfolio-nav__item[aria-current="page"] {
+          color: rgba(23,23,23,0.98);
+        }
+
+        .portfolio-nav__item[aria-current="page"]::before {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .portfolio-nav__item[aria-current="page"]::after {
           opacity: 0.72;
           transform: translateY(0) scaleX(1);
         }
@@ -771,6 +791,7 @@ export default function Navbar({ onSkillsOpen }: NavbarProps) {
       >
         {NAV_ITEMS.map((item) => (
           <button
+            aria-current={item.section === currentSection ? "page" : undefined}
             aria-label={item.shortLabel}
             className="portfolio-nav__item"
             key={item.section}

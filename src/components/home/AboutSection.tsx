@@ -539,7 +539,7 @@ export function AboutSection({
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
-                  className="m-0 font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.085em] text-balance max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
+                  className="m-0 font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-balance max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
                   aria-label={ABOUT_DATA.titleLines.join(" ")}
                 >
                   {ABOUT_DATA.titleLines.map((line, lineIndex) => (

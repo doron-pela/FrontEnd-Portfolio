@@ -47,6 +47,7 @@ export type ScrollLockedSectionControllerProps<Section extends string> = {
   runtimesRef: RefObject<Map<Section, ScrollSectionRuntime<Section>>>; //Record<> and Map<> are the same except that record takes <strings|nums|symbols as key, v>, while map takes <anything as key, v>
   //RuntimesRef will globally hold the registered runtime for any of the sections that register
   programmaticScrollRef: RefObject<boolean>;
+  onCurrentSectionChange?: (section: Section) => void;
   restoreState?: ScrollSectionRestoreState<Section> | null;
 };
 

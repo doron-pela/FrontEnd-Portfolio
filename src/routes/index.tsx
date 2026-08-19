@@ -52,14 +52,16 @@ const SECTION_KEY_MAP: Record<string, HomeSection> = {
 function HomePage() {
   const location = useLocation();
   const [skillsDrawerOpen, setSkillsDrawerOpen] = useState(false);
+  const [currentSection, setCurrentSection] = useState<HomeSection>(() =>
+    location.state.portfolioReturn?.locked
+      ? location.state.portfolioReturn.section
+      : "init",
+  );
   const sectionRuntimesRef = useRef(
     new Map<HomeSection, ScrollSectionRuntime<HomeSection>>(),
   );
   const programmaticScrollRef = useRef(false);
 
-  //The project-detail link stores this on the HOME history entry before it
-  //leaves. Returning with browser/TanStack history therefore gives this exact
-  //entry its project index back without putting restoration data in the URL.
   const portfolioReturnStateRef = useRef<PortfolioReturnState | undefined>(
     location.state.portfolioReturn,
   );
@@ -77,16 +79,6 @@ function HomePage() {
         : null,
     );
 
-  //The project-return metadata must survive pure browser Back/Forward cycling.
-  //If it is deleted immediately on the first return, a later Alt+Forward followed
-  //by Alt+Back reaches the same HOME history entry without enough information to
-  //reconstruct the locally locked Frontend scene. Keep the metadata on that exact
-  //history entry until the user actually starts interacting with the homepage.
-  //
-  //This still solves the older stale-refresh problem: once the user scrolls,
-  //touches, uses section-navigation keys, or clicks into the live homepage, the
-  //return instruction is consumed from THIS home entry. A later refresh from a
-  //different section therefore cannot incorrectly jump back to the old project.
   const clearPortfolioReturnState = useCallback(() => {
     const currentHistoryState = (window.history.state ?? {}) as Record<
       string,
@@ -98,9 +90,7 @@ function HomePage() {
     }
 
     const nextHistoryState = { ...currentHistoryState };
-
     delete nextHistoryState.portfolioReturn;
-
     window.history.replaceState(nextHistoryState, "", window.location.href);
     portfolioReturnStateRef.current = undefined;
   }, []);
@@ -112,13 +102,9 @@ function HomePage() {
 
     function handleHomepagePointerDown(event: PointerEvent) {
       const target = event.target;
-
-      //The loading screen is only a visual overlay. Clicking/tapping it must not
-      //consume route-return metadata before the restored homepage is presented.
       if (target instanceof Element && target.closest(".spline-loader-shell")) {
         return;
       }
-
       clearPortfolioReturnState();
     }
 
@@ -131,8 +117,6 @@ function HomePage() {
     }
 
     function handleHomepageKeyDown(event: KeyboardEvent) {
-      //Alt+left / Alt+Right are browser-history commands. They are specifically
-      //the navigation path that needs this metadata to remain on the home entry.
       if (event.altKey || event.metaKey || event.ctrlKey) {
         return;
       }
@@ -179,7 +163,6 @@ function HomePage() {
     };
   }, [clearPortfolioReturnState]);
 
-  //Called, this function is our actual effect in every section component
   const registerSection = useCallback<RegisterScrollSection<HomeSection>>(
     (runtime) => {
       sectionRuntimesRef.current.set(runtime.section, runtime);
@@ -195,40 +178,16 @@ function HomePage() {
 
   return (
     <>
-      {/*
-        Navbar intentionally belongs to the homepage route, not __root.tsx.
-        SplineScene mounts this entire <Outlet /> only after its loading screen
-        has completed, so the navbar cannot appear during loading and enters the
-        DOM at the exact same lifecycle boundary as the homepage controller and
-        section overlays. Project-detail routes never mount this index route, so
-        they naturally remain navbar-free and keep their dedicated Back control.
-      */}
-      <Navbar onSkillsOpen={() => setSkillsDrawerOpen(true)} />
-
-      {/*
-        This action belongs only to the homepage base composition. It is kept out
-        of the scroll-section controller and derives its visibility directly from
-        window.scrollY, fading away continuously as the visitor leaves scrollY 0.
-      */}
+      <Navbar
+        currentSection={currentSection}
+        onSkillsOpen={() => setSkillsDrawerOpen(true)}
+      />
       {/* <ResumeDownloadButton /> */}
-
-      {/*
-        The professional role signature belongs to the same homepage base
-        composition as the resume action. It remains independent from the
-        scroll-section controller and simply fades with the real window scroll.
-      */}
       <HomeRoleSignature />
-
-      {/*
-        Skills is an overlay owned by the homepage, not another HomeSection.
-        Opening it therefore never changes global scrollY, ScrollTrigger state,
-        route history, the active Spline camera, or the current manual section.
-      */}
       <SkillsDrawer
         open={skillsDrawerOpen}
         onOpenChange={setSkillsDrawerOpen}
       />
-
       <ScrollLockedSectionController<HomeSection>
         positions={HOME_SECTIONS}
         revealDelaySeconds={SECTION_REVEAL_DELAY_SECONDS}
@@ -236,27 +195,24 @@ function HomePage() {
         scrollDurationSeconds={SECTION_SCROLL_DURATION_SECONDS}
         runtimesRef={sectionRuntimesRef}
         programmaticScrollRef={programmaticScrollRef}
+        onCurrentSectionChange={setCurrentSection}
         restoreState={routeRestoreStateRef.current}
       />
-
       <AboutSection
         startY={HOME_SECTIONS.about}
         registerSection={registerSection}
         programmaticScrollRef={programmaticScrollRef}
       />
-
       <FrontendSection
         startY={HOME_SECTIONS.experience}
         registerSection={registerSection}
         programmaticScrollRef={programmaticScrollRef}
       />
-
       <BackendSection
         startY={HOME_SECTIONS.systems}
         registerSection={registerSection}
         programmaticScrollRef={programmaticScrollRef}
       />
-
       <ContactSection
         startY={HOME_SECTIONS.contact}
         registerSection={registerSection}

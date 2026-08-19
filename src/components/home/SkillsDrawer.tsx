@@ -426,7 +426,7 @@ export default function SkillsDrawer({
     calculateDrawerMetrics();
 
     const drawerWidth = Math.max(drawerWidthRef.current, 1);
-    const stretchDistancePx = 0;
+    const stretchDistancePx = 60;
     const stretchedScaleX = 1 + stretchDistancePx / drawerWidth;
 
     gsap.set(drawer, {
@@ -436,8 +436,8 @@ export default function SkillsDrawer({
 
     const timeline = gsap.timeline({
       delay: 0.85,
-        repeat: -1,
-        repeatDelay: 5,
+      repeat: -1,
+      repeatDelay: 5,
     });
 
     idleStretchTimelineRef.current = timeline;

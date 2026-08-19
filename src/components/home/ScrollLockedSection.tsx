@@ -1,4 +1,3 @@
-// src/components/home/ScrollLockedSection.tsx
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useCallback, useEffect, useRef } from "react";
@@ -45,9 +44,11 @@ export function ScrollLockedSectionController<Section extends string>({
   scrollDurationSeconds,
   runtimesRef,
   programmaticScrollRef,
+  onCurrentSectionChange,
   restoreState = null,
 }: ScrollLockedSectionControllerProps<Section>) {
   const activeLockedSectionRef = useRef<Section | null>(null);
+  const currentSectionRef = useRef<Section | null>(null);
   const hasRestoredStateRef = useRef(false);
   const lastWindowScrollYRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
@@ -65,6 +66,41 @@ export function ScrollLockedSectionController<Section extends string>({
   const getRegisteredSections = useCallback(() => {
     return Array.from(runtimesRef.current.values());
   }, [runtimesRef]);
+
+  const publishCurrentSection = useCallback(
+    (section: Section) => {
+      if (currentSectionRef.current === section) {
+        return;
+      }
+
+      currentSectionRef.current = section;
+      onCurrentSectionChange?.(section);
+    },
+    [onCurrentSectionChange],
+  );
+
+  //Resolve the current global section from the same authored positions already
+  //owned by this controller. This keeps Navbar state tied to real scroll state.
+  const syncCurrentSectionForWindowY = useCallback(
+    (windowY: number) => {
+      let currentSection: Section | null = null;
+      let currentSectionStartY = Number.NEGATIVE_INFINITY;
+
+      for (const [section, startY] of Object.entries(positions) as Array<
+        [Section, number]
+      >) {
+        if (startY <= windowY && startY >= currentSectionStartY) {
+          currentSection = section;
+          currentSectionStartY = startY;
+        }
+      }
+
+      if (currentSection !== null) {
+        publishCurrentSection(currentSection);
+      }
+    },
+    [positions, publishCurrentSection],
+  );
 
   const getActiveLockedSection = useCallback(() => {
     const activeSection = activeLockedSectionRef.current;
@@ -361,6 +397,9 @@ export function ScrollLockedSectionController<Section extends string>({
       const revealDelay = revealDelaySeconds[section];
       const registeredSections = getRegisteredSections();
 
+      //Programmatic navigation owns the requested destination immediately.
+      publishCurrentSection(section);
+
       gsap.killTweensOf(window);
 
       registeredSections.forEach((runtime) => {
@@ -447,6 +486,7 @@ export function ScrollLockedSectionController<Section extends string>({
           //An interrupted authored scroll must not leave the destination's hard
           //isolation behind. Recompute eligibility from the actual window Y.
           syncSectionDisplayForWindowY(window.scrollY, null);
+          syncCurrentSectionForWindowY(window.scrollY);
         },
       });
     },
@@ -455,13 +495,15 @@ export function ScrollLockedSectionController<Section extends string>({
       getSectionScrollTarget,
       lockSectionScroll,
       programmaticScrollRef,
+      publishCurrentSection,
       resetSection,
       revealDelaySeconds,
       runtimesRef,
       scrollDurationSeconds,
+      syncCurrentSectionForWindowY,
       syncSectionDisplayForWindowY,
       unlockSectionScroll,
-      isolateLockedSection
+      isolateLockedSection,
     ],
   );
 
@@ -538,6 +580,7 @@ export function ScrollLockedSectionController<Section extends string>({
       destinationRuntime.lockYRef.current = targetY;
       destinationRuntime.lockedRef.current = true;
       activeLockedSectionRef.current = destinationRuntime.section;
+      publishCurrentSection(destinationRuntime.section);
       isolateLockedSection(destinationRuntime.section);
 
       destinationRuntime.snapRef.current = true;
@@ -583,6 +626,7 @@ export function ScrollLockedSectionController<Section extends string>({
     getRegisteredSections,
     isolateLockedSection,
     programmaticScrollRef,
+    publishCurrentSection,
     restoreState,
     runtimesRef,
     settleSectionForWindowY,
@@ -655,10 +699,12 @@ export function ScrollLockedSectionController<Section extends string>({
         );
 
         isolateLockedSection(inferredLockedSection.section);
+        publishCurrentSection(inferredLockedSection.section);
         lastWindowScrollYRef.current = lockY;
       } else {
         activeLockedSectionRef.current = null;
         syncSectionDisplayForWindowY(restoredY, null);
+        syncCurrentSectionForWindowY(restoredY);
         lastWindowScrollYRef.current = restoredY;
       }
 
@@ -674,8 +720,10 @@ export function ScrollLockedSectionController<Section extends string>({
   }, [
     getRegisteredSections,
     isolateLockedSection,
+    publishCurrentSection,
     restoreState,
     settleSectionForWindowY,
+    syncCurrentSectionForWindowY,
     syncSectionDisplayForWindowY,
   ]);
 
@@ -799,7 +847,10 @@ export function ScrollLockedSectionController<Section extends string>({
 
       const activeSection = getActiveLockedSection();
 
-      if (!activeSection?.lockedRef.current) {
+      if (activeSection?.lockedRef.current) {
+        publishCurrentSection(activeSection.section);
+      } else {
+        syncCurrentSectionForWindowY(currentY);
         syncSectionDisplayForWindowY(currentY, null);
       }
 
@@ -930,6 +981,10 @@ export function ScrollLockedSectionController<Section extends string>({
 
     lastWindowScrollYRef.current = window.scrollY;
 
+    if (!restoreState) {
+      syncCurrentSectionForWindowY(window.scrollY);
+    }
+
     window.addEventListener("scroll", handleWindowScroll, {
       passive: true,
     });
@@ -944,7 +999,10 @@ export function ScrollLockedSectionController<Section extends string>({
     isolateLockedSection,
     lockSectionScroll,
     programmaticScrollRef,
+    publishCurrentSection,
+    restoreState,
     snapWindowToSectionLock,
+    syncCurrentSectionForWindowY,
     syncSectionDisplayForWindowY,
   ]);
 
