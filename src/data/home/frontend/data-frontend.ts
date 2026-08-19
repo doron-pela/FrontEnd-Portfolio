@@ -16,8 +16,8 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   {
     title: "Cybervylle",
     description:
-      "A cinematic game discovery and catalogue experience for exploring releases, filtering by platform and release window, searching titles, saving games, and moving into rich game-detail views without losing the product's visual identity.",
-    outcome: `A large external game catalogue becomes a focused discovery journey that moves users from browsing to deeper game context and saved intent through one coherent interface.`,
+      "A game discovery platform built for finding what’s worth playing next. Explore new and upcoming releases, filter by platform and date, compare ratings and Metacritic reviews, see where each game is available, and save your favorites",
+    outcome: `Gave gaming lounges and arcade communities a better way to surface relevant titles to players, compare reception across games, and quickly identify what was available on different platforms before adding something new to the rotation`,
     technologies: ["React", "TanStack Query", "RAWG API", "Axios", "Motion "],
     liveUrl: "https://cybervylle.vercel.app/",
     repositoryUrl: "https://github.com/doron-pela/Cyberville",
