@@ -23,13 +23,13 @@ export const NAV_ITEMS: readonly NavbarItem[] = [
   {
     section: "experience",
     key: "2",
-    label: "Frontend",
+    label: "Frontend work",
     shortLabel: "Frontend work",
   },
   {
     section: "systems",
     key: "3",
-    label: "Backend",
+    label: "Backend work",
     shortLabel: "Backend work",
   },
   { section: "skills", key: null, label: "Skills", shortLabel: "Skills" },

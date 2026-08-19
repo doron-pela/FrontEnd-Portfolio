@@ -49,6 +49,7 @@ export function ScrollLockedSectionController<Section extends string>({
 }: ScrollLockedSectionControllerProps<Section>) {
   const activeLockedSectionRef = useRef<Section | null>(null);
   const currentSectionRef = useRef<Section | null>(null);
+  const programmaticNavigationIdRef = useRef(0);
   const hasRestoredStateRef = useRef(false);
   const lastWindowScrollYRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
@@ -264,6 +265,7 @@ export function ScrollLockedSectionController<Section extends string>({
       runtime.lockYRef.current = lockY; //Exact global pixel y distance where about section locks
       runtime.lockedRef.current = true;
       activeLockedSectionRef.current = runtime.section;
+      publishCurrentSection(runtime.section);
       isolateLockedSection(runtime.section);
 
       runtime.snapRef.current = true;
@@ -281,7 +283,7 @@ export function ScrollLockedSectionController<Section extends string>({
         runtime.snapRef.current = false;
       });
     },
-    [isolateLockedSection, programmaticScrollRef],
+    [isolateLockedSection, programmaticScrollRef, publishCurrentSection],
   );
 
   //Locally advancing about section while global window is locked
@@ -396,9 +398,14 @@ export function ScrollLockedSectionController<Section extends string>({
       const destinationRuntime = runtimesRef.current.get(section) ?? null;
       const revealDelay = revealDelaySeconds[section];
       const registeredSections = getRegisteredSections();
+      const navigationId = programmaticNavigationIdRef.current + 1;
 
-      //Programmatic navigation owns the requested destination immediately.
-      publishCurrentSection(section);
+      //Invalidate the callbacks belonging to any previous authored window
+      //scroll BEFORE killing that tween. GSAP fires the previous tween's
+      //onInterrupt synchronously when it is killed; without this generation
+      //guard that stale callback can publish the intermediate window.scrollY
+      //section after the newly clicked navbar destination.
+      programmaticNavigationIdRef.current = navigationId;
 
       gsap.killTweensOf(window);
 
@@ -408,6 +415,11 @@ export function ScrollLockedSectionController<Section extends string>({
 
       programmaticScrollRef.current = true;
       controllerReadyRef.current = true;
+
+      //Publish only after any older window tween has been invalidated/killed,
+      //so the clicked destination is the final section signal for this
+      //navigation request.
+      publishCurrentSection(section);
 
       registeredSections.forEach((runtime) => {
         runtime.releasingRef.current = false;
@@ -463,8 +475,13 @@ export function ScrollLockedSectionController<Section extends string>({
           });
         },
         onComplete: () => {
+          if (programmaticNavigationIdRef.current !== navigationId) {
+            return;
+          }
+
           lastWindowScrollYRef.current = targetY;
           programmaticScrollRef.current = false;
+          publishCurrentSection(section);
 
           if (destinationRuntime) {
             destinationRuntime.lockYRef.current = targetY;
@@ -480,6 +497,14 @@ export function ScrollLockedSectionController<Section extends string>({
           syncSectionDisplayForWindowY(targetY, null);
         },
         onInterrupt: () => {
+          //A newer navbar/key navigation may have intentionally killed this
+          //tween. In that case the newer request owns both programmatic-scroll
+          //state and the navbar destination, so this stale callback must not
+          //publish the intermediate scroll position over it.
+          if (programmaticNavigationIdRef.current !== navigationId) {
+            return;
+          }
+
           lastWindowScrollYRef.current = window.scrollY;
           programmaticScrollRef.current = false;
 

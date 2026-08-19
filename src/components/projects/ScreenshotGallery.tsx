@@ -47,7 +47,7 @@ const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";
 //composition: it begins translated LEFT underneath the copy and reveals RIGHT.
 //In both modalities the wrapper reveal happens before native screenshot scroll,
 //so there is no clipping/direction discontinuity at the reveal handoff.
-const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 31;
+const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 27.5;
 
 //A small amount of drag hysteresis prevents tiny pointer noise from needlessly
 //writing scrollLeft / transform values before the user has actually dragged.
@@ -346,10 +346,10 @@ export default function ProjectScreenshotGallery({
         (1 - clampedProgress);
 
       galleryRevealProgressRef.current = clampedProgress;
-      //Store the reveal translation on the shell so both the screenshot
-      //wrapper and the opening-arrow track inherit the exact same motion. The
-      //opening arrow therefore rides the real exposed edge of the translated
-      //gallery instead of being statically pinned to the outer viewport.
+      //Store the reveal translation on the shell so both the screenshot wrapper
+      //and the opening-arrow track inherit the exact same motion. The opening
+      //control is offset beyond that translated media edge below, so it follows
+      //the gallery reveal without ever sitting on top of screenshot pixels.
       galleryShellRef.current?.style.setProperty(
         "--project-gallery-peek-x",
         `${peekTranslatePercent}%`,
@@ -1126,11 +1126,11 @@ export default function ProjectScreenshotGallery({
 
         /*
           The arrows remain click-only controls; dragging is still owned by the
-          gallery surface. On wide desktop the OPENING arrow lives on a separate
-          transform track that inherits the gallery's exact peek translation,
-          so it rides the exposed leading edge of the screenshot wall itself.
-          The CLOSING arrow stays at the details-side edge where the old opening
-          control lived, preventing it from floating in the empty outer space.
+          gallery surface. On wide desktop the OPENING arrow rides with the
+          translated screenshot wall but is offset completely beyond its
+          scene-facing edge, so it reads as an external pull/reveal affordance
+          and never covers project media. The CLOSING arrow stays at the
+          details-side edge in its existing position.
         */
         .project-gallery-opening-tug-track {
           pointer-events: none;
@@ -1209,14 +1209,14 @@ export default function ProjectScreenshotGallery({
 
         @media (min-width: 1181px) {
           /*
-            Frontend opens with the RIGHT arrow, but that arrow belongs on the
-            translated gallery's exposed LEFT tip. Backend mirrors this exactly:
-            its LEFT opening arrow belongs on the exposed RIGHT tip. Keep a tiny
-            inset so the circular control visibly sits ON the screenshot edge.
+            Frontend's opening control hangs beyond the gallery's LEFT,
+            scene-facing edge. Backend mirrors it beyond the RIGHT edge. The
+            whole circular control stays clear of screenshot pixels; only the
+            closing control remains attached to the details-side gallery edge.
           */
           .project-gallery-opening-tug-track[data-orientation="frontend"]
             .project-gallery-tug-open {
-            left: clamp(0.2rem, 0.35vw, 0.35rem);
+            left: clamp(-2.75rem, -2.6vw, -2.2rem);
             right: auto;
             transform: translateY(-50%) scale(0.94);
           }
@@ -1234,7 +1234,7 @@ export default function ProjectScreenshotGallery({
           .project-gallery-opening-tug-track[data-orientation="backend"]
             .project-gallery-tug-open {
             left: auto;
-            right: clamp(0.2rem, 0.35vw, 0.35rem);
+            right: clamp(-2.75rem, -2.6vw, -2.2rem);
             transform: translateY(-50%) scale(0.94);
           }
 
