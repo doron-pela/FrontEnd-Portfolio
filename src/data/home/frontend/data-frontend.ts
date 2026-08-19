@@ -1,11 +1,11 @@
 import type { PortfolioProject } from "@/data/projects/project.types";
 import { getProjectScreenshots } from "@/utils/home-asset-registry";
 
-const mediaQuery = window.matchMedia("(max-width: 399px)");
+// const mediaQuery = window.matchMedia("(max-width: 399px)");
 
-const padding = mediaQuery.matches
-  ? ""
-  : "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ"; ;
+// const padding = mediaQuery.matches
+//   ? ""
+//   : "ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ"; ;
 
 //This is the single source of truth for every frontend project's metadata. The
 //homepage story and the /experience/frontend/$projectSlug detail route both
@@ -17,7 +17,7 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
     title: "Cybervylle",
     description:
       "A cinematic game discovery and catalogue experience for exploring releases, filtering by platform and release window, searching titles, saving games, and moving into rich game-detail views without losing the product's visual identity.",
-    outcome: `A large external game catalogue becomes a focused discovery journey that moves users from browsing to deeper game context and saved intent through one coherent interface.${padding}`,
+    outcome: `A large external game catalogue becomes a focused discovery journey that moves users from browsing to deeper game context and saved intent through one coherent interface.`,
     technologies: ["React", "TanStack Query", "RAWG API", "Axios", "Motion "],
     liveUrl: "https://cybervylle.vercel.app/",
     repositoryUrl: "https://github.com/doron-pela/Cyberville",
