@@ -436,8 +436,8 @@ export default function SkillsDrawer({
 
     const timeline = gsap.timeline({
       delay: 0.85,
-      //   repeat: -1,
-      //   repeatDelay: 5,
+        repeat: -1,
+        repeatDelay: 5,
     });
 
     idleStretchTimelineRef.current = timeline;
