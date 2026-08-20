@@ -1126,20 +1126,19 @@ export default function FrontendSection({
         }
 
         /*
-          Wide-but-short desktop viewports (for example 1280 x 800 laptop
-          compositions) still belong to the desktop two-column layout, but they
-          do not have enough vertical room for the desktop minimum rem sizes.
-          Scale only the project copy's vertical rhythm from viewport HEIGHT so
-          text, controls and spacing contract continuously before the section's
-          outer overflow gate ever has a reason to clip the action row.
+          Height-constrained non-mobile viewports need density to respond to the
+          usable HEIGHT, not only to width. Start this treatment at 1100px so it
+          covers the existing stacked 1100-1180 composition and the 1181-1400
+          desktop two-column composition without changing either layout or the
+          gallery geometry.
         */
-        @media (min-width: 1181px) and (max-height: 900px) {
+        @media (min-width: 1100px) and (max-width: 1400px) and (max-height: 900px) {
           .frontend-desktop-project-title-block {
             margin-top: clamp(0.35rem, 1.2vh, 0.7rem) !important;
           }
 
           .frontend-desktop-project-title {
-            font-size: clamp(1.2rem, 2.8vh, 1.72rem) !important;
+            font-size: clamp(1.12rem, 2.55vh, 1.55rem) !important;
             line-height: 0.9 !important;
           }
 
@@ -1153,18 +1152,18 @@ export default function FrontendSection({
           }
 
           .frontend-desktop-detail-label {
-            font-size: clamp(0.44rem, 0.9vh, 0.54rem) !important;
+            font-size: clamp(0.42rem, 0.82vh, 0.5rem) !important;
             letter-spacing: 0.13em !important;
           }
 
           .frontend-compact-phone-detail-value {
-            font-size: clamp(0.76rem, 1.72vh, 0.98rem) !important;
-            line-height: 1.34 !important;
+            font-size: clamp(0.76rem, 1.55vh, 0.92rem) !important;
+            line-height: 1.32 !important;
           }
 
           .frontend-desktop-technology {
-            font-size: clamp(0.56rem, 1.12vh, 0.7rem) !important;
-            line-height: 1.4 !important;
+            font-size: clamp(0.54rem, 1vh, 0.66rem) !important;
+            line-height: 1.38 !important;
           }
 
           .frontend-desktop-links {
@@ -1173,9 +1172,9 @@ export default function FrontendSection({
           }
 
           .frontend-compact-phone-action {
-            padding: clamp(0.36rem, 0.76vh, 0.48rem)
-              clamp(0.58rem, 0.72vw, 0.82rem) !important;
-            font-size: clamp(0.54rem, 1.05vh, 0.62rem) !important;
+            padding: clamp(0.34rem, 0.7vh, 0.44rem)
+              clamp(0.56rem, 0.68vw, 0.78rem) !important;
+            font-size: clamp(0.52rem, 0.96vh, 0.6rem) !important;
           }
 
           .frontend-desktop-links .frontend-project-link {
@@ -1185,6 +1184,29 @@ export default function FrontendSection({
           .frontend-desktop-links svg {
             width: clamp(0.72rem, 1.45vh, 0.84rem);
             height: clamp(0.72rem, 1.45vh, 0.84rem);
+          }
+        }
+
+        /*
+          Below 860px of usable height, secondary editorial rows are the first
+          information to yield. Description, technologies, destinations and the
+          gallery remain intact. Grouping the surviving copy at the vertical
+          center prevents the action row from being pushed below the viewport
+          while avoiding a large empty band between the project title and copy.
+        */
+        @media (min-width: 1100px) and (max-width: 1400px) and (max-height: 860px) {
+          .frontend-project-detail-secondary {
+            display: none !important;
+          }
+
+          .frontend-desktop-copy-distribution {
+            justify-content: center !important;
+            gap: clamp(0.42rem, 1.05vh, 0.68rem) !important;
+          }
+
+          .frontend-desktop-technology,
+          .frontend-desktop-links {
+            margin-top: 0 !important;
           }
         }
 
