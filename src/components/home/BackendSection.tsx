@@ -993,87 +993,144 @@ export default function BackendSection({
         }
 
         /*
-          Compact-phone mode is intentionally based on BOTH width and height.
-          A 375px-wide phone can still have a tall viewport, so width alone
-          should not throw away project information. On short phone viewports
-          (including the 377 x 758 case), keep Description and collapse the two
-          secondary editorial rows so the gallery and actions retain real space.
+          Mobile now uses a deliberate information hierarchy rather than trying
+          to preserve every desktop-sized text layer inside a narrow, short
+          viewport. The section intro and repository action are secondary on
+          phones, so removing them buys real vertical room without touching the
+          project description, primary destinations, gallery or story timeline.
+          The H2 also scales against BOTH width and height so a wider-but-short
+          phone cannot make the heading grow just because vw increased.
         */
-        @media (max-width: 390px) and (max-height: 820px) {
-          .backend-project-detail-secondary {
+        @media (max-width: 680px) {
+          .backend-compact-phone-intro,
+          .backend-mobile-hidden-repository {
             display: none !important;
           }
 
-          .backend-compact-phone-composition {
-            bottom: 3.1vh !important;
-            gap: 0.5rem !important;
-          }
-
           .backend-compact-phone-heading {
-            font-size: clamp(1.85rem, 8.5vw, 2.1rem) !important;
+            font-size: clamp(1.7rem, min(8.2vw, 4.4vh), 2.2rem) !important;
             line-height: 0.78 !important;
           }
 
-          .backend-compact-phone-intro {
-            margin-top: 0.35rem !important;
-            font-size: 0.44rem !important;
-            line-height: 1.4 !important;
-          }
-
-          .backend-compact-phone-project-title {
-            font-size: clamp(1.25rem, 5.8vw, 1.5rem) !important;
-            line-height: 0.94 !important;
-          }
-
-          .backend-compact-phone-project-row {
-            margin-top: 0.45rem !important;
-            gap: 0.55rem !important;
-          }
-
-          .backend-compact-phone-detail {
-            gap: 0.18rem !important;
-            padding-block: 0.42rem !important;
-          }
-
-          .backend-compact-phone-detail-value {
-            font-size: 0.8rem !important;
-            line-height: 1.4 !important;
-          }
-
-          .backend-compact-phone-technology {
-            margin-top: 0.42rem !important;
-            font-size: 0.64rem !important;
-            line-height: 1.45 !important;
-          }
-
-          .backend-compact-phone-links {
-            margin-top: 0.5rem !important;
-            column-gap: 0.45rem !important;
-            row-gap: 0.35rem !important;
-          }
-
-          .backend-compact-phone-action {
-            padding: 0.44rem 0.72rem !important;
-            font-size: 0.52rem !important;
-          }
-
-          .backend-compact-phone-gallery {
-            height: min(17vh, 8rem) !important;
+          .backend-compact-phone-composition {
+            gap: clamp(0.58rem, 1.2vh, 0.78rem) !important;
           }
         }
 
         /*
-          If the browser chrome leaves an even shorter usable viewport, the
-          section-level intro is the next least-important item. Project title,
-          Description, technologies, destinations and media stay available.
+          Short-phone fit mode starts before the examples become pathological,
+          not after overlap has already occurred. The project composition stops
+          using the normal mobile upward nudge and is aligned from the TOP of
+          the stack. That makes the H2/stack boundary deterministic: if content
+          ever becomes taller than its available region it can only grow toward
+          the bottom, never upward through the section heading.
+
+          The remaining typography and vertical rhythm then scale primarily from
+          viewport HEIGHT. Description is intentionally never clamped here.
         */
-        @media (max-width: 390px) and (max-height: 700px) {
-          .backend-compact-phone-intro {
-            display: none !important;
+        @media (max-width: 680px) and (max-height: 820px) {
+          .backend-desktop-project-layout {
+            justify-content: flex-start !important;
+            transform: translateY(0) !important;
+          }
+
+          .backend-desktop-project-title-block {
+            margin-top: 0 !important;
+            flex-shrink: 0;
+          }
+
+          .backend-compact-phone-project-title {
+            font-size: clamp(1.02rem, min(5.5vw, 2.8vh), 1.34rem) !important;
+            line-height: 1 !important;
+          }
+
+          .backend-compact-phone-project-row {
+            margin-top: clamp(0.48rem, 1.05vh, 0.62rem) !important;
+            gap: clamp(0.42rem, 0.9vh, 0.58rem) !important;
+          }
+
+          .backend-compact-phone-detail {
+            gap: clamp(0.12rem, 0.3vh, 0.18rem) !important;
+            padding-block: clamp(0.28rem, 0.62vh, 0.42rem) !important;
+          }
+
+          .backend-compact-phone-detail-value {
+            font-size: clamp(0.7rem, min(3.25vw, 1.68vh), 0.8rem) !important;
+            line-height: 1.38 !important;
+          }
+
+          .backend-compact-phone-technology {
+            margin-top: clamp(0.3rem, 0.65vh, 0.44rem) !important;
+            font-size: clamp(0.53rem, min(2.35vw, 1.32vh), 0.62rem) !important;
+            line-height: 1.38 !important;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+          }
+
+          .backend-compact-phone-links {
+            margin-top: clamp(0.34rem, 0.72vh, 0.5rem) !important;
+            column-gap: clamp(0.34rem, 1.2vw, 0.46rem) !important;
+            row-gap: clamp(0.24rem, 0.55vh, 0.34rem) !important;
+          }
+
+          .backend-compact-phone-action {
+            padding: clamp(0.31rem, 0.72vh, 0.42rem)
+              clamp(0.58rem, 2.1vw, 0.72rem) !important;
+            font-size: clamp(0.46rem, min(2.05vw, 1.12vh), 0.52rem) !important;
           }
 
           .backend-compact-phone-gallery {
-            height: min(15vh, 6.75rem) !important;
+            height: min(16vh, 7.75rem) !important;
+          }
+        }
+
+        /*
+          Narrow short phones cannot afford a second editorial paragraph after
+          Description. This deliberately covers the 390/391/392px seam as one
+          continuous geometry range, so changing width by a pixel can no longer
+          restore Outcome/My work and suddenly push the whole card into the H2.
+        */
+        @media (max-width: 430px) and (max-height: 820px) {
+          .backend-project-detail-secondary {
+            display: none !important;
+          }
+        }
+
+        /*
+          Wider short phones have more line width, so keep their secondary detail
+          when possible but cap it to two lines. This is the dynamic truncation
+          layer: Description remains complete, while lower-priority copy is the
+          first text allowed to surrender height as the viewport gets shorter.
+        */
+        @media (min-width: 431px) and (max-width: 680px) and (max-height: 820px) {
+          .backend-project-detail-secondary .backend-compact-phone-detail-value {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+          }
+        }
+
+        /*
+          At genuinely shallow phone heights, secondary editorial rows disappear
+          everywhere and the technology line is reduced to one line. The gallery
+          remains visible and simply gives up a small amount of height. This is
+          intentionally the final fallback, after heading/action reduction and
+          truncation have already done the cheaper work.
+        */
+        @media (max-width: 680px) and (max-height: 700px) {
+          .backend-project-detail-secondary {
+            display: none !important;
+          }
+
+          .backend-compact-phone-technology {
+            -webkit-line-clamp: 1;
+          }
+
+          .backend-compact-phone-gallery {
+            height: min(14.5vh, 6.6rem) !important;
           }
         }
 
@@ -1128,55 +1185,59 @@ export default function BackendSection({
         }
 
         /*
-          Height-constrained non-mobile viewports need density to respond to the
-          usable HEIGHT, not only to width. Start this treatment at 1100px so it
-          covers the existing stacked 1100-1180 composition and the 1181-1400
-          desktop two-column composition without changing either layout or the
-          gallery geometry.
+          The real short-desktop pressure starts at the 1181px layout handoff.
+          At <=1180px the existing stacked composition already uses the wider
+          31rem copy column and height-aware type. At 1181px the layout becomes
+          two-column, the copy narrows to roughly 40% of the 58vw composition,
+          and the desktop type minima become much larger. On a short viewport
+          that combination creates extra line wraps and pushes the action row
+          below the stage. Keep every project field and the gallery intact here;
+          only let typography and its immediate vertical rhythm contract gently
+          with viewport HEIGHT.
         */
-        @media (min-width: 1100px) and (max-width: 1400px) and (max-height: 900px) {
+        @media (min-width: 1181px) and (max-width: 1400px) and (max-height: 900px) {
           .backend-desktop-project-title-block {
-            margin-top: clamp(0.35rem, 1.2vh, 0.7rem) !important;
+            margin-top: clamp(0.45rem, 1.35vh, 0.78rem) !important;
           }
 
           .backend-desktop-project-title {
-            font-size: clamp(1.12rem, 2.55vh, 1.55rem) !important;
-            line-height: 0.9 !important;
+            font-size: clamp(1.18rem, 2.9vh, 1.7rem) !important;
+            line-height: 0.91 !important;
           }
 
           .backend-desktop-project-row {
-            margin-top: clamp(0.3rem, 0.8vh, 0.5rem) !important;
+            margin-top: clamp(0.38rem, 0.95vh, 0.62rem) !important;
           }
 
           .backend-compact-phone-detail {
-            gap: clamp(0.16rem, 0.45vh, 0.3rem) !important;
-            padding-block: clamp(0.32rem, 0.85vh, 0.58rem) !important;
+            gap: clamp(0.2rem, 0.5vh, 0.34rem) !important;
+            padding-block: clamp(0.38rem, 0.88vh, 0.62rem) !important;
           }
 
           .backend-desktop-detail-label {
-            font-size: clamp(0.42rem, 0.82vh, 0.5rem) !important;
+            font-size: clamp(0.46rem, 0.92vh, 0.54rem) !important;
             letter-spacing: 0.13em !important;
           }
 
           .backend-compact-phone-detail-value {
-            font-size: clamp(0.76rem, 1.55vh, 0.92rem) !important;
-            line-height: 1.32 !important;
+            font-size: clamp(0.84rem, 1.85vh, 0.98rem) !important;
+            line-height: 1.34 !important;
           }
 
           .backend-desktop-technology {
-            font-size: clamp(0.54rem, 1vh, 0.66rem) !important;
-            line-height: 1.38 !important;
+            font-size: clamp(0.58rem, 1.15vh, 0.72rem) !important;
+            line-height: 1.42 !important;
           }
 
           .backend-desktop-links {
-            column-gap: clamp(0.4rem, 0.65vw, 0.72rem) !important;
-            row-gap: 0.35rem !important;
+            column-gap: clamp(0.45rem, 0.72vw, 0.78rem) !important;
+            row-gap: clamp(0.3rem, 0.7vh, 0.42rem) !important;
           }
 
           .backend-compact-phone-action {
-            padding: clamp(0.34rem, 0.7vh, 0.44rem)
-              clamp(0.56rem, 0.68vw, 0.78rem) !important;
-            font-size: clamp(0.52rem, 0.96vh, 0.6rem) !important;
+            padding: clamp(0.36rem, 0.74vh, 0.48rem)
+              clamp(0.62rem, 0.74vw, 0.86rem) !important;
+            font-size: clamp(0.56rem, 1.08vh, 0.64rem) !important;
           }
 
           .backend-desktop-links .backend-project-link {
@@ -1184,31 +1245,36 @@ export default function BackendSection({
           }
 
           .backend-desktop-links svg {
-            width: clamp(0.72rem, 1.45vh, 0.84rem);
-            height: clamp(0.72rem, 1.45vh, 0.84rem);
+            width: clamp(0.74rem, 1.5vh, 0.86rem);
+            height: clamp(0.74rem, 1.5vh, 0.86rem);
           }
         }
 
         /*
-          Below 860px of usable height, secondary editorial rows are the first
-          information to yield. Description, technologies, destinations and the
-          gallery remain intact. Grouping the surviving copy at the vertical
-          center prevents the action row from being pushed below the viewport
-          while avoiding a large empty band between the project title and copy.
+          Only genuinely shallow desktop windows need information reduction.
+          Keep every detail through ordinary 800-ish short-desktop heights. At
+          <=680px, hide only secondary editorial rows. The remaining Description
+          stays at the top of the copy column, while technologies and actions
+          form the lower cluster via auto margin. This preserves the useful
+          vertical separation instead of bunching all surviving copy together in
+          one centered block.
         */
-        @media (min-width: 1100px) and (max-width: 1400px) and (max-height: 860px) {
+        @media (min-width: 1181px) and (max-width: 1400px) and (max-height: 680px) {
           .backend-project-detail-secondary {
             display: none !important;
           }
 
           .backend-desktop-copy-distribution {
-            justify-content: center !important;
-            gap: clamp(0.42rem, 1.05vh, 0.68rem) !important;
+            justify-content: flex-start !important;
+            gap: 0 !important;
           }
 
-          .backend-desktop-technology,
+          .backend-desktop-technology {
+            margin-top: auto !important;
+          }
+
           .backend-desktop-links {
-            margin-top: 0 !important;
+            margin-top: clamp(0.38rem, 0.9vh, 0.58rem) !important;
           }
         }
 
@@ -1266,7 +1332,7 @@ export default function BackendSection({
             <div className="backend-compact-phone-composition absolute bottom-[3.25vh] left-[4.35vw] top-[clamp(5.5rem,8.6vh,7.8rem)] z-20 flex min-h-0 w-[min(58vw,70rem)] flex-col gap-[clamp(0.95rem,1.55vh,1.35rem)] max-[1180px]:w-[min(76vw,46rem)] min-[901px]:max-[1180px]:gap-[clamp(0.72rem,1.2vh,0.9rem)] max-[900px]:bottom-[3.5vh] max-[900px]:left-[4.5vw] max-[900px]:top-[clamp(5.25rem,8vh,6.5rem)] max-[900px]:w-[91vw] max-[680px]:bottom-[4vh] max-[680px]:left-[4vw] max-[680px]:right-[27vw] max-[680px]:top-[clamp(5.15rem,9.8vh,6.25rem)] max-[680px]:w-auto max-[680px]:gap-[clamp(0.72rem,1.25vh,1rem)]">
               <div className="backend-browser-zoom-compensated z-40 mr-auto flex w-full shrink-0 flex-col items-start text-left">
                 <h2
-                  className="frontend-compact-phone-heading m-0 font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2.35rem,2.5vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
+                  className="backend-compact-phone-heading m-0 font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2.35rem,2.5vw,4.5rem)] font-semibold uppercase leading-[0.78] tracking-[-0.085em] min-[681px]:max-[1180px]:text-[clamp(2.05rem,3.25vw,2.75rem)] min-[681px]:max-[1180px]:leading-[0.8] min-[901px]:max-[1180px]:text-[clamp(1.8rem,3.55vh,2.05rem)] min-[901px]:max-[1180px]:leading-[0.78] max-[680px]:text-[clamp(2.15rem,9.4vw,2.9rem)] max-[680px]:leading-[0.75]"
                   aria-label={BACKEND_DATA.ariaLabel}
                 >
                   <span className="block overflow-y-clip pb-[0.08em]">
@@ -1341,7 +1407,7 @@ export default function BackendSection({
                       */}
                       <div className="backend-desktop-project-layout flex h-full min-h-0 w-full flex-col justify-end max-[1180px]:justify-center max-[680px]:-translate-y-[clamp(0.35rem,1.2vh,0.75rem)]">
                         <div className="backend-desktop-project-title-block backend-browser-zoom-compensated backend-project-copy mt-[5vh] relative z-30 mr-auto w-full max-w-[23rem] text-left max-[1180px]:max-w-[31rem] min-[901px]:max-[1180px]:shrink-0 max-[680px]:max-w-none">
-                          <h3 className="backend-desktop-project-title frontend-compact-phone-project-title ml-auto max-w-[23rem] font-['Dancing_Script','Segoe_Script','Brush_Script_MT',cursive] text-[clamp(1.85rem,2vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
+                          <h3 className="backend-desktop-project-title backend-compact-phone-project-title ml-auto max-w-[23rem] font-['Dancing_Script','Segoe_Script','Brush_Script_MT',cursive] text-[clamp(1.85rem,2vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
                             {project.title}
                           </h3>
                         </div>
@@ -1426,7 +1492,7 @@ export default function BackendSection({
 
                                   {project.repositoryUrl ? (
                                     <a
-                                      className="backend-project-link backend-compact-phone-action pointer-events-auto inline-flex items-center justify-center gap-[clamp(0.42rem,0.52vw,0.58rem)] rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(1.05rem,1.22vw,1.3rem)] py-[clamp(0.6rem,0.72vw,0.76rem)] font-mono text-[clamp(0.68rem,0.76vw,0.84rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:gap-[0.38rem] max-[1180px]:px-[0.92rem] max-[1180px]:py-[0.58rem] max-[1180px]:text-[0.62rem] min-[901px]:max-[1180px]:px-[0.84rem] min-[901px]:max-[1180px]:py-[0.5rem] min-[901px]:max-[1180px]:text-[0.58rem] max-[680px]:text-[0.6rem]"
+                                      className="backend-project-link backend-compact-phone-action backend-mobile-hidden-repository pointer-events-auto inline-flex items-center justify-center gap-[clamp(0.42rem,0.52vw,0.58rem)] rounded-full border border-[#171717]/11 bg-white/[0.045] px-[clamp(1.05rem,1.22vw,1.3rem)] py-[clamp(0.6rem,0.72vw,0.76rem)] font-mono text-[clamp(0.68rem,0.76vw,0.84rem)] uppercase tracking-[0.12em] text-[#171717]/62 backdrop-blur-[8px] transition-[transform,background-color,opacity] duration-200 hover:-translate-y-px hover:bg-white/16 hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/14 max-[1180px]:gap-[0.38rem] max-[1180px]:px-[0.92rem] max-[1180px]:py-[0.58rem] max-[1180px]:text-[0.62rem] min-[901px]:max-[1180px]:px-[0.84rem] min-[901px]:max-[1180px]:py-[0.5rem] min-[901px]:max-[1180px]:text-[0.58rem] max-[680px]:text-[0.6rem]"
                                       href={project.repositoryUrl}
                                       rel="noreferrer"
                                       target="_blank"
