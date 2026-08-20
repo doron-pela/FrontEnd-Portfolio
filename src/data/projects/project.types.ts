@@ -14,7 +14,7 @@ export type PortfolioProject = {
   description: string | null;
   contribution?: string | null;
   outcome?: string | null;
-  technologies: readonly string[];
+  technologies?: readonly string[];
   screenshots?: readonly ProjectScreenshot[];
   liveUrl?: string | null;
   repositoryUrl?: string | null;

@@ -1127,6 +1127,69 @@ export default function BackendSection({
           }
         }
 
+        /*
+          Wide-but-short desktop viewports (for example 1280 x 800 laptop
+          compositions) still belong to the desktop two-column layout, but they
+          do not have enough vertical room for the desktop minimum rem sizes.
+          Scale only the project copy's vertical rhythm from viewport HEIGHT so
+          text, controls and spacing contract continuously before the section's
+          outer overflow gate ever has a reason to clip the action row.
+        */
+        @media (min-width: 1181px) and (max-height: 900px) {
+          .backend-desktop-project-title-block {
+            margin-top: clamp(0.35rem, 1.2vh, 0.7rem) !important;
+          }
+
+          .backend-desktop-project-title {
+            font-size: clamp(1.2rem, 2.8vh, 1.72rem) !important;
+            line-height: 0.9 !important;
+          }
+
+          .backend-desktop-project-row {
+            margin-top: clamp(0.3rem, 0.8vh, 0.5rem) !important;
+          }
+
+          .backend-compact-phone-detail {
+            gap: clamp(0.16rem, 0.45vh, 0.3rem) !important;
+            padding-block: clamp(0.32rem, 0.85vh, 0.58rem) !important;
+          }
+
+          .backend-desktop-detail-label {
+            font-size: clamp(0.44rem, 0.9vh, 0.54rem) !important;
+            letter-spacing: 0.13em !important;
+          }
+
+          .backend-compact-phone-detail-value {
+            font-size: clamp(0.76rem, 1.72vh, 0.98rem) !important;
+            line-height: 1.34 !important;
+          }
+
+          .backend-desktop-technology {
+            font-size: clamp(0.56rem, 1.12vh, 0.7rem) !important;
+            line-height: 1.4 !important;
+          }
+
+          .backend-desktop-links {
+            column-gap: clamp(0.4rem, 0.65vw, 0.72rem) !important;
+            row-gap: 0.35rem !important;
+          }
+
+          .backend-compact-phone-action {
+            padding: clamp(0.36rem, 0.76vh, 0.48rem)
+              clamp(0.58rem, 0.72vw, 0.82rem) !important;
+            font-size: clamp(0.54rem, 1.05vh, 0.62rem) !important;
+          }
+
+          .backend-desktop-links .backend-project-link {
+            letter-spacing: 0.1em;
+          }
+
+          .backend-desktop-links svg {
+            width: clamp(0.72rem, 1.45vh, 0.84rem);
+            height: clamp(0.72rem, 1.45vh, 0.84rem);
+          }
+        }
+
         .backend-timeline-progress-horizontal {
           transform: scaleX(var(--backend-timeline-progress, 0));
           transform-origin: right center;
@@ -1255,8 +1318,8 @@ export default function BackendSection({
                         vertical rhythm so the whole project remains self-contained.
                       */}
                       <div className="backend-desktop-project-layout flex h-full min-h-0 w-full flex-col justify-end max-[1180px]:justify-center max-[680px]:-translate-y-[clamp(0.35rem,1.2vh,0.75rem)]">
-                        <div className="backend-browser-zoom-compensated backend-project-copy mt-[5vh] relative z-30 mr-auto w-full max-w-[23rem] text-left max-[1180px]:max-w-[31rem] min-[901px]:max-[1180px]:shrink-0 max-[680px]:max-w-none">
-                          <h3 className="frontend-compact-phone-project-title ml-auto max-w-[23rem] font-['Dancing_Script','Segoe_Script','Brush_Script_MT',cursive] text-[clamp(1.85rem,2vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
+                        <div className="backend-desktop-project-title-block backend-browser-zoom-compensated backend-project-copy mt-[5vh] relative z-30 mr-auto w-full max-w-[23rem] text-left max-[1180px]:max-w-[31rem] min-[901px]:max-[1180px]:shrink-0 max-[680px]:max-w-none">
+                          <h3 className="backend-desktop-project-title frontend-compact-phone-project-title ml-auto max-w-[23rem] font-['Dancing_Script','Segoe_Script','Brush_Script_MT',cursive] text-[clamp(1.85rem,2vw,3.25rem)] font-semibold leading-[0.92] tracking-[-0.065em] max-[1180px]:max-w-[31rem] max-[1180px]:text-[clamp(1.55rem,2.7vw,1.9rem)] min-[681px]:max-[1180px]:text-[clamp(1.35rem,2.25vw,1.75rem)] min-[681px]:max-[1180px]:leading-[0.94] min-[901px]:max-[1180px]:text-[clamp(1.15rem,2.5vh,1.35rem)] min-[901px]:max-[1180px]:leading-[0.94] max-[680px]:max-w-full max-[680px]:text-[clamp(1.45rem,6.7vw,2rem)] max-[680px]:leading-[0.96]">
                             {project.title}
                           </h3>
                         </div>
@@ -1302,7 +1365,7 @@ export default function BackendSection({
                                       />
 
                                       <div className="backend-project-copy backend-compact-phone-detail flex flex-col items-start gap-[clamp(0.45rem,0.7vh,0.62rem)] py-[clamp(0.92rem,1.35vh,1.18rem)] text-left max-[1180px]:gap-[0.32rem] max-[1180px]:py-[0.7rem] min-[901px]:max-[1180px]:gap-[0.22rem] min-[901px]:max-[1180px]:py-[clamp(0.42rem,0.8vh,0.5rem)] max-[680px]:gap-[0.3rem] max-[680px]:py-[0.66rem]">
-                                        <span className="font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
+                                        <span className="backend-desktop-detail-label font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
                                           {detail.label}
                                         </span>
                                         <p className="backend-compact-phone-detail-value max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
@@ -1315,7 +1378,7 @@ export default function BackendSection({
                               ) : null}
 
                               <p className="backend-desktop-technology backend-technology-text backend-compact-phone-technology mr-auto mt-[clamp(1rem,1.5vh,1.3rem)] w-full max-w-[23rem] text-left font-mono text-[clamp(0.76rem,0.82vw,0.92rem)] font-medium leading-[1.65] tracking-[0.035em] text-[#171717]/68 max-[1180px]:mt-[0.78rem] max-[1180px]:max-w-[31rem] max-[1180px]:text-[0.74rem] min-[901px]:max-[1180px]:mt-[0.5rem] min-[901px]:max-[1180px]:text-[0.66rem] min-[901px]:max-[1180px]:leading-[1.5] max-[680px]:mt-[0.72rem] max-[680px]:max-w-none max-[680px]:text-[0.7rem] max-[680px]:leading-[1.6]">
-                                {project.technologies.join(", ")}
+                                {project.technologies?.join(", ")}
                               </p>
 
                               {/* Explicit project destinations live with the copy.

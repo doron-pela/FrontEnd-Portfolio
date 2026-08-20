@@ -30,7 +30,7 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
       "A web-based CV builder for Ashesi University students that turns form entries into a consistently formatted CV ready to download.",
     outcome:
       "Helped my Alma mater's Career Services center to make CV formatting faster, simpler and consistent without repeatedly editing document templates.",
-    technologies: [],
+    // technologies: [],
     liveUrl: "https://ashesi-cv-generator.vercel.app",
     repositoryUrl: null,
     detailsSlug: "ashesi-cv-generator",
