@@ -6,6 +6,7 @@ import BackendSection from "@/components/home/BackendSection";
 import ContactSection from "@/components/home/ContactSection";
 import FrontendSection from "@/components/home/FrontendSection";
 import HomeRoleSignature from "@/components/home/HomeRoleSignature";
+import HomeScrollIndicator from "@/components/home/HomeScrollIndicator";
 // import ResumeDownloadButton from "@/components/home/ResumeDownloadButton";
 import { ScrollLockedSectionController } from "@/components/home/ScrollLockedSection";
 import SkillsDrawer from "@/components/home/SkillsDrawer";
@@ -184,6 +185,10 @@ function HomePage() {
       />
       {/* <ResumeDownloadButton /> */}
       <HomeRoleSignature />
+      
+      <HomeScrollIndicator
+        active={currentSection === "init" && !skillsDrawerOpen}
+      />
       <SkillsDrawer
         open={skillsDrawerOpen}
         onOpenChange={setSkillsDrawerOpen}

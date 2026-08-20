@@ -17,6 +17,50 @@ type SkillsDrawerProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+//The stretch/elastic affordance is only allowed before the drawer has ever been
+//opened. Persist that one-time interaction in localStorage so a normal refresh,
+//a route remount or a later visit cannot bring the introductory bounce back.
+const SKILLS_DRAWER_OPENED_STORAGE_KEY = "portfolio:skills-drawer-opened";
+let hasSkillsDrawerOpenedInMemory = false;
+
+function hasSkillsDrawerBeenOpened() {
+  if (hasSkillsDrawerOpenedInMemory) {
+    return true;
+  }
+
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    const hasOpened =
+      window.localStorage.getItem(SKILLS_DRAWER_OPENED_STORAGE_KEY) === "true";
+
+    if (hasOpened) {
+      hasSkillsDrawerOpenedInMemory = true;
+    }
+
+    return hasOpened;
+  } catch {
+    return false;
+  }
+}
+
+function rememberSkillsDrawerOpened() {
+  hasSkillsDrawerOpenedInMemory = true;
+
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(SKILLS_DRAWER_OPENED_STORAGE_KEY, "true");
+  } catch {
+    //The in-memory flag still preserves idempotency for this application
+    //lifetime if browser storage is unavailable or intentionally blocked.
+  }
+}
+
 function DrawerSection({
   eyebrow,
   children,
@@ -33,7 +77,7 @@ function DrawerSection({
   return (
     <section className={`skills-drawer-section ${className}`}>
       <div className="mb-3 flex items-center gap-3">
-        <span className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.17em] text-[#171717]/42">
+        <span className="font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold','Avenir_Next','Segoe_UI',sans-serif] text-[clamp(0.58rem,0.62vw,0.64rem)] font-semibold uppercase tracking-[0.12em] text-[#171717]/48">
           {eyebrow}
           {useColon ? ":" : ""}
         </span>
@@ -60,6 +104,7 @@ export default function SkillsDrawer({
   const scrollTrackRef = useRef<HTMLDivElement | null>(null);
   const scrollThumbRef = useRef<HTMLDivElement | null>(null);
   const idleStretchTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const hasOpenedOnceRef = useRef(hasSkillsDrawerBeenOpened());
 
   const scrollSyncFrameRef = useRef<number | null>(null);
   const scrollThumbDraggingRef = useRef(false);
@@ -364,9 +409,24 @@ export default function SkillsDrawer({
     };
   }, [open, scheduleScrollThumbSync]);
 
-  //Controlled open/close animation. Opening deliberately overshoots with an
-  //elastic spring, while closing is cleaner and faster so the drawer never feels
-  //sluggish when the user clicks away.
+  const markDrawerAsOpened = useCallback(() => {
+    if (hasOpenedOnceRef.current) {
+      return;
+    }
+
+    hasOpenedOnceRef.current = true;
+    rememberSkillsDrawerOpened();
+
+    //Once the drawer has been intentionally opened, the closed-state stretch is
+    //retired after first use. It must never restart after closing.
+    idleStretchTimelineRef.current?.kill();
+    idleStretchTimelineRef.current = null;
+  }, []);
+
+  //Controlled open/close animation. Desktop openings always keep the authored
+  //elastic overshoot. Mobile/tablet openings remain smooth and non-bouncy. The
+  //persisted "opened once" flag only retires the CLOSED idle stretch affordance;
+  //it must never remove the desktop drawer's actual springy open animation.
   useEffect(() => {
     const drawer = drawerRef.current;
     const overlay = overlayRef.current;
@@ -376,6 +436,17 @@ export default function SkillsDrawer({
     }
 
     calculateDrawerMetrics();
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const desktopDrawerQuery = window.matchMedia("(min-width: 1101px)");
+    const shouldUseElasticOpen =
+      open && desktopDrawerQuery.matches && !prefersReducedMotion;
+
+    if (open) {
+      markDrawerAsOpened();
+    }
 
     gsap.killTweensOf(drawer);
     gsap.killTweensOf(overlay);
@@ -387,8 +458,12 @@ export default function SkillsDrawer({
 
     gsap.to(drawer, {
       x: open ? 0 : closedXRef.current,
-      duration: open ? 0.92 : 0.58,
-      ease: open ? "elastic.out(1, 0.62)" : "power4.inOut",
+      duration: open ? (shouldUseElasticOpen ? 0.92 : 0.62) : 0.58,
+      ease: open
+        ? shouldUseElasticOpen
+          ? "elastic.out(1, 0.62)"
+          : "power4.out"
+        : "power4.inOut",
       overwrite: true,
     });
 
@@ -398,19 +473,17 @@ export default function SkillsDrawer({
       ease: "power2.out",
       overwrite: true,
     });
-  }, [calculateDrawerMetrics, open]);
+  }, [calculateDrawerMetrics, markDrawerAsOpened, open]);
 
   //The idle affordance never changes drawer.x. Real drag/open/close own that
-  //property exclusively. Instead, the ENTIRE closed white sheet stretches a
-  //maximum of ~6px toward the viewport using scaleX from its left edge.
-  //
-  //Because the drawer is translated exactly one full drawer-width offscreen,
-  //scaleX > 1 temporarily exposes only those few pixels. Returning to scaleX 1
-  //makes the sheet completely disappear again, leaving only the attached tab.
+  //property exclusively. Instead, the ENTIRE closed white sheet stretches from
+  //its left edge. This hint is desktop-only and exists only BEFORE the very first
+  //drawer opening; after that first use, the closed drawer remains completely
+  //static after that first use.
   useEffect(() => {
     const drawer = drawerRef.current;
 
-    if (!drawer || open) {
+    if (!drawer || open || hasOpenedOnceRef.current) {
       return;
     }
 
@@ -534,12 +607,27 @@ export default function SkillsDrawer({
           ? true
           : openRef.current;
 
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const desktopDrawerQuery = window.matchMedia("(min-width: 1101px)");
+      const shouldUseElasticOpen =
+        nextOpen && desktopDrawerQuery.matches && !prefersReducedMotion;
+
+      if (nextOpen) {
+        markDrawerAsOpened();
+      }
+
       //Force the drawer to settle even when the controlled boolean does not
       //change, because the user may have dragged it partway and released.
       gsap.to(drawer, {
         x: nextOpen ? 0 : closedX,
-        duration: nextOpen ? 0.78 : 0.5,
-        ease: nextOpen ? "elastic.out(1, 0.64)" : "power4.inOut",
+        duration: nextOpen ? (shouldUseElasticOpen ? 0.78 : 0.58) : 0.5,
+        ease: nextOpen
+          ? shouldUseElasticOpen
+            ? "elastic.out(1, 0.64)"
+            : "power4.out"
+          : "power4.inOut",
         overwrite: true,
       });
 
@@ -549,7 +637,7 @@ export default function SkillsDrawer({
         idleStretchTimelineRef.current?.restart(true);
       }
     },
-    [calculateDrawerMetrics, onOpenChange],
+    [calculateDrawerMetrics, markDrawerAsOpened, onOpenChange],
   );
 
   const handlePointerMove = useCallback(
@@ -822,7 +910,7 @@ export default function SkillsDrawer({
           ref={handleRef}
           aria-expanded={open}
           aria-label={open ? "Close skills drawer" : "Open skills drawer"}
-          className="skills-drawer-handle absolute right-[-2.37rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-[#171717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/15 max-[1100px]:hidden"
+          className="skills-drawer-handle absolute right-[-2.37rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-[#171717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/15 max-[680px]:hidden"
           onClick={() => {
             //A pointer drag naturally emits a click after pointerup in browsers.
             //Suppress that synthetic click when the handle actually travelled,
@@ -879,7 +967,7 @@ export default function SkillsDrawer({
         >
           <div ref={scrollContentRef}>
             <header className="mb-[clamp(1.6rem,3vh,2.35rem)]">
-              <h2 className="font-sans text-[clamp(2.45rem,2vw,4.2rem)] font-semibold uppercase leading-[0.82] tracking-[-0.075em] max-[680px]:text-[2.65rem]">
+              <h2 className="font-sans text-[clamp(2rem,1.7vw,3.35rem)] font-semibold uppercase leading-[0.84] tracking-[-0.065em] max-[680px]:text-[2.2rem]">
                 {SKILLS_DATA.title}
               </h2>
 
@@ -899,7 +987,7 @@ export default function SkillsDrawer({
                     }
                     key={role.title}
                   >
-                    <div className="font-sans text-[clamp(1.35rem,2vw,1.75rem)] font-medium tracking-[-0.045em]">
+                    <div className="font-sans text-[clamp(1.08rem,1.35vw,1.35rem)] font-medium tracking-[-0.035em]">
                       {role.title}
                     </div>
 
