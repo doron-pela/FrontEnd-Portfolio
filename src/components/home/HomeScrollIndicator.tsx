@@ -164,7 +164,7 @@ export default function HomeScrollIndicator({
               rgb(5,5,5) 100%
             );
           box-shadow:
-            inset 0 8px 13px -14px rgba(255,255,255,0.3),
+            inset 0 8px 13px -14px rgba(255,255,255,0.42),
             inset 0 -10px 14px -14px rgba(255,255,255,0.12),
             0 8px 24px rgba(0,0,0,0.2);
           color: rgba(255,255,255,0.9);
@@ -181,16 +181,35 @@ export default function HomeScrollIndicator({
           background:
             linear-gradient(
               180deg,
-              rgba(255,255,255,0.4) 0%,
-              rgba(255,255,255,0.23) 15%,
-              rgba(255,255,255,0.095) 31%,
-              rgba(255,255,255,0.028) 43%,
-              rgba(255,255,255,0.006) 51%,
-              transparent 60%
+              rgba(255,255,255,0.72) 0%,
+              rgba(255,255,255,0.5) 12%,
+              rgba(255,255,255,0.27) 27%,
+              rgba(255,255,255,0.11) 41%,
+              rgba(255,255,255,0.032) 52%,
+              transparent 64%
+            );
+          -webkit-mask-image:
+            radial-gradient(
+              92% 128% at 50% -18%,
+              #000 0%,
+              #000 52%,
+              rgba(0,0,0,0.92) 62%,
+              rgba(0,0,0,0.5) 75%,
+              transparent 91%
+            );
+          mask-image:
+            radial-gradient(
+              92% 128% at 50% -18%,
+              #000 0%,
+              #000 52%,
+              rgba(0,0,0,0.92) 62%,
+              rgba(0,0,0,0.5) 75%,
+              transparent 91%
             );
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.28);
-          opacity: 0.72;
+            inset 0 1.65px 0 rgba(255,255,255,0.5),
+            inset 0 4px 8px -7px rgba(255,255,255,0.32);
+          opacity: 0.96;
         }
 
         .home-scroll-indicator__label {
