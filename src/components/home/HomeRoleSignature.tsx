@@ -92,7 +92,7 @@ export default function HomeRoleSignature() {
           min-[1101px]:text-[rgba(32,32,32,0.62)]
           max-[2300px]:top-[16vh]
           min-[701px]:max-[1100px]:left-[18vw] min-[701px]:max-[1100px]:top-[31vh] min-[701px]:max-[1100px]:w-[min(52vw,30rem)]
-          min-[950px]:max-[1100px]:left-[40vw]
+          min-[950px]:max-[1100px]:left-[25vw]
           max-[700px]:left-1/2 max-[700px]:top-[34vh] max-[700px]:w-[88vw] max-[700px]:text-center max-[700px]:mix-blend-normal"
       >
         <span

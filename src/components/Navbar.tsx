@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type SVGProps } from "react";
+import { useCallback, type SVGProps } from "react";
 
 import type { HomeSection } from "@/@types/home-section.types";
 import {
@@ -203,8 +203,6 @@ function SectionIcon({
 }
 
 export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
-  const navRef = useRef<HTMLElement | null>(null);
-
   const handleSectionNavigation = useCallback(
     (item: NavbarItem) => {
       if (item.section === "skills") {
@@ -225,72 +223,13 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
     [currentSection, onSkillsOpen],
   );
 
-  //Keep the liquid-glass shell responsive to pointer position. The page's actual
-  //Spline canvas remains the background, while these CSS optical layers supply
-  //specular response and depth without introducing another renderer.
-  useEffect(() => {
-    const nav = navRef.current;
-
-    if (!nav) {
-      return;
-    }
-
-    function resetOptics() {
-      if (!nav) {
-        return;
-      }
-
-      nav.style.setProperty("--nav-pointer-x", "50%");
-      nav.style.setProperty("--nav-pointer-y", "22%");
-    }
-
-    function handlePointerMove(event: PointerEvent) {
-      if (!nav) {
-        return;
-      }
-
-      const rect = nav.getBoundingClientRect();
-
-      if (
-        event.clientX < rect.left ||
-        event.clientX > rect.right ||
-        event.clientY < rect.top ||
-        event.clientY > rect.bottom
-      ) {
-        resetOptics();
-        return;
-      }
-
-      const x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100;
-      const y = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100;
-
-      nav.style.setProperty("--nav-pointer-x", `${x}%`);
-      nav.style.setProperty("--nav-pointer-y", `${y}%`);
-    }
-
-    window.addEventListener("pointermove", handlePointerMove, {
-      passive: true,
-    });
-    window.addEventListener("blur", resetOptics);
-
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("blur", resetOptics);
-      resetOptics();
-    };
-  }, []);
-
   return (
     <nav
-      ref={navRef}
       aria-label="Portfolio sections"
       className="portfolio-nav fixed left-1/2 top-[clamp(0.45rem,1vh,0.68rem)] z-[500] -translate-x-1/2"
     >
       <style>{`
         .portfolio-nav {
-          --nav-pointer-x: 50%;
-          --nav-pointer-y: 22%;
-
           width: clamp(50rem, 58vw, 64rem);
           height: 3.72rem;
           padding: 0.27rem;
@@ -301,9 +240,10 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         /*
-          Restore the deeper liquid-glass shell from the earlier navbar, but keep
-          the palette strictly monochrome. Depth comes from white/black Fresnel-
-          like edges, pointer light and real backdrop blur rather than bright hue.
+          Material first, reflections second. The shell is not a flat #000 fill:
+          several extremely dark value bands model a rounded black object before
+          any white specular highlight is added. This borrows the useful part of
+          the supplied 3D-ball reference without importing its many noisy facets.
         */
         .portfolio-nav::before {
           content: "";
@@ -311,49 +251,65 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           inset: 0;
           z-index: -4;
           border-radius: inherit;
-          background: rgba(227, 227, 227, 0.29);
-          -webkit-backdrop-filter:
-            blur(21px)
-            saturate(1.32)
-            brightness(1.075)
-            contrast(1.025);
-          backdrop-filter:
-            blur(21px)
-            saturate(1.32)
-            brightness(1.075)
-            contrast(1.025);
+          background:
+            radial-gradient(
+              78% 140% at 13% -24%,
+              rgba(255,255,255,0.075) 0%,
+              rgba(255,255,255,0.022) 34%,
+              transparent 62%
+            ),
+            radial-gradient(
+              72% 125% at 88% 120%,
+              rgba(255,255,255,0.045) 0%,
+              rgba(255,255,255,0.012) 38%,
+              transparent 65%
+            ),
+            linear-gradient(
+              180deg,
+              rgb(8,8,8) 0%,
+              rgb(2,2,2) 23%,
+              rgb(0,0,0) 57%,
+              rgb(0,0,0) 74%,
+              rgb(5,5,5) 100%
+            );
           box-shadow:
-            inset 0 1.2px 0 rgba(255,255,255,0.9),
-            inset 0 -1.4px 0 rgba(23,23,23,0.13),
-            inset 1.8px 0 1.4px rgba(255,255,255,0.24),
-            inset -1.8px 0 1.4px rgba(23,23,23,0.08),
-            0 9px 28px rgba(23,23,23,0.075),
-            0 2px 7px rgba(23,23,23,0.045);
+            inset 0 10px 16px -15px rgba(255,255,255,0.34),
+            inset 0 -12px 18px -17px rgba(255,255,255,0.16),
+            0 10px 26px rgba(0,0,0,0.2),
+            0 2px 7px rgba(0,0,0,0.14);
         }
 
+        /*
+          Specular light now lives on a complete inset copy of the navbar's own
+          pill surface. That is the important geometric constraint: the light is
+          clipped by the same curvature as the object instead of being drawn as a
+          free-standing strip. Two localized environment catches are enough to
+          suggest polished black material without filling the middle with lines.
+        */
         .portfolio-nav::after {
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 1px;
+          inset: 0.14rem 0.16rem 0.18rem;
           z-index: -2;
           border-radius: inherit;
           background:
             radial-gradient(
-              circle at var(--nav-pointer-x) var(--nav-pointer-y),
-              rgba(255,255,255,0.94) 0%,
-              rgba(255,255,255,0.31) 15%,
-              rgba(255,255,255,0.07) 35%,
-              transparent 59%
+              62% 118% at 7% -28%,
+              rgba(255,255,255,0.62) 0%,
+              rgba(255,255,255,0.34) 13%,
+              rgba(255,255,255,0.14) 30%,
+              rgba(255,255,255,0.035) 46%,
+              transparent 61%
             ),
             radial-gradient(
-              ellipse at 50% 123%,
-              rgba(23,23,23,0.13) 0%,
-              rgba(23,23,23,0.035) 42%,
-              transparent 71%
+              31% 92% at 99% 7%,
+              rgba(255,255,255,0.3) 0%,
+              rgba(255,255,255,0.12) 21%,
+              rgba(255,255,255,0.03) 40%,
+              transparent 59%
             );
-          opacity: 0.76;
-          mix-blend-mode: screen;
+          opacity: 0.82;
         }
 
         .portfolio-nav__items {
@@ -378,19 +334,20 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border: 0;
           border-radius: 999px;
           background: transparent;
-          color: rgba(23,23,23,0.8);
+          color: rgba(255,255,255,0.9);
           cursor: pointer;
           perspective: 260px;
           user-select: none;
           transition:
-            transform 300ms cubic-bezier(.2,1.4,.36,1),
-            color 220ms ease;
+            transform 260ms cubic-bezier(.2,1.2,.36,1),
+            color 180ms ease;
           will-change: transform;
         }
 
         /*
-          Each nav item is still a shallow water lens. The old hover depth is
-          retained, but its edge separation is now white/black only.
+          The active item uses the same material model at a smaller scale. Its
+          body is still black; slightly stronger tonal modelling makes it read
+          as a raised glossy capsule without turning it grey or luminous.
         */
         .portfolio-nav__item::before {
           content: "";
@@ -399,100 +356,98 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           inset: 0.09rem;
           z-index: -1;
           border-radius: inherit;
-          opacity: 0.065;
-          transform: scale(0.88);
+          opacity: 0;
           background:
             radial-gradient(
-              circle at 27% 13%,
-              rgba(255,255,255,0.97) 0%,
-              rgba(255,255,255,0.43) 11%,
-              rgba(255,255,255,0.08) 31%,
-              transparent 54%
+              90% 145% at 18% -35%,
+              rgba(255,255,255,0.12) 0%,
+              rgba(255,255,255,0.035) 37%,
+              transparent 65%
             ),
-            radial-gradient(
-              circle at 72% 97%,
-              rgba(23,23,23,0.15) 0%,
-              rgba(23,23,23,0.035) 39%,
-              transparent 66%
-            ),
-            rgba(255,255,255,0.075);
-          -webkit-backdrop-filter:
-            blur(8px)
-            saturate(1.3)
-            brightness(1.075);
-          backdrop-filter:
-            blur(8px)
-            saturate(1.3)
-            brightness(1.075);
+            linear-gradient(
+              180deg,
+              rgb(12,12,12) 0%,
+              rgb(5,5,5) 25%,
+              rgb(2,2,2) 58%,
+              rgb(7,7,7) 100%
+            );
           box-shadow:
-            inset 0 1.1px 0 rgba(255,255,255,0.86),
-            inset 0 -1.2px 0 rgba(23,23,23,0.13),
-            inset 1.7px 0 1.2px rgba(255,255,255,0.27),
-            inset -1.7px 0 1.2px rgba(23,23,23,0.09),
-            0 5px 13px rgba(23,23,23,0.065);
-          transition:
-            opacity 260ms ease,
-            transform 340ms cubic-bezier(.2,1.45,.36,1),
-            box-shadow 260ms ease;
+            inset 0 8px 12px -13px rgba(255,255,255,0.36),
+            inset 0 -9px 13px -13px rgba(255,255,255,0.11),
+            0 2px 6px rgba(0,0,0,0.36);
+          transition: opacity 190ms ease;
         }
 
+        /*
+          The active sheen follows the active capsule itself. It occupies a full
+          inset rounded surface, then localized gradients determine where light
+          is visible. This keeps the highlight curved at the ends and straight
+          through the centre without ever becoming a rectangular patch.
+        */
         .portfolio-nav__item::after {
           content: "";
           pointer-events: none;
           position: absolute;
-          left: 18%;
-          top: 11%;
+          inset: 0.14rem;
           z-index: 1;
-          width: 36%;
-          height: 18%;
-          border-radius: 999px;
+          border-radius: inherit;
           opacity: 0;
-          transform: translateY(2px) scaleX(0.72);
-          background: rgba(255,255,255,0.83);
-          filter: blur(3.5px);
-          transition:
-            opacity 230ms ease,
-            transform 330ms cubic-bezier(.2,1.45,.36,1);
-          mix-blend-mode: screen;
+          background:
+            radial-gradient(
+              72% 116% at 8% -28%,
+              rgba(255,255,255,0.72) 0%,
+              rgba(255,255,255,0.4) 14%,
+              rgba(255,255,255,0.17) 31%,
+              rgba(255,255,255,0.04) 46%,
+              transparent 61%
+            ),
+            radial-gradient(
+              34% 90% at 99% 8%,
+              rgba(255,255,255,0.26) 0%,
+              rgba(255,255,255,0.085) 24%,
+              transparent 55%
+            );
+          transition: opacity 190ms ease;
         }
 
-        .portfolio-nav__item:hover,
+        /*
+          Hover intentionally does NOT create a second capsule or any light patch.
+          It only lifts the content slightly so the hovered destination is clear
+          without visually competing with the persistent active state.
+        */
+        @media (hover: hover) and (pointer: fine) {
+          .portfolio-nav__item:hover:not([aria-current="page"]) {
+            color: rgba(255,255,255,1);
+            transform: translateY(-1px);
+          }
+
+          .portfolio-nav__item:hover:not([aria-current="page"])
+            .portfolio-nav__icon-shell {
+            color: rgba(255,255,255,1);
+            transform:
+              perspective(240px)
+              rotateX(-4deg)
+              rotateY(2deg)
+              translate3d(0,-1.5px,4px);
+          }
+        }
+
         .portfolio-nav__item:focus-visible {
-          color: rgba(23,23,23,0.98);
-          transform: translateY(-1px) scale(1.012);
-          outline: none;
-        }
-
-        .portfolio-nav__item:hover::before,
-        .portfolio-nav__item:focus-visible::before {
-          opacity: 1;
-          transform: scale(1);
-          box-shadow:
-            inset 0 1.5px 0 rgba(255,255,255,0.98),
-            inset 0 -1.5px 0 rgba(23,23,23,0.15),
-            inset 1.9px 0 1.3px rgba(255,255,255,0.34),
-            inset -1.9px 0 1.3px rgba(23,23,23,0.11),
-            0 8px 21px rgba(23,23,23,0.1);
-        }
-
-        .portfolio-nav__item:hover::after,
-        .portfolio-nav__item:focus-visible::after {
-          opacity: 0.72;
-          transform: translateY(0) scaleX(1);
+          color: rgba(255,255,255,1);
+          outline: 1px solid rgba(255,255,255,0.32);
+          outline-offset: -2px;
         }
 
         .portfolio-nav__item[aria-current="page"] {
-          color: rgba(23,23,23,0.98);
+          color: rgba(255,255,255,1);
         }
 
         .portfolio-nav__item[aria-current="page"]::before {
           opacity: 1;
-          transform: scale(1);
         }
 
         .portfolio-nav__item[aria-current="page"]::after {
-          opacity: 0.72;
-          transform: translateY(0) scaleX(1);
+          opacity: 0.78;
         }
 
         .portfolio-nav__item:active {
@@ -501,9 +456,8 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         /*
-          The icon is intentionally UNBOUNDED. This wrapper exists only as a
-          transform target for the hover lift, not as a visible tile or badge.
-          There is no background, border, radius, glass box or clipping around it.
+          The icon remains unbounded. Its wrapper is only a 3D transform target;
+          there is no visible icon tile, glass square or clipping container.
         */
         .portfolio-nav__icon-shell {
           position: relative;
@@ -513,7 +467,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           height: 1.62rem;
           flex: 0 0 auto;
           place-items: center;
-          color: rgba(23,23,23,0.88);
+          color: rgba(255,255,255,0.92);
           perspective: 240px;
           transform:
             perspective(240px)
@@ -522,16 +476,11 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             translate3d(0,0,0);
           transform-style: preserve-3d;
           transition:
-            transform 300ms cubic-bezier(.2,1.35,.36,1),
-            color 220ms ease;
+            transform 260ms cubic-bezier(.2,1.25,.36,1),
+            color 180ms ease;
           will-change: transform;
         }
 
-        /*
-          Keep the SVG itself razor-sharp. No blurred glass background and no
-          scale-based enlargement. The zero-blur drop shadows create a tiny
-          white crown and dark extrusion directly from the vector geometry.
-        */
         .portfolio-nav__icon {
           position: relative;
           z-index: 3;
@@ -560,29 +509,6 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           vector-effect: non-scaling-stroke;
         }
 
-        /*
-          The pop now comes from displacement and perspective, not magnification.
-          That keeps the SVG geometry crisp while still making it feel like it
-          physically lifts out of the liquid navbar on hover.
-        */
-        .portfolio-nav__item:hover .portfolio-nav__icon-shell,
-        .portfolio-nav__item:focus-visible .portfolio-nav__icon-shell {
-          color: rgba(10,10,10,0.98);
-          transform:
-            perspective(240px)
-            rotateX(-10deg)
-            rotateY(5deg)
-            translate3d(0,-2.5px,8px);
-        }
-
-        .portfolio-nav__item:hover .portfolio-nav__icon,
-        .portfolio-nav__item:focus-visible .portfolio-nav__icon {
-          filter:
-            drop-shadow(0 -0.8px 0 rgba(255,255,255,1))
-            drop-shadow(0 1.35px 0 rgba(23,23,23,0.26))
-            drop-shadow(0 3px 0 rgba(23,23,23,0.10));
-        }
-
         .portfolio-nav__item:active .portfolio-nav__icon-shell {
           transform:
             perspective(240px)
@@ -590,11 +516,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             rotateY(-1deg)
             translate3d(0,0,1px);
         }
-        /*
-          Visible labels keep their authored casing. The slight scaleX gives the
-          lettering the wider horizontal feel requested without forcing another
-          font dependency into the project.
-        */
+
         .portfolio-nav__label {
           position: relative;
           z-index: 2;
@@ -619,10 +541,6 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           transform-origin: center;
         }
 
-        /*
-          Only the shortLabel is shown. No subtitle, no helper copy and no forced
-          uppercase. This replaces the browser's unstyleable native title bubble.
-        */
         .portfolio-nav__tooltip {
           pointer-events: none;
           position: absolute;
@@ -672,7 +590,6 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         @media (hover: hover) and (pointer: fine) {
-          .portfolio-nav__item:hover .portfolio-nav__tooltip,
           .portfolio-nav__item:focus-visible .portfolio-nav__tooltip {
             opacity: 1;
             visibility: visible;
@@ -680,10 +597,6 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           }
         }
 
-        /*
-          Tablet / mobile remain a six-icon dock. The text disappears, but the
-          monochrome glass icons keep their depth and equal spacing.
-        */
         @media (max-width: 1180px) {
           .portfolio-nav {
             width: min(82vw, 32rem);
@@ -714,7 +627,8 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             height: 1.38rem;
           }
 
-          .portfolio-nav__item::before {
+          .portfolio-nav__item::before,
+          .portfolio-nav__item::after {
             inset: 0.1rem 0.2rem;
           }
         }
@@ -725,18 +639,6 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             width: min(calc(100vw - 0.5rem), 25.5rem);
             height: 3.34rem;
             padding: 0.23rem;
-          }
-
-          .portfolio-nav::before {
-            background: rgba(227,227,227,0.34);
-            -webkit-backdrop-filter:
-              blur(23px)
-              saturate(1.24)
-              brightness(1.075);
-            backdrop-filter:
-              blur(23px)
-              saturate(1.24)
-              brightness(1.075);
           }
 
           .portfolio-nav__icon-shell {

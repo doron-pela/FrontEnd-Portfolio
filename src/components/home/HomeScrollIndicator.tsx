@@ -135,28 +135,38 @@ export default function HomeScrollIndicator({
           transform: translate3d(-50%, 0, 0) scale(1);
         }
 
+        /*
+          Match the navbar's material model: deep black tonal shaping first,
+          then one broad reflection plus one small local facet. The surface never
+          becomes grey and there is no ring of decorative highlight lines.
+        */
         .home-scroll-indicator__surface {
           position: relative;
           display: flex;
           align-items: center;
           gap: 0.7rem;
           padding: 0.48rem 0.52rem 0.48rem 0.9rem;
-          border: 1px solid rgba(255,255,255,0.72);
+          border: 0;
           border-radius: 9999px;
-          background: rgba(241,241,241,0.3);
-          -webkit-backdrop-filter:
-            blur(16px)
-            saturate(1.16)
-            brightness(1.04);
-          backdrop-filter:
-            blur(16px)
-            saturate(1.16)
-            brightness(1.04);
+          background:
+            radial-gradient(
+              92% 145% at 16% -35%,
+              rgba(255,255,255,0.07) 0%,
+              rgba(255,255,255,0.018) 38%,
+              transparent 65%
+            ),
+            linear-gradient(
+              180deg,
+              rgb(8,8,8) 0%,
+              rgb(2,2,2) 25%,
+              rgb(0,0,0) 60%,
+              rgb(5,5,5) 100%
+            );
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.82),
-            inset 0 -1px 0 rgba(23,23,23,0.075),
-            0 8px 24px rgba(23,23,23,0.07);
-          color: rgba(23,23,23,0.68);
+            inset 0 8px 13px -14px rgba(255,255,255,0.3),
+            inset 0 -10px 14px -14px rgba(255,255,255,0.12),
+            0 8px 24px rgba(0,0,0,0.2);
+          color: rgba(255,255,255,0.9);
           isolation: isolate;
         }
 
@@ -164,20 +174,30 @@ export default function HomeScrollIndicator({
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 1px;
-          z-index: -1;
+          inset: 0.11rem 0.13rem 0.14rem;
+          z-index: 1;
           border-radius: inherit;
           background:
             radial-gradient(
-              circle at 24% 8%,
-              rgba(255,255,255,0.8),
-              rgba(255,255,255,0.12) 38%,
+              72% 118% at 8% -30%,
+              rgba(255,255,255,0.58) 0%,
+              rgba(255,255,255,0.3) 15%,
+              rgba(255,255,255,0.11) 33%,
+              rgba(255,255,255,0.025) 47%,
               transparent 62%
+            ),
+            radial-gradient(
+              34% 92% at 99% 8%,
+              rgba(255,255,255,0.24) 0%,
+              rgba(255,255,255,0.075) 25%,
+              transparent 56%
             );
-          opacity: 0.72;
+          opacity: 0.78;
         }
 
         .home-scroll-indicator__label {
+          position: relative;
+          z-index: 2;
           font-family:
             ui-monospace,
             SFMono-Regular,
@@ -195,20 +215,25 @@ export default function HomeScrollIndicator({
         }
 
         .home-scroll-indicator__arrow-shell {
+          position: relative;
+          z-index: 2;
           display: grid;
           width: 1.78rem;
           height: 1.78rem;
           flex: 0 0 auto;
           place-items: center;
-          border: 1px solid rgba(23,23,23,0.09);
+          border: 0;
           border-radius: 9999px;
-          background: rgba(255,255,255,0.32);
+          background: rgb(4,4,4);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.8),
-            0 3px 10px rgba(23,23,23,0.045);
+            inset 0 0 0 1px rgba(255,255,255,0.075),
+            0 3px 10px rgba(0,0,0,0.24);
+          color: rgba(255,255,255,0.94);
         }
 
         .home-scroll-indicator__arrow {
+          position: relative;
+          z-index: 2;
           width: 0.9rem;
           height: 0.9rem;
           animation: home-scroll-indicator-arrow 1.8s ease-in-out infinite;

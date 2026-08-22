@@ -876,7 +876,7 @@ export default function SkillsDrawer({
             top: 0;
             z-index: 0;
             border-radius: 0 0.9rem 0.9rem 0;
-            background: #fff;
+            background: #000;
             transform-origin: left center;
             will-change: transform;
           }
@@ -903,14 +903,14 @@ export default function SkillsDrawer({
         `}</style>
 
         {/*
-          The exposed white tab belongs to the drawer itself, so dragging it moves
+          The exposed black tab belongs to the drawer itself, so dragging it moves
           the real panel under the pointer instead of firing an abstract toggle.
         */}
         <button
           ref={handleRef}
           aria-expanded={open}
           aria-label={open ? "Close skills drawer" : "Open skills drawer"}
-          className="skills-drawer-handle absolute right-[-2.37rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-[#171717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#171717]/15 max-[680px]:hidden"
+          className="skills-drawer-handle absolute right-[-2.37rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 max-[680px]:hidden"
           onClick={() => {
             //A pointer drag naturally emits a click after pointerup in browsers.
             //Suppress that synthetic click when the handle actually travelled,
@@ -934,7 +934,7 @@ export default function SkillsDrawer({
           <img
             alt=""
             aria-hidden="true"
-            className={`relative z-10 mt-2 size-3 opacity-80 transition-transform duration-300 ${
+            className={`relative z-10 mt-2 size-3 brightness-0 invert opacity-80 transition-transform duration-300 ${
               open ? "rotate-180" : ""
             }`}
             src={chevronRightIcon}
