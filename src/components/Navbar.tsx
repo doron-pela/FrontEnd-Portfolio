@@ -253,31 +253,32 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border-radius: inherit;
           background:
             radial-gradient(
-              46% 135% at 8% 4%,
-              rgba(255,255,255,0.075) 0%,
-              rgba(255,255,255,0.024) 38%,
-              transparent 66%
+              48% 142% at 8% 2%,
+              rgba(255,255,255,0.13) 0%,
+              rgba(255,255,255,0.048) 32%,
+              rgba(255,255,255,0.012) 52%,
+              transparent 70%
             ),
             radial-gradient(
-              34% 120% at 92% 96%,
-              rgba(255,255,255,0.038) 0%,
-              rgba(255,255,255,0.012) 42%,
-              transparent 69%
+              36% 122% at 92% 98%,
+              rgba(255,255,255,0.056) 0%,
+              rgba(255,255,255,0.02) 36%,
+              transparent 68%
             ),
             linear-gradient(
               180deg,
-              rgb(10,10,10) 0%,
-              rgb(3,3,3) 22%,
-              rgb(0,0,0) 58%,
-              rgb(0,0,0) 76%,
-              rgb(6,6,6) 100%
+              rgb(12,12,12) 0%,
+              rgb(4,4,4) 20%,
+              rgb(0,0,0) 54%,
+              rgb(0,0,0) 74%,
+              rgb(8,8,8) 100%
             );
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.2),
-            inset 0 9px 15px -15px rgba(255,255,255,0.3),
-            inset 0 -10px 17px -17px rgba(255,255,255,0.12),
-            0 10px 26px rgba(0,0,0,0.2),
-            0 2px 7px rgba(0,0,0,0.14);
+            inset 0 1.2px 0 rgba(255,255,255,0.28),
+            inset 0 13px 20px -18px rgba(255,255,255,0.42),
+            inset 0 -12px 18px -16px rgba(255,255,255,0.16),
+            0 10px 26px rgba(0,0,0,0.22),
+            0 2px 7px rgba(0,0,0,0.16);
         }
 
         /*
@@ -290,23 +291,23 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 2.5px;
+          inset: 2.2px;
           z-index: -2;
           border-radius: inherit;
           background:
             linear-gradient(
               180deg,
-              rgba(255,255,255,0.46) 0%,
-              rgba(255,255,255,0.27) 14%,
-              rgba(255,255,255,0.12) 30%,
-              rgba(255,255,255,0.038) 43%,
-              rgba(255,255,255,0.009) 52%,
-              transparent 61%
+              rgba(255,255,255,0.64) 0%,
+              rgba(255,255,255,0.41) 11%,
+              rgba(255,255,255,0.2) 24%,
+              rgba(255,255,255,0.082) 38%,
+              rgba(255,255,255,0.02) 49%,
+              transparent 60%
             );
           box-shadow:
-            inset 0 1.15px 0 rgba(255,255,255,0.34),
-            inset 0 -1px 0 rgba(255,255,255,0.015);
-          opacity: 0.78;
+            inset 0 1.35px 0 rgba(255,255,255,0.46),
+            inset 0 -1px 0 rgba(255,255,255,0.018);
+          opacity: 0.92;
         }
 
         .portfolio-nav__items {
@@ -342,9 +343,9 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         /*
-          The active item uses the same material model at a smaller scale. Its
-          body is still black; slightly stronger tonal modelling makes it read
-          as a raised glossy capsule without turning it grey or luminous.
+          The active destination is deliberately inverted against the black
+          navbar shell. Its body is a clean white capsule while the reflective
+          depth is modelled with darker tonal return-light along the bottom.
         */
         .portfolio-nav__item::before {
           content: "";
@@ -355,26 +356,33 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border-radius: inherit;
           opacity: 0;
           background:
+            radial-gradient(
+              70% 120% at 50% -12%,
+              rgba(255,255,255,1) 0%,
+              rgba(255,255,255,0.98) 38%,
+              transparent 68%
+            ),
             linear-gradient(
               180deg,
-              rgb(7,7,7) 0%,
-              rgb(2,2,2) 39%,
-              rgb(3,3,3) 67%,
-              rgb(11,11,11) 100%
+              rgb(255,255,255) 0%,
+              rgb(252,252,252) 46%,
+              rgb(247,247,247) 78%,
+              rgb(241,241,241) 100%
             );
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.035),
-            inset 0 -8px 12px -13px rgba(255,255,255,0.2),
-            0 2px 6px rgba(0,0,0,0.36);
+            inset 0 1px 0 rgba(255,255,255,1),
+            inset 0 -1px 0 rgba(0,0,0,0.12),
+            inset 0 -5px 9px -9px rgba(0,0,0,0.22),
+            0 1px 0 rgba(255,255,255,0.14),
+            0 2px 7px rgba(0,0,0,0.42);
           transition: opacity 190ms ease;
         }
 
         /*
-          The active-item gloss is a reflection BAND, not a second full-surface
-          treatment. It is still geometrically derived from the exact active
-          capsule, but only its lower portion is revealed. The light fades
-          upward on the y-axis and tapers toward both ends on the x-axis, so the
-          reflection reads as light catching the lower curvature of the pill.
+          The active-item reflection remains a separate lower band rather than
+          covering the whole white capsule. Because the surface is inverted, the
+          reflected band is now dark: it rises from the bottom curvature and
+          tapers toward both ends while inheriting the item's exact pill shape.
         */
         .portfolio-nav__item::after {
           content: "";
@@ -387,35 +395,38 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           background:
             linear-gradient(
               0deg,
-              rgba(255,255,255,0.48) 0%,
-              rgba(255,255,255,0.31) 22%,
-              rgba(255,255,255,0.14) 49%,
-              rgba(255,255,255,0.045) 70%,
+              rgba(0,0,0,0.34) 0%,
+              rgba(0,0,0,0.17) 38%,
+              rgba(0,0,0,0.045) 72%,
               transparent 100%
             );
-          clip-path: inset(52% 0 0 0 round 0 0 999px 999px);
+          clip-path: inset(86% 0 0 0 round 0 0 999px 999px);
           -webkit-mask-image:
             linear-gradient(
               90deg,
               transparent 0%,
-              rgba(0,0,0,0.34) 8%,
-              #000 19%,
-              #000 81%,
-              rgba(0,0,0,0.34) 92%,
+              rgba(0,0,0,0.08) 18%,
+              rgba(0,0,0,0.58) 30%,
+              #000 42%,
+              #000 58%,
+              rgba(0,0,0,0.58) 70%,
+              rgba(0,0,0,0.08) 82%,
               transparent 100%
             );
           mask-image:
             linear-gradient(
               90deg,
               transparent 0%,
-              rgba(0,0,0,0.34) 8%,
-              #000 19%,
-              #000 81%,
-              rgba(0,0,0,0.34) 92%,
+              rgba(0,0,0,0.08) 18%,
+              rgba(0,0,0,0.58) 30%,
+              #000 42%,
+              #000 58%,
+              rgba(0,0,0,0.58) 70%,
+              rgba(0,0,0,0.08) 82%,
               transparent 100%
             );
           box-shadow:
-            inset 0 -1.15px 0 rgba(255,255,255,0.34);
+            inset 0 -0.75px 0 rgba(0,0,0,0.25);
           transition: opacity 190ms ease;
         }
 
@@ -448,7 +459,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         .portfolio-nav__item[aria-current="page"] {
-          color: rgba(255,255,255,1);
+          color: rgba(0,0,0,0.96);
         }
 
         .portfolio-nav__item[aria-current="page"]::before {
@@ -456,7 +467,18 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         .portfolio-nav__item[aria-current="page"]::after {
-          opacity: 0.78;
+          opacity: 0.82;
+        }
+
+        .portfolio-nav__item[aria-current="page"] .portfolio-nav__icon-shell {
+          color: rgba(0,0,0,0.96);
+        }
+
+        .portfolio-nav__item[aria-current="page"] .portfolio-nav__icon {
+          filter:
+            drop-shadow(0 -0.55px 0 rgba(0,0,0,0.28))
+            drop-shadow(0 1px 0 rgba(255,255,255,0.72))
+            drop-shadow(0 1.8px 0 rgba(0,0,0,0.08));
         }
 
         .portfolio-nav__item:active {

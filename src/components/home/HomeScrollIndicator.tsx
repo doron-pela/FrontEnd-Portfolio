@@ -244,14 +244,75 @@ export default function HomeScrollIndicator({
           height: 1.78rem;
           flex: 0 0 auto;
           place-items: center;
-          border: 1px solid rgba(255,255,255,0.09);
+          border: 1px solid rgba(255,255,255,0.92);
           border-radius: 9999px;
-          background: rgb(0,0,0);
+          background:
+            radial-gradient(
+              76% 118% at 50% -12%,
+              rgba(255,255,255,1) 0%,
+              rgba(255,255,255,0.98) 42%,
+              transparent 70%
+            ),
+            linear-gradient(
+              180deg,
+              rgb(255,255,255) 0%,
+              rgb(252,252,252) 46%,
+              rgb(247,247,247) 78%,
+              rgb(241,241,241) 100%
+            );
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.055),
-            0 3px 10px rgba(0,0,0,0.24);
-          color: rgba(255,255,255,0.94);
+            inset 0 1px 0 rgba(255,255,255,1),
+            inset 0 -1px 0 rgba(0,0,0,0.12),
+            inset 0 -5px 9px -9px rgba(0,0,0,0.22),
+            0 1px 0 rgba(255,255,255,0.12),
+            0 3px 10px rgba(0,0,0,0.28);
+          color: rgba(0,0,0,0.9);
           isolation: isolate;
+          overflow: hidden;
+        }
+
+        .home-scroll-indicator__arrow-shell::after {
+          content: "";
+          pointer-events: none;
+          position: absolute;
+          inset: 1px;
+          z-index: 1;
+          border-radius: inherit;
+          background:
+            linear-gradient(
+              0deg,
+              rgba(0,0,0,0.32) 0%,
+              rgba(0,0,0,0.15) 38%,
+              rgba(0,0,0,0.04) 72%,
+              transparent 100%
+            );
+          clip-path: inset(86% 0 0 0 round 0 0 999px 999px);
+          -webkit-mask-image:
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(0,0,0,0.1) 18%,
+              rgba(0,0,0,0.62) 32%,
+              #000 44%,
+              #000 56%,
+              rgba(0,0,0,0.62) 68%,
+              rgba(0,0,0,0.1) 82%,
+              transparent 100%
+            );
+          mask-image:
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(0,0,0,0.1) 18%,
+              rgba(0,0,0,0.62) 32%,
+              #000 44%,
+              #000 56%,
+              rgba(0,0,0,0.62) 68%,
+              rgba(0,0,0,0.1) 82%,
+              transparent 100%
+            );
+          box-shadow:
+            inset 0 -0.7px 0 rgba(0,0,0,0.24);
         }
 
         .home-scroll-indicator__arrow {
