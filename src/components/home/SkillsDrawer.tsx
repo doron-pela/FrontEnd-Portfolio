@@ -871,7 +871,7 @@ export default function SkillsDrawer({
             pointer-events: none;
             position: absolute;
             bottom: 0;
-            left: -4px;
+            left: 0;
             right: 0;
             top: 0;
             z-index: 0;
@@ -879,6 +879,96 @@ export default function SkillsDrawer({
             background: #000;
             transform-origin: left center;
             will-change: transform;
+          }
+
+          .skills-drawer-handle-chevron-shell {
+            pointer-events: none;
+            position: relative;
+            z-index: 10;
+            display: grid;
+            width: 1.42rem;
+            height: 1.42rem;
+            flex: 0 0 auto;
+            place-items: center;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.92);
+            border-radius: 9999px;
+            background:
+              radial-gradient(
+                76% 118% at 50% -12%,
+                rgba(255,255,255,1) 0%,
+                rgba(255,255,255,0.98) 42%,
+                transparent 70%
+              ),
+              linear-gradient(
+                180deg,
+                rgb(255,255,255) 0%,
+                rgb(252,252,252) 46%,
+                rgb(247,247,247) 78%,
+                rgb(241,241,241) 100%
+              );
+            box-shadow:
+              inset 0 1px 0 rgba(255,255,255,1),
+              inset 0 -1px 0 rgba(0,0,0,0.12),
+              inset 0 -5px 9px -9px rgba(0,0,0,0.22),
+              0 1px 0 rgba(255,255,255,0.12),
+              0 3px 10px rgba(0,0,0,0.24);
+            isolation: isolate;
+            overflow: hidden;
+          }
+
+          .skills-drawer-handle-chevron-shell::after {
+            content: "";
+            pointer-events: none;
+            position: absolute;
+            inset: 1px;
+            z-index: 1;
+            border-radius: inherit;
+            background:
+              linear-gradient(
+                0deg,
+                rgba(0,0,0,0.32) 0%,
+                rgba(0,0,0,0.15) 38%,
+                rgba(0,0,0,0.04) 72%,
+                transparent 100%
+              );
+            clip-path: inset(86% 0 0 0 round 0 0 999px 999px);
+            -webkit-mask-image:
+              linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(0,0,0,0.1) 18%,
+                rgba(0,0,0,0.62) 32%,
+                #000 44%,
+                #000 56%,
+                rgba(0,0,0,0.62) 68%,
+                rgba(0,0,0,0.1) 82%,
+                transparent 100%
+              );
+            mask-image:
+              linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(0,0,0,0.1) 18%,
+                rgba(0,0,0,0.62) 32%,
+                #000 44%,
+                #000 56%,
+                rgba(0,0,0,0.62) 68%,
+                rgba(0,0,0,0.1) 82%,
+                transparent 100%
+              );
+            box-shadow:
+              inset 0 -0.7px 0 rgba(0,0,0,0.24);
+          }
+
+          .skills-drawer-handle-chevron {
+            position: relative;
+            z-index: 2;
+            width: 0.72rem;
+            height: 0.72rem;
+            filter: brightness(0);
+            opacity: 0.84;
+            transition: transform 300ms ease;
           }
 
           @media (max-width: 680px) {
@@ -910,7 +1000,7 @@ export default function SkillsDrawer({
           ref={handleRef}
           aria-expanded={open}
           aria-label={open ? "Close skills drawer" : "Open skills drawer"}
-          className="skills-drawer-handle absolute right-[-2.37rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 max-[680px]:hidden"
+          className="skills-drawer-handle absolute right-[-2.45rem] top-[42%] z-20 flex h-[5.9rem] w-[2.45rem] -translate-y-1/2 cursor-ew-resize flex-col items-center justify-center text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 max-[680px]:hidden"
           onClick={() => {
             //A pointer drag naturally emits a click after pointerup in browsers.
             //Suppress that synthetic click when the handle actually travelled,
@@ -931,14 +1021,18 @@ export default function SkillsDrawer({
             Skills
           </span>
 
-          <img
-            alt=""
+          <span
             aria-hidden="true"
-            className={`relative z-10 mt-2 size-3 brightness-0 invert opacity-80 transition-transform duration-300 ${
-              open ? "rotate-180" : ""
-            }`}
-            src={chevronRightIcon}
-          />
+            className="skills-drawer-handle-chevron-shell"
+          >
+            <img
+              alt=""
+              className={`skills-drawer-handle-chevron ${
+                open ? "rotate-180" : ""
+              }`}
+              src={chevronRightIcon}
+            />
+          </span>
         </button>
 
         {/*
