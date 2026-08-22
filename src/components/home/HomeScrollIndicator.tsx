@@ -152,8 +152,8 @@ export default function HomeScrollIndicator({
           background:
             radial-gradient(
               92% 145% at 16% -35%,
-              rgba(255,255,255,0.07) 0%,
-              rgba(255,255,255,0.018) 38%,
+              rgba(255,255,255,0.048) 0%,
+              rgba(255,255,255,0.012) 38%,
               transparent 65%
             ),
             linear-gradient(
@@ -164,8 +164,8 @@ export default function HomeScrollIndicator({
               rgb(5,5,5) 100%
             );
           box-shadow:
-            inset 0 8px 13px -14px rgba(255,255,255,0.42),
-            inset 0 -10px 14px -14px rgba(255,255,255,0.12),
+            inset 0 8px 13px -14px rgba(255,255,255,0.28),
+            inset 0 -10px 14px -14px rgba(255,255,255,0.08),
             0 8px 24px rgba(0,0,0,0.2);
           color: rgba(255,255,255,0.9);
           isolation: isolate;
@@ -181,11 +181,11 @@ export default function HomeScrollIndicator({
           background:
             linear-gradient(
               180deg,
-              rgba(255,255,255,0.72) 0%,
-              rgba(255,255,255,0.5) 12%,
-              rgba(255,255,255,0.27) 27%,
-              rgba(255,255,255,0.11) 41%,
-              rgba(255,255,255,0.032) 52%,
+              rgba(255,255,255,0.48) 0%,
+              rgba(255,255,255,0.31) 12%,
+              rgba(255,255,255,0.16) 27%,
+              rgba(255,255,255,0.062) 41%,
+              rgba(255,255,255,0.017) 52%,
               transparent 64%
             );
           -webkit-mask-image:
@@ -207,9 +207,9 @@ export default function HomeScrollIndicator({
               transparent 91%
             );
           box-shadow:
-            inset 0 1.65px 0 rgba(255,255,255,0.5),
-            inset 0 4px 8px -7px rgba(255,255,255,0.32);
-          opacity: 0.96;
+            inset 0 1.65px 0 rgba(255,255,255,0.32),
+            inset 0 4px 8px -7px rgba(255,255,255,0.20);
+          opacity: 0.76;
         }
 
         .home-scroll-indicator__label {

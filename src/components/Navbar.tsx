@@ -254,15 +254,15 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           background:
             radial-gradient(
               48% 142% at 8% 2%,
-              rgba(255,255,255,0.13) 0%,
-              rgba(255,255,255,0.048) 32%,
-              rgba(255,255,255,0.012) 52%,
+              rgba(255,255,255,0.09) 0%,
+              rgba(255,255,255,0.032) 32%,
+              rgba(255,255,255,0.008) 52%,
               transparent 70%
             ),
             radial-gradient(
               36% 122% at 92% 98%,
-              rgba(255,255,255,0.056) 0%,
-              rgba(255,255,255,0.02) 36%,
+              rgba(255,255,255,0.038) 0%,
+              rgba(255,255,255,0.013) 36%,
               transparent 68%
             ),
             linear-gradient(
@@ -274,9 +274,9 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
               rgb(8,8,8) 100%
             );
           box-shadow:
-            inset 0 1.2px 0 rgba(255,255,255,0.28),
-            inset 0 13px 20px -18px rgba(255,255,255,0.42),
-            inset 0 -12px 18px -16px rgba(255,255,255,0.16),
+            inset 0 1.2px 0 rgba(255,255,255,0.20),
+            inset 0 13px 20px -18px rgba(255,255,255,0.28),
+            inset 0 -12px 18px -16px rgba(255,255,255,0.11),
             0 10px 26px rgba(0,0,0,0.22),
             0 2px 7px rgba(0,0,0,0.16);
         }
@@ -297,17 +297,17 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           background:
             linear-gradient(
               180deg,
-              rgba(255,255,255,0.64) 0%,
-              rgba(255,255,255,0.41) 11%,
-              rgba(255,255,255,0.2) 24%,
-              rgba(255,255,255,0.082) 38%,
-              rgba(255,255,255,0.02) 49%,
+              rgba(255,255,255,0.43) 0%,
+              rgba(255,255,255,0.26) 11%,
+              rgba(255,255,255,0.12) 24%,
+              rgba(255,255,255,0.045) 38%,
+              rgba(255,255,255,0.01) 49%,
               transparent 60%
             );
           box-shadow:
-            inset 0 1.35px 0 rgba(255,255,255,0.46),
+            inset 0 1.35px 0 rgba(255,255,255,0.30),
             inset 0 -1px 0 rgba(255,255,255,0.018);
-          opacity: 0.92;
+          opacity: 0.74;
         }
 
         .portfolio-nav__items {

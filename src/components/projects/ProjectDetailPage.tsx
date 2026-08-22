@@ -181,7 +181,7 @@ export default function ProjectDetailPage({
             </p>
 
             <p className="mt-3 max-w-[30rem] font-mono text-[clamp(0.78rem,0.9vw,0.95rem)] leading-[1.7] tracking-[0.025em] text-white/68">
-              {project.technologies.join(", ")}
+              {project.technologies?.join(", ")}
             </p>
           </div>
 
