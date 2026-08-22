@@ -240,10 +240,10 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
         }
 
         /*
-          Material first, reflections second. The shell is not a flat #000 fill:
-          several extremely dark value bands model a rounded black object before
-          any white specular highlight is added. This borrows the useful part of
-          the supplied 3D-ball reference without importing its many noisy facets.
+          Treat the navbar as one long polished black capsule. The material
+          shading and the reflection layer both use the navbar's exact rounded
+          geometry, so the highlight bends naturally into the end caps instead
+          of reading as a rectangular strip laid across the middle.
         */
         .portfolio-nav::before {
           content: "";
@@ -253,63 +253,60 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border-radius: inherit;
           background:
             radial-gradient(
-              78% 140% at 13% -24%,
+              46% 135% at 8% 4%,
               rgba(255,255,255,0.075) 0%,
-              rgba(255,255,255,0.022) 34%,
-              transparent 62%
+              rgba(255,255,255,0.024) 38%,
+              transparent 66%
             ),
             radial-gradient(
-              72% 125% at 88% 120%,
-              rgba(255,255,255,0.045) 0%,
-              rgba(255,255,255,0.012) 38%,
-              transparent 65%
+              34% 120% at 92% 96%,
+              rgba(255,255,255,0.038) 0%,
+              rgba(255,255,255,0.012) 42%,
+              transparent 69%
             ),
             linear-gradient(
               180deg,
-              rgb(8,8,8) 0%,
-              rgb(2,2,2) 23%,
-              rgb(0,0,0) 57%,
-              rgb(0,0,0) 74%,
-              rgb(5,5,5) 100%
+              rgb(10,10,10) 0%,
+              rgb(3,3,3) 22%,
+              rgb(0,0,0) 58%,
+              rgb(0,0,0) 76%,
+              rgb(6,6,6) 100%
             );
           box-shadow:
-            inset 0 10px 16px -15px rgba(255,255,255,0.34),
-            inset 0 -12px 18px -17px rgba(255,255,255,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.2),
+            inset 0 9px 15px -15px rgba(255,255,255,0.3),
+            inset 0 -10px 17px -17px rgba(255,255,255,0.12),
             0 10px 26px rgba(0,0,0,0.2),
             0 2px 7px rgba(0,0,0,0.14);
         }
 
         /*
-          Specular light now lives on a complete inset copy of the navbar's own
-          pill surface. That is the important geometric constraint: the light is
-          clipped by the same curvature as the object instead of being drawn as a
-          free-standing strip. Two localized environment catches are enough to
-          suggest polished black material without filling the middle with lines.
+          The shell reflection spans the entire upper surface uniformly. The
+          reflective layer is the same inset pill as the navbar itself, so the
+          middle stays straight and both end caps inherit the navbar's exact
+          curvature instead of receiving independently drawn highlight shapes.
         */
         .portfolio-nav::after {
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 0.14rem 0.16rem 0.18rem;
+          inset: 2.5px;
           z-index: -2;
           border-radius: inherit;
           background:
-            radial-gradient(
-              62% 118% at 7% -28%,
-              rgba(255,255,255,0.62) 0%,
-              rgba(255,255,255,0.34) 13%,
-              rgba(255,255,255,0.14) 30%,
-              rgba(255,255,255,0.035) 46%,
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,0.46) 0%,
+              rgba(255,255,255,0.27) 14%,
+              rgba(255,255,255,0.12) 30%,
+              rgba(255,255,255,0.038) 43%,
+              rgba(255,255,255,0.009) 52%,
               transparent 61%
-            ),
-            radial-gradient(
-              31% 92% at 99% 7%,
-              rgba(255,255,255,0.3) 0%,
-              rgba(255,255,255,0.12) 21%,
-              rgba(255,255,255,0.03) 40%,
-              transparent 59%
             );
-          opacity: 0.82;
+          box-shadow:
+            inset 0 1.15px 0 rgba(255,255,255,0.34),
+            inset 0 -1px 0 rgba(255,255,255,0.015);
+          opacity: 0.78;
         }
 
         .portfolio-nav__items {
@@ -358,55 +355,67 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border-radius: inherit;
           opacity: 0;
           background:
-            radial-gradient(
-              90% 145% at 18% -35%,
-              rgba(255,255,255,0.12) 0%,
-              rgba(255,255,255,0.035) 37%,
-              transparent 65%
-            ),
             linear-gradient(
               180deg,
-              rgb(12,12,12) 0%,
-              rgb(5,5,5) 25%,
-              rgb(2,2,2) 58%,
-              rgb(7,7,7) 100%
+              rgb(7,7,7) 0%,
+              rgb(2,2,2) 39%,
+              rgb(3,3,3) 67%,
+              rgb(11,11,11) 100%
             );
           box-shadow:
-            inset 0 8px 12px -13px rgba(255,255,255,0.36),
-            inset 0 -9px 13px -13px rgba(255,255,255,0.11),
+            inset 0 1px 0 rgba(255,255,255,0.035),
+            inset 0 -8px 12px -13px rgba(255,255,255,0.2),
             0 2px 6px rgba(0,0,0,0.36);
           transition: opacity 190ms ease;
         }
 
         /*
-          The active sheen follows the active capsule itself. It occupies a full
-          inset rounded surface, then localized gradients determine where light
-          is visible. This keeps the highlight curved at the ends and straight
-          through the centre without ever becoming a rectangular patch.
+          The active-item gloss is a reflection BAND, not a second full-surface
+          treatment. It is still geometrically derived from the exact active
+          capsule, but only its lower portion is revealed. The light fades
+          upward on the y-axis and tapers toward both ends on the x-axis, so the
+          reflection reads as light catching the lower curvature of the pill.
         */
         .portfolio-nav__item::after {
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 0.14rem;
+          inset: 0.09rem;
           z-index: 1;
           border-radius: inherit;
           opacity: 0;
           background:
-            radial-gradient(
-              72% 116% at 8% -28%,
-              rgba(255,255,255,0.72) 0%,
-              rgba(255,255,255,0.4) 14%,
-              rgba(255,255,255,0.17) 31%,
-              rgba(255,255,255,0.04) 46%,
-              transparent 61%
-            ),
-            radial-gradient(
-              34% 90% at 99% 8%,
-              rgba(255,255,255,0.26) 0%,
-              rgba(255,255,255,0.085) 24%,
-              transparent 55%
+            linear-gradient(
+              0deg,
+              rgba(255,255,255,0.48) 0%,
+              rgba(255,255,255,0.31) 22%,
+              rgba(255,255,255,0.14) 49%,
+              rgba(255,255,255,0.045) 70%,
+              transparent 100%
             );
+          clip-path: inset(52% 0 0 0 round 0 0 999px 999px);
+          -webkit-mask-image:
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(0,0,0,0.34) 8%,
+              #000 19%,
+              #000 81%,
+              rgba(0,0,0,0.34) 92%,
+              transparent 100%
+            );
+          mask-image:
+            linear-gradient(
+              90deg,
+              transparent 0%,
+              rgba(0,0,0,0.34) 8%,
+              #000 19%,
+              #000 81%,
+              rgba(0,0,0,0.34) 92%,
+              transparent 100%
+            );
+          box-shadow:
+            inset 0 -1.15px 0 rgba(255,255,255,0.34);
           transition: opacity 190ms ease;
         }
 
@@ -627,8 +636,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             height: 1.38rem;
           }
 
-          .portfolio-nav__item::before,
-          .portfolio-nav__item::after {
+          .portfolio-nav__item::before {
             inset: 0.1rem 0.2rem;
           }
         }

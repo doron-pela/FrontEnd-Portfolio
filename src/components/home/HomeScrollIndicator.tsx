@@ -136,9 +136,10 @@ export default function HomeScrollIndicator({
         }
 
         /*
-          Match the navbar's material model: deep black tonal shaping first,
-          then one broad reflection plus one small local facet. The surface never
-          becomes grey and there is no ring of decorative highlight lines.
+          Match the navbar's shell model: a deep-black capsule with one top-down
+          reflection spanning the full inset pill. Because the highlight layer
+          shares the parent's exact radius, the reflection stays straight across
+          the middle and bends only where the control itself bends.
         */
         .home-scroll-indicator__surface {
           position: relative;
@@ -174,25 +175,22 @@ export default function HomeScrollIndicator({
           content: "";
           pointer-events: none;
           position: absolute;
-          inset: 0.11rem 0.13rem 0.14rem;
+          inset: 2px;
           z-index: 1;
           border-radius: inherit;
           background:
-            radial-gradient(
-              72% 118% at 8% -30%,
-              rgba(255,255,255,0.58) 0%,
-              rgba(255,255,255,0.3) 15%,
-              rgba(255,255,255,0.11) 33%,
-              rgba(255,255,255,0.025) 47%,
-              transparent 62%
-            ),
-            radial-gradient(
-              34% 92% at 99% 8%,
-              rgba(255,255,255,0.24) 0%,
-              rgba(255,255,255,0.075) 25%,
-              transparent 56%
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,0.4) 0%,
+              rgba(255,255,255,0.23) 15%,
+              rgba(255,255,255,0.095) 31%,
+              rgba(255,255,255,0.028) 43%,
+              rgba(255,255,255,0.006) 51%,
+              transparent 60%
             );
-          opacity: 0.78;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.28);
+          opacity: 0.72;
         }
 
         .home-scroll-indicator__label {
@@ -214,6 +212,11 @@ export default function HomeScrollIndicator({
           white-space: nowrap;
         }
 
+        /*
+          Keep the arrow control visually subordinate to the glossy parent.
+          It is now a simple black inset button rather than a second reflective
+          object competing with the scroll-indicator surface.
+        */
         .home-scroll-indicator__arrow-shell {
           position: relative;
           z-index: 2;
@@ -222,13 +225,14 @@ export default function HomeScrollIndicator({
           height: 1.78rem;
           flex: 0 0 auto;
           place-items: center;
-          border: 0;
+          border: 1px solid rgba(255,255,255,0.09);
           border-radius: 9999px;
-          background: rgb(4,4,4);
+          background: rgb(0,0,0);
           box-shadow:
-            inset 0 0 0 1px rgba(255,255,255,0.075),
+            inset 0 1px 0 rgba(255,255,255,0.055),
             0 3px 10px rgba(0,0,0,0.24);
           color: rgba(255,255,255,0.94);
+          isolation: isolate;
         }
 
         .home-scroll-indicator__arrow {
