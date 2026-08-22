@@ -275,7 +275,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             );
           box-shadow:
             inset 0 1.2px 0 rgba(255,255,255,0.20),
-            inset 0 13px 20px -18px rgba(255,255,255,0.28),
+            inset 0 7px 12px -12px rgba(255,255,255,0.28),
             inset 0 -12px 18px -16px rgba(255,255,255,0.11),
             0 10px 26px rgba(0,0,0,0.22),
             0 2px 7px rgba(0,0,0,0.16);
@@ -298,11 +298,11 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
             linear-gradient(
               180deg,
               rgba(255,255,255,0.43) 0%,
-              rgba(255,255,255,0.26) 11%,
-              rgba(255,255,255,0.12) 24%,
-              rgba(255,255,255,0.045) 38%,
-              rgba(255,255,255,0.01) 49%,
-              transparent 60%
+              rgba(255,255,255,0.26) 7%,
+              rgba(255,255,255,0.12) 14%,
+              rgba(255,255,255,0.045) 22%,
+              rgba(255,255,255,0.01) 28%,
+              transparent 34%
             );
           box-shadow:
             inset 0 1.35px 0 rgba(255,255,255,0.30),
