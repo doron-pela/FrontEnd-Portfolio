@@ -114,7 +114,7 @@ export default function HomeScrollIndicator({
   return (
     <div
       aria-hidden="true"
-      className="home-scroll-indicator pointer-events-none fixed left-[23%] top-[72vh] z-[470] max-[1100px]:hidden"
+      className="home-scroll-indicator pointer-events-none fixed left-[22.5%] top-[72vh] z-[470] max-[1100px]:hidden"
       data-visible={visible ? "true" : "false"}
     >
       <style>{`

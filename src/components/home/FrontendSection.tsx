@@ -50,34 +50,6 @@ const FRONTEND_SCENE_SCROLL_SLOT_TIME =
 const FRONTEND_TIMELINE_NAV_CLEARANCE_PX = 6;
 const FRONTEND_TIMELINE_HORIZONTAL_THICKNESS_PX = 2;
 
-//Browser page zoom changes window.devicePixelRatio in Chromium/Firefox. We
-//capture the DPR from the first mounted version of this section as the 1x
-//reference and apply the inverse ratio only to textual UI layers. This keeps
-//the existing viewport media queries fully in charge of responsive layout
-//while preventing Ctrl +/- from making project copy and its spacing balloon
-//or collapse independently of the intended composition.
-const FRONTEND_BROWSER_ZOOM_MIN_COMPENSATION = 0.48;
-const FRONTEND_BROWSER_ZOOM_MAX_COMPENSATION = 2.1;
-
-type FrontendZoomAwareWindow = Window & {
-  __frontendSectionBaseDevicePixelRatio?: number;
-};
-
-function getFrontendBaseDevicePixelRatio() {
-  if (typeof window === "undefined") {
-    return 1;
-  }
-
-  const zoomAwareWindow = window as FrontendZoomAwareWindow;
-
-  if (!zoomAwareWindow.__frontendSectionBaseDevicePixelRatio) {
-    zoomAwareWindow.__frontendSectionBaseDevicePixelRatio =
-      window.devicePixelRatio || 1;
-  }
-
-  return zoomAwareWindow.__frontendSectionBaseDevicePixelRatio;
-}
-
 function rememberFrontendProjectReturnState(projectIndex: number) {
   //TanStack's `state` option belongs to the DESTINATION history entry. For a
   //true Back restoration we need the metadata on the CURRENT home entry, so
@@ -260,6 +232,21 @@ export default function FrontendSection({
         const stackRect = stack.getBoundingClientRect();
         const galleryRect = gallery?.getBoundingClientRect() ?? null;
 
+        //At <=1180px the project dots and their horizontal progress rail form a
+        //real footer band. Measure the navigator itself instead of guessing a
+        //bottom padding from vh: the project composition can then reserve exactly
+        //the space occupied by the current dot size + current bottom offset. The
+        //horizontal rail is centered on this same nav rect below, so reserving to
+        //navRect.top protects both controls as one responsive footer system.
+        const horizontalNavigatorReserve = Math.max(
+          contentRect.bottom - navRect.top,
+          0,
+        );
+        section.style.setProperty(
+          "--frontend-horizontal-nav-reserve",
+          `${horizontalNavigatorReserve}px`,
+        );
+
         //Wide desktop: start where the screenshot region begins and stop just
         //before the first dot in the vertical navigator.
         const verticalAnchorRect = galleryRect ?? stackRect;
@@ -336,89 +323,7 @@ export default function FrontendSection({
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       window.removeEventListener("resize", syncTimelineRailGeometry);
-    };
-  }, []);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-
-    if (!section) return;
-
-    // Browser zoom and device DPR are not the same thing. In particular,
-    // DevTools mobile emulation can report a high DPR even though the mobile
-    // media-query layout is already perfectly sized. Only apply inverse-DPR
-    // compensation in a desktop interaction environment where Ctrl +/- is
-    // actually relevant. Coarse-pointer / touch layouts always stay at 1x and
-    // therefore remain governed exclusively by the existing responsive CSS.
-    const desktopInteractionQuery = window.matchMedia(
-      "(hover: hover) and (pointer: fine)",
-    );
-
-    let resolutionQuery: MediaQueryList | null = null;
-
-    const syncBrowserZoomCompensation = () => {
-      if (!desktopInteractionQuery.matches) {
-        section.style.setProperty("--frontend-browser-zoom-compensation", "1");
-        return;
-      }
-
-      // Capture the reference DPR only once we are actually in the desktop
-      // interaction mode. This prevents a mobile-emulation DPR (2x/3x, etc.)
-      // from ever becoming the reference used for desktop Ctrl +/- behavior.
-      const baseDevicePixelRatio = getFrontendBaseDevicePixelRatio();
-      const currentDevicePixelRatio = window.devicePixelRatio || 1;
-      const browserZoomRatio =
-        currentDevicePixelRatio / Math.max(baseDevicePixelRatio, 0.0001);
-      const inverseZoom = 1 / Math.max(browserZoomRatio, 0.0001);
-      const compensation = Math.min(
-        Math.max(inverseZoom, FRONTEND_BROWSER_ZOOM_MIN_COMPENSATION),
-        FRONTEND_BROWSER_ZOOM_MAX_COMPENSATION,
-      );
-
-      section.style.setProperty(
-        "--frontend-browser-zoom-compensation",
-        compensation.toFixed(4),
-      );
-    };
-
-    const bindResolutionQuery = () => {
-      resolutionQuery?.removeEventListener("change", handleResolutionChange);
-
-      resolutionQuery = window.matchMedia(
-        `(resolution: ${window.devicePixelRatio || 1}dppx)`,
-      );
-      resolutionQuery.addEventListener("change", handleResolutionChange);
-    };
-
-    function handleResolutionChange() {
-      syncBrowserZoomCompensation();
-      bindResolutionQuery();
-    }
-
-    function handleInteractionModeChange() {
-      syncBrowserZoomCompensation();
-      bindResolutionQuery();
-    }
-
-    syncBrowserZoomCompensation();
-    bindResolutionQuery();
-
-    window.addEventListener("resize", syncBrowserZoomCompensation, {
-      passive: true,
-    });
-    desktopInteractionQuery.addEventListener(
-      "change",
-      handleInteractionModeChange,
-    );
-
-    return () => {
-      window.removeEventListener("resize", syncBrowserZoomCompensation);
-      desktopInteractionQuery.removeEventListener(
-        "change",
-        handleInteractionModeChange,
-      );
-      resolutionQuery?.removeEventListener("change", handleResolutionChange);
-      section.style.removeProperty("--frontend-browser-zoom-compensation");
+      section.style.removeProperty("--frontend-horizontal-nav-reserve");
     };
   }, []);
 
@@ -971,24 +876,14 @@ export default function FrontendSection({
     >
       <style>{`
         /*
-          Use CSS zoom instead of transform: scale() so compensated text also
-          consumes proportionally less/more layout space. The outer section and
-          its media-query breakpoints are intentionally left untouched.
+          Do not infer browser zoom from devicePixelRatio here. DevTools device
+          emulation intentionally changes DPR and touch/pointer characteristics,
+          so inverse-DPR scaling can shrink this text even when the authored
+          responsive CSS is correct. The existing "frontend-browser-zoom-compensated"
+          class names remain only as stable grouping hooks; they no longer apply
+          any visual zoom. Browser zoom and Device Mode are allowed to render at
+          their native scale.
         */
-        .frontend-browser-zoom-compensated {
-          zoom: var(--frontend-browser-zoom-compensation, 1);
-        }
-
-        /*
-          Touch/mobile layouts must remain exactly as authored by the existing
-          media queries. This CSS guard mirrors the JS guard above and prevents
-          device-emulation DPR from ever shrinking the tuned phone/tablet UI.
-        */
-        @media (hover: none), (pointer: coarse) {
-          .frontend-browser-zoom-compensated {
-            zoom: 1 !important;
-          }
-        }
 
         /*
           Mobile now uses a deliberate information hierarchy rather than trying
@@ -1016,19 +911,18 @@ export default function FrontendSection({
         }
 
         /*
-          Short-phone fit mode starts before the examples become pathological,
-          not after overlap has already occurred. The project composition stops
-          using the normal mobile upward nudge and is aligned from the TOP of
-          the stack. That makes the H2/stack boundary deterministic: if content
-          ever becomes taller than its available region it can only grow toward
-          the bottom, never upward through the section heading.
+          Short-phone fit mode removes the normal mobile upward nudge and
+          tightens the immediate rhythm, but ordinary phone heights still keep
+          the project composition vertically centered. The final hard-fit
+          fallback below is reserved for genuinely pathological viewport
+          heights, where growing downward from the top is safer.
 
-          The remaining typography and vertical rhythm then scale primarily from
+          The remaining typography and vertical rhythm scale primarily from
           viewport HEIGHT. Description is intentionally never clamped here.
         */
         @media (max-width: 680px) and (max-height: 820px) {
           .frontend-desktop-project-layout {
-            justify-content: flex-start !important;
+            justify-content: center !important;
             transform: translateY(0) !important;
           }
 
@@ -1085,14 +979,16 @@ export default function FrontendSection({
         }
 
         /*
-          Narrow short phones cannot afford a second editorial paragraph after
-          Description. This deliberately covers the 390/391/392px seam as one
-          continuous geometry range, so changing width by a pixel can no longer
-          restore Outcome/My work and suddenly push the whole card into the H2.
+          Narrow phones now retain Outcome as well as Description. Cap that
+          secondary paragraph to two lines in the compact-height range so the
+          additional information does not destabilize the card geometry.
         */
         @media (max-width: 430px) and (max-height: 820px) {
-          .frontend-project-detail-secondary {
-            display: none !important;
+          .frontend-project-detail-secondary .frontend-compact-phone-detail-value {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
           }
         }
 
@@ -1112,13 +1008,11 @@ export default function FrontendSection({
         }
 
         /*
-          At genuinely shallow phone heights, secondary editorial rows disappear
-          everywhere and the technology line is reduced to one line. The gallery
-          remains visible and simply gives up a small amount of height. This is
-          intentionally the final fallback, after heading/action reduction and
-          truncation have already done the cheaper work.
+          Only genuinely pathological phone heights now drop secondary editorial
+          rows. Normal phones keep Outcome. At this final fallback, technology is
+          reduced to one line and the gallery gives up a small amount of height.
         */
-        @media (max-width: 680px) and (max-height: 700px) {
+        @media (max-width: 680px) and (max-height: 560px) {
           .frontend-project-detail-secondary {
             display: none !important;
           }
@@ -1273,6 +1167,437 @@ export default function FrontendSection({
 
           .frontend-desktop-links {
             margin-top: clamp(0.38rem, 0.9vh, 0.58rem) !important;
+          }
+        }
+
+
+        /*
+          Readability pass for the project-story UI.
+
+          The previous typography became especially small in the 681-1180px
+          band and again in the 1181-1400px short-laptop fallback. These rules
+          deliberately change only type, action sizing and the phone card's
+          vertical alignment. The gallery geometry, composition widths, GSAP
+          labels, scroll distances and navigation coordinates remain untouched.
+        */
+        @media (min-width: 1181px) {
+          .frontend-compact-phone-heading {
+            font-size: clamp(2.6rem, 2.75vw, 4.8rem) !important;
+          }
+
+          .frontend-compact-phone-intro {
+            font-size: clamp(0.64rem, 0.7vw, 0.8rem) !important;
+          }
+
+          .frontend-desktop-project-title {
+            font-size: clamp(2.05rem, 2.2vw, 3.5rem) !important;
+          }
+
+          .frontend-desktop-detail-label {
+            font-size: clamp(0.64rem, 0.66vw, 0.74rem) !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(1.28rem, 1.08vw, 1.52rem) !important;
+          }
+
+          .frontend-desktop-technology {
+            font-size: clamp(0.84rem, 0.88vw, 1rem) !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: clamp(0.64rem, 0.72vw, 0.8rem)
+              clamp(1.08rem, 1.22vw, 1.4rem) !important;
+            font-size: clamp(0.74rem, 0.8vw, 0.9rem) !important;
+          }
+        }
+
+        /*
+          Tablet through compact-laptop is the band that was most visibly
+          under-sized. Keep the existing stacked composition, but raise all
+          reading and action sizes together so no one element looks inflated
+          relative to its neighbors.
+        */
+        @media (min-width: 681px) and (max-width: 1180px) {
+          .frontend-compact-phone-heading {
+            font-size: clamp(2.3rem, 3.5vw, 3rem) !important;
+            line-height: 0.8 !important;
+          }
+
+          .frontend-compact-phone-intro {
+            font-size: clamp(0.62rem, 0.74vw, 0.72rem) !important;
+            line-height: 1.5 !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            font-size: clamp(1.5rem, 2.6vw, 1.95rem) !important;
+            line-height: 0.96 !important;
+          }
+
+          .frontend-desktop-detail-label {
+            font-size: clamp(0.56rem, 0.72vw, 0.64rem) !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(1rem, 1.6vw, 1.16rem) !important;
+            line-height: 1.42 !important;
+          }
+
+          .frontend-desktop-technology {
+            font-size: clamp(0.76rem, 1vw, 0.86rem) !important;
+            line-height: 1.5 !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: clamp(0.56rem, 0.72vw, 0.68rem)
+              clamp(0.96rem, 1.2vw, 1.12rem) !important;
+            font-size: clamp(0.72rem, 0.86vw, 0.8rem) !important;
+          }
+        }
+
+        /*
+          Normal phone heights keep the card centered in its available stack
+          and retain Outcome. Outcome is capped to two lines in the compact fit
+          range so the added information does not push the composition into the
+          section heading. Only extremely shallow phones fall back to hiding it.
+        */
+        @media (max-width: 680px) {
+          .frontend-desktop-project-layout {
+            justify-content: center !important;
+            transform: translateY(0) !important;
+          }
+
+          .frontend-compact-phone-heading {
+            font-size: clamp(1.95rem, min(9vw, 5.2vh), 2.5rem) !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            font-size: clamp(1.3rem, min(6.2vw, 3.4vh), 1.72rem) !important;
+            line-height: 0.98 !important;
+          }
+
+          .frontend-desktop-detail-label {
+            font-size: 0.54rem !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(0.9rem, min(3.8vw, 2.05vh), 0.98rem) !important;
+            line-height: 1.43 !important;
+          }
+
+          .frontend-compact-phone-technology {
+            font-size: clamp(0.64rem, min(2.75vw, 1.55vh), 0.72rem) !important;
+            line-height: 1.45 !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: clamp(0.44rem, 0.9vh, 0.56rem)
+              clamp(0.76rem, 2.5vw, 0.94rem) !important;
+            font-size: clamp(0.66rem, min(2.7vw, 1.55vh), 0.72rem) !important;
+          }
+        }
+
+
+        /*
+          Preserve the hard-fit escape hatch for pathological landscape/split
+          heights such as ~375x370. At this point keeping the section on-screen
+          is more important than forcing every secondary field to remain visible.
+        */
+        @media (max-width: 680px) and (max-height: 560px) {
+          .frontend-desktop-project-layout {
+            justify-content: flex-start !important;
+          }
+
+          .frontend-project-detail-secondary {
+            display: none !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(0.8rem, min(3.45vw, 2.3vh), 0.9rem) !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: clamp(0.36rem, 0.78vh, 0.46rem)
+              clamp(0.68rem, 2.25vw, 0.82rem) !important;
+            font-size: clamp(0.54rem, min(2.25vw, 1.5vh), 0.62rem) !important;
+          }
+        }
+
+        /*
+          Compact 14-inch-class laptops commonly land here (for example,
+          1366x768). Keep the existing height-saving rhythm, but do not allow
+          the fallback to reduce copy/buttons back to sub-legible sizes.
+        */
+        @media (min-width: 1181px) and (max-width: 1400px) and (max-height: 900px) {
+          .frontend-compact-phone-heading {
+            font-size: clamp(2.3rem, 4.8vh, 2.85rem) !important;
+          }
+
+          .frontend-compact-phone-intro {
+            font-size: clamp(0.62rem, 1.2vh, 0.72rem) !important;
+          }
+
+          .frontend-desktop-project-title {
+            font-size: clamp(1.45rem, 3.25vh, 1.9rem) !important;
+          }
+
+          .frontend-desktop-detail-label {
+            font-size: clamp(0.62rem, 1.18vh, 0.68rem) !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(1rem, 2.15vh, 1.14rem) !important;
+            line-height: 1.36 !important;
+          }
+
+          .frontend-desktop-technology {
+            font-size: clamp(0.72rem, 1.42vh, 0.82rem) !important;
+          }
+
+          .frontend-compact-phone-action {
+            padding: clamp(0.44rem, 0.9vh, 0.56rem)
+              clamp(0.76rem, 0.9vw, 0.96rem) !important;
+            font-size: clamp(0.72rem, 1.45vh, 0.8rem) !important;
+          }
+
+          .frontend-desktop-links svg {
+            width: clamp(0.82rem, 1.75vh, 0.96rem);
+            height: clamp(0.82rem, 1.75vh, 0.96rem);
+          }
+        }
+
+        /*
+          Short-height stacked-layout guard.
+
+          The <=1180px composition is intentionally stacked: section heading /
+          intro are one shrink-0 flex child and the project stack owns the rest.
+          At shallow heights (Nest Hub is 1024x600), centering an almost-full-
+          height project story makes any excess height spill equally upward and
+          downward. That is what lets the project title creep into the heading
+          zone and makes the first detail divider feel attached to the title.
+
+          Treat the vertical structure as three explicit zones instead:
+          1. Lift the whole composition slightly to recover otherwise-unused top
+             space without changing its width or horizontal safe area.
+          2. Top-anchor the project story inside the remaining stack, so overflow
+             can never be distributed upward into the section heading / intro.
+          3. Give the title -> first-divider boundary an explicit gap, then let
+             the gallery flex into whatever height remains instead of demanding
+             a fixed vh height.
+
+          This query is height-driven on purpose. Normal tablet portrait and
+          ordinary laptop heights therefore keep the already-approved layout.
+        */
+        @media (max-width: 1180px) and (max-height: 700px) {
+          .frontend-compact-phone-composition {
+            top: clamp(3.7rem, 7vh, 4.4rem) !important;
+            bottom: clamp(0.95rem, 2.5vh, 1.35rem) !important;
+            gap: clamp(0.42rem, 0.9vh, 0.62rem) !important;
+          }
+
+          .frontend-compact-phone-heading {
+            line-height: 0.84 !important;
+          }
+
+          .frontend-compact-phone-intro {
+            margin-top: clamp(0.22rem, 0.55vh, 0.36rem) !important;
+          }
+
+          .frontend-desktop-project-layout {
+            justify-content: flex-start !important;
+            transform: translateY(0) !important;
+          }
+
+          .frontend-desktop-project-title-block {
+            margin-top: 0 !important;
+            flex: 0 0 auto !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            line-height: 1.04 !important;
+            padding-bottom: 0.06em;
+          }
+
+          .frontend-compact-phone-project-row {
+            display: grid !important;
+            grid-template-rows: auto minmax(0, 1fr);
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            margin-top: clamp(0.62rem, 1.35vh, 0.82rem) !important;
+            row-gap: clamp(0.38rem, 0.85vh, 0.56rem) !important;
+            column-gap: 0 !important;
+            justify-items: end;
+            align-content: stretch;
+          }
+
+          .frontend-desktop-copy-column {
+            grid-row: 1;
+            flex: 0 0 auto !important;
+            min-height: 0 !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            grid-row: 2;
+            height: 100% !important;
+            min-height: 0 !important;
+            flex: none !important;
+            align-self: stretch !important;
+          }
+        }
+
+        /*
+          Extreme-height fallback keeps the same title/divider invariant while
+          retaining the existing information-reduction rules below 560px. The
+          gallery is intentionally NOT made flexible here; the earlier hard-fit
+          height remains the safer survival behavior for ~375x370-class views.
+        */
+        @media (max-width: 680px) and (max-height: 560px) {
+          .frontend-compact-phone-composition {
+            top: clamp(3.45rem, 14vh, 4rem) !important;
+            bottom: clamp(0.72rem, 2.2vh, 1rem) !important;
+            gap: clamp(0.3rem, 0.7vh, 0.46rem) !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            line-height: 1.04 !important;
+            padding-bottom: 0.04em;
+          }
+
+          .frontend-compact-phone-project-row {
+            display: flex !important;
+            flex-direction: column !important;
+            margin-top: clamp(0.44rem, 1.15vh, 0.58rem) !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            height: min(14.5vh, 6.6rem) !important;
+            min-height: 0 !important;
+            flex: none !important;
+          }
+        }
+
+        /*
+          Horizontal navigator-aware composition budget.
+
+          Below the 1181px handoff the dots and the progress line are no longer
+          side furniture; they occupy the bottom of the same viewport as the
+          stacked project story. JS above measures the actual nav top on every
+          relevant ResizeObserver/resize pass. Reserving that measured footer
+          plus a small optical gap guarantees that gallery media, buttons and
+          copy can never render underneath either the dots or the progress line.
+        */
+        @media (max-width: 1180px) {
+          .frontend-compact-phone-composition {
+            bottom: calc(
+              var(--frontend-horizontal-nav-reserve, 3.5rem) +
+                clamp(0.45rem, 0.9vh, 0.72rem)
+            ) !important;
+          }
+        }
+
+        /*
+          Normal-height phones need an explicit title/detail boundary. A cursive
+          project title has visible ascenders/descenders that can make an ordinary
+          margin look much smaller than its numeric CSS value. Make the project
+          story itself a two-row grid and let row-gap own that relationship. The
+          whole story is still centered vertically, but the first detail rule can
+          no longer collapse toward the project title. Shorter phone heights keep
+          using the dedicated fit-mode rules above.
+        */
+        @media (max-width: 680px) and (min-height: 701px) {
+          .frontend-desktop-project-layout {
+            display: grid !important;
+            grid-template-rows: auto auto;
+            align-content: center !important;
+            justify-content: stretch !important;
+            row-gap: clamp(0.86rem, 1.55vh, 1.08rem);
+          }
+
+          .frontend-desktop-project-title-block {
+            margin-top: 0 !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            line-height: 1.05 !important;
+            padding-bottom: 0.1em;
+          }
+
+          .frontend-compact-phone-project-row {
+            margin-top: 0 !important;
+          }
+        }
+
+        /*
+          On ordinary tall phones, pay for the measured navigator reserve and
+          the stronger title/detail separation by letting media surrender a
+          small amount of height. Copy remains fully readable; the gallery still
+          keeps a substantial carousel viewport. The <=820px fit mode above
+          already uses a smaller gallery, so this rule starts at 821px.
+        */
+        @media (max-width: 680px) and (min-height: 821px) {
+          .frontend-compact-phone-gallery {
+            height: min(17vh, 10rem) !important;
+          }
+        }
+
+        /*
+          Tall tablet portrait has the opposite constraint from Nest Hub/mobile:
+          there is surplus vertical room, but the copy used to retain only its
+          intrinsic height, leaving Description, Outcome, Built With and actions
+          bunched together. Give the project row a bounded share of viewport
+          height, reserve a fixed media row, and let the copy consume/distribute
+          the rest. display: contents promotes each editorial detail row into
+          the distribution flex context, matching the proven wide-desktop model.
+          Nothing is pushed beyond the stage because the row itself remains
+          clamped and the measured navigator footer above is already excluded.
+        */
+        @media (min-width: 681px) and (max-width: 1180px) and (min-height: 900px) {
+          .frontend-desktop-project-layout {
+            justify-content: center !important;
+            transform: translateY(0) !important;
+          }
+
+          .frontend-compact-phone-project-row {
+            display: grid !important;
+            grid-template-rows: minmax(0, 1fr) auto;
+            height: clamp(31rem, 52vh, 42rem);
+            min-height: 0 !important;
+            flex: none !important;
+            margin-top: clamp(0.78rem, 1.15vh, 1rem) !important;
+            row-gap: clamp(0.9rem, 1.4vh, 1.2rem) !important;
+            column-gap: 0 !important;
+            justify-items: end;
+            align-items: stretch !important;
+          }
+
+          .frontend-desktop-copy-column {
+            grid-row: 1;
+            height: 100%;
+            min-height: 0 !important;
+            align-self: stretch !important;
+          }
+
+          .frontend-desktop-copy-distribution {
+            height: 100%;
+            min-height: 0;
+            justify-content: space-between;
+          }
+
+          .frontend-desktop-detail-list {
+            display: contents;
+          }
+
+          .frontend-desktop-technology,
+          .frontend-desktop-links {
+            margin-top: 0 !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            grid-row: 2;
+            height: min(18vh, 14rem) !important;
+            min-height: 0 !important;
+            flex: none !important;
+            align-self: stretch !important;
           }
         }
 

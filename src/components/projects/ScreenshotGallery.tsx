@@ -115,7 +115,12 @@ function buildPackedMasonryColumns(
     return [] as PackedMasonryColumn[];
   }
 
-  const effectiveHeight = Math.max(galleryHeight, 280);
+  //Use the real rendered gallery height once ResizeObserver has measured it.
+  //The previous Math.max(galleryHeight, 280) made short-height layouts visually
+  //behave as if the masonry were still 280px tall even when the parent had
+  //correctly yielded far less space to media. Keep 280px only as the transient
+  //pre-measurement fallback so the first render has stable geometry.
+  const effectiveHeight = galleryHeight > 1 ? galleryHeight : 280;
   const ratios = screenshots.map((screenshot, index) =>
     getKnownScreenshotRatio(screenshot, index, imageRatios),
   );
