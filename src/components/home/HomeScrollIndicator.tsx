@@ -163,54 +163,15 @@ export default function HomeScrollIndicator({
               rgb(0,0,0) 60%,
               rgb(5,5,5) 100%
             );
-          box-shadow:
-            inset 0 8px 13px -14px rgba(255,255,255,0.28),
-            inset 0 -10px 14px -14px rgba(255,255,255,0.08),
-            0 8px 24px rgba(0,0,0,0.2);
+          // box-shadow:
+          //   inset 0 8px 13px -14px rgba(255,255,255,0.28),
+          //   inset 0 -10px 14px -14px rgba(255,255,255,0.08),
+          //   0 8px 24px rgba(0,0,0,0.2);
           color: rgba(255,255,255,0.9);
           isolation: isolate;
         }
 
-        .home-scroll-indicator__surface::before {
-          content: "";
-          pointer-events: none;
-          position: absolute;
-          inset: 2px;
-          z-index: 1;
-          border-radius: inherit;
-          background:
-            linear-gradient(
-              180deg,
-              rgba(255,255,255,0.48) 0%,
-              rgba(255,255,255,0.31) 12%,
-              rgba(255,255,255,0.16) 27%,
-              rgba(255,255,255,0.062) 41%,
-              rgba(255,255,255,0.017) 52%,
-              transparent 64%
-            );
-          -webkit-mask-image:
-            radial-gradient(
-              92% 128% at 50% -18%,
-              #000 0%,
-              #000 52%,
-              rgba(0,0,0,0.92) 62%,
-              rgba(0,0,0,0.5) 75%,
-              transparent 91%
-            );
-          mask-image:
-            radial-gradient(
-              92% 128% at 50% -18%,
-              #000 0%,
-              #000 52%,
-              rgba(0,0,0,0.92) 62%,
-              rgba(0,0,0,0.5) 75%,
-              transparent 91%
-            );
-          box-shadow:
-            inset 0 1.65px 0 rgba(255,255,255,0.32),
-            inset 0 4px 8px -7px rgba(255,255,255,0.20);
-          opacity: 0.76;
-        }
+        
 
         .home-scroll-indicator__label {
           position: relative;

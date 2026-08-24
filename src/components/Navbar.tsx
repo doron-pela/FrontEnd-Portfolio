@@ -273,12 +273,12 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
               rgb(0,0,0) 74%,
               rgb(8,8,8) 100%
             );
-          box-shadow:
-            inset 0 1.2px 0 rgba(255,255,255,0.20),
-            inset 0 7px 12px -12px rgba(255,255,255,0.28),
-            inset 0 -12px 18px -16px rgba(255,255,255,0.11),
-            0 10px 26px rgba(0,0,0,0.22),
-            0 2px 7px rgba(0,0,0,0.16);
+            // box-shadow:
+            // inset 0 1.2px 0 rgba(255,255,255,0.20),
+            // inset 0 7px 12px -12px rgba(255,255,255,0.28),
+            // inset 0 -12px 18px -16px rgba(255,255,255,0.11),
+            // 0 10px 26px rgba(0,0,0,0.22),
+            // 0 2px 7px rgba(0,0,0,0.16);
         }
 
         /*
@@ -287,6 +287,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           middle stays straight and both end caps inherit the navbar's exact
           curvature instead of receiving independently drawn highlight shapes.
         */
+       /*
         .portfolio-nav::after {
           content: "";
           pointer-events: none;
@@ -296,19 +297,20 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
           border-radius: inherit;
           background:
             linear-gradient(
-              180deg,
+              0deg,
               rgba(255,255,255,0.43) 0%,
-              rgba(255,255,255,0.26) 7%,
-              rgba(255,255,255,0.12) 14%,
-              rgba(255,255,255,0.045) 22%,
-              rgba(255,255,255,0.01) 28%,
-              transparent 34%
+              rgba(255,255,255,0.26) 3%,
+              rgba(255,255,255,0.12) 7%,
+              rgba(255,255,255,0.045) 10%,
+              rgba(255,255,255,0.01) 8%,
+              transparent 10%
             );
           box-shadow:
             inset 0 1.35px 0 rgba(255,255,255,0.30),
             inset 0 -1px 0 rgba(255,255,255,0.018);
           opacity: 0.74;
         }
+          */
 
         .portfolio-nav__items {
           position: relative;
