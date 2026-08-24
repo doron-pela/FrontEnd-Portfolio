@@ -16,8 +16,9 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
   {
     title: "Cybervylle",
     description:
-      "A game discovery platform built for finding what’s worth playing next. Explore new and upcoming releases, filter by platform and date, compare ratings and Metacritic reviews, see where each game is available, and save your favorites",
+      "A game discovery platform built for finding what’s worth playing next. Explore new and upcoming releases, compare ratings and Metacritic reviews, see where each game is available, and save your favorites",
     outcome: `Gave gaming lounges and arcade communities a better way to surface relevant titles to players, compare reception across games, and quickly identify what was available on different platforms before adding something new to the rotation`,
+    shortOutcome: `Helped gaming lounges and arcade communities find new games, compare reviews, and check platform availability`,
     technologies: ["React", "TanStack Query", "RAWG API", "Axios", "Motion "],
     liveUrl: "https://cybervylle.vercel.app/",
     repositoryUrl: "https://github.com/doron-pela/Cyberville",
@@ -30,7 +31,9 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
       "A web-based CV builder for Ashesi University students that turns form entries into a consistently formatted CV ready to download.",
     outcome:
       "Helped my Alma mater's Career Services center to make CV formatting faster, simpler and consistent without repeatedly editing document templates.",
-    // technologies: [],
+    shortOutcome: `Helped my Alma mater's Career Services center to make CV formatting faster, simpler and consistent without repeatedly editing document templates.`,
+
+    technologies: ["React", "contextAPI"],
     liveUrl: "https://ashesi-cv-generator.vercel.app",
     repositoryUrl: null,
     detailsSlug: "ashesi-cv-generator",

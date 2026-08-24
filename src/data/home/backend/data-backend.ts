@@ -15,6 +15,8 @@ export const BACKEND_PROJECTS: readonly PortfolioProject[] = [
       "I build C# / ASP.NET Core API endpoints and backend workflows, and contribute Python RAG/agent systems for retrieval, grounding and evaluation.",
     outcome:
       "Supports HR and payroll operations for 70,000+ employees across enterprise customers.",
+    shortOutcome: 
+      "Supports HR and payroll operations for 70,000+ employees across enterprise customers.",
     technologies: [
       "C#",
       "ASP.NET Core",

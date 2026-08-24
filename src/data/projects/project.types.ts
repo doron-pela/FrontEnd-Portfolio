@@ -13,6 +13,7 @@ export type PortfolioProject = {
   title: string;
   description: string | null;
   contribution?: string | null;
+  shortOutcome?: string | null;
   outcome?: string | null;
   technologies?: readonly string[];
   screenshots?: readonly ProjectScreenshot[];

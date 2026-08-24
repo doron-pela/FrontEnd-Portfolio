@@ -2,7 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { HomeSection } from "@/@types/home-section.types";
 import type {
@@ -80,6 +80,193 @@ function GitHubIcon() {
     >
       <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.167 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.014-1.7-2.782.604-3.369-1.34-3.369-1.34-.455-1.157-1.11-1.465-1.11-1.465-.908-.62.069-.608.069-.608 1.003.071 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.091-.646.349-1.087.635-1.337-2.221-.253-4.555-1.111-4.555-4.943 0-1.091.39-1.984 1.03-2.683-.103-.253-.447-1.269.098-2.645 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0 1 12 6.844a9.56 9.56 0 0 1 2.504.337c1.909-1.294 2.748-1.025 2.748-1.025.546 1.376.202 2.392.099 2.645.64.699 1.029 1.592 1.029 2.683 0 3.842-2.337 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.337-.012 2.415-.012 2.744 0 .267.18.578.688.48A10.004 10.004 0 0 0 22 12c0-5.523-4.477-10-10-10Z" />
     </svg>
+  );
+}
+
+type ResponsiveOutcomeTextProps = {
+  className: string;
+  value: string;
+};
+
+function getResponsiveOutcomeLineLimit() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (window.innerWidth < 1181 || window.innerHeight > 1050) {
+    return null;
+  }
+
+  //At <=720px the existing wide-desktop compact mode hides Outcome entirely,
+  //so there is no visible paragraph to truncate.
+  if (window.innerHeight <= 720) {
+    return null;
+  }
+
+  if (window.innerHeight <= 780) {
+    return 1;
+  }
+
+  if (window.innerHeight <= 900) {
+    return 2;
+  }
+
+  return 3;
+}
+
+function truncateOutcomeToLineCount(
+  element: HTMLParagraphElement,
+  value: string,
+  lineLimit: number,
+) {
+  const width = element.getBoundingClientRect().width;
+
+  if (width <= 1) {
+    return value;
+  }
+
+  const computed = window.getComputedStyle(element);
+  const parsedLineHeight = Number.parseFloat(computed.lineHeight);
+  const parsedFontSize = Number.parseFloat(computed.fontSize);
+  const lineHeight = Number.isFinite(parsedLineHeight)
+    ? parsedLineHeight
+    : parsedFontSize * 1.2;
+  const maxHeight = lineHeight * lineLimit + 0.5;
+
+  const measurement = document.createElement("div");
+  measurement.setAttribute("aria-hidden", "true");
+
+  Object.assign(measurement.style, {
+    position: "fixed",
+    left: "-100000px",
+    top: "0",
+    visibility: "hidden",
+    pointerEvents: "none",
+    width: `${width}px`,
+    height: "auto",
+    maxHeight: "none",
+    margin: "0",
+    padding: "0",
+    border: "0",
+    boxSizing: computed.boxSizing,
+    display: "block",
+    whiteSpace: "normal",
+    overflow: "visible",
+    overflowWrap: computed.overflowWrap,
+    wordBreak: computed.wordBreak,
+    fontFamily: computed.fontFamily,
+    fontSize: computed.fontSize,
+    fontWeight: computed.fontWeight,
+    fontStyle: computed.fontStyle,
+    fontStretch: computed.fontStretch,
+    lineHeight: computed.lineHeight,
+    letterSpacing: computed.letterSpacing,
+    wordSpacing: computed.wordSpacing,
+    textTransform: computed.textTransform,
+  });
+
+  document.body.appendChild(measurement);
+
+  const fits = (candidate: string) => {
+    measurement.textContent = candidate;
+    return measurement.scrollHeight <= maxHeight + 1;
+  };
+
+  if (fits(value)) {
+    measurement.remove();
+    return value;
+  }
+
+  let low = 0;
+  let high = value.length;
+
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    const candidate = `${value.slice(0, middle).trimEnd()}...`;
+
+    if (fits(candidate)) {
+      low = middle;
+    } else {
+      high = middle - 1;
+    }
+  }
+
+  let truncated = value.slice(0, low).trimEnd();
+  const lastSpace = truncated.lastIndexOf(" ");
+
+  //Prefer a complete word near the measured cutoff. The three periods are
+  //literal rendered characters, so the result never depends on the browser
+  //deciding whether to paint a synthetic line-clamp ellipsis.
+  if (lastSpace > 0 && truncated.length - lastSpace <= 18) {
+    truncated = truncated.slice(0, lastSpace);
+  }
+
+  truncated = truncated.replace(/[,:;.!?]+$/u, "").trimEnd();
+  measurement.remove();
+
+  return truncated ? `${truncated}...` : value;
+}
+
+function ResponsiveOutcomeText({
+  className,
+  value,
+}: ResponsiveOutcomeTextProps) {
+  const paragraphRef = useRef<HTMLParagraphElement | null>(null);
+  const [renderedValue, setRenderedValue] = useState(value);
+
+  useEffect(() => {
+    const paragraph = paragraphRef.current;
+
+    if (!paragraph) {
+      return;
+    }
+
+    let frame = 0;
+    let disposed = false;
+
+    const syncOutcome = () => {
+      cancelAnimationFrame(frame);
+
+      frame = requestAnimationFrame(() => {
+        if (disposed) {
+          return;
+        }
+
+        const lineLimit = getResponsiveOutcomeLineLimit();
+        const nextValue = lineLimit
+          ? truncateOutcomeToLineCount(paragraph, value, lineLimit)
+          : value;
+
+        setRenderedValue((current) =>
+          current === nextValue ? current : nextValue,
+        );
+      });
+    };
+
+    syncOutcome();
+
+    const resizeObserver = new ResizeObserver(syncOutcome);
+    resizeObserver.observe(paragraph);
+    window.addEventListener("resize", syncOutcome, { passive: true });
+
+    void document.fonts?.ready.then(() => {
+      if (!disposed) {
+        syncOutcome();
+      }
+    });
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", syncOutcome);
+    };
+  }, [value]);
+
+  return (
+    <p aria-label={value} className={className} ref={paragraphRef}>
+      {renderedValue}
+    </p>
   );
 }
 
@@ -1029,6 +1216,55 @@ export default function BackendSection({
         }
 
         /*
+          Wide-desktop height responsiveness. The actual architecture switches
+          from stacked to two-column at 1181px, so keep that exact handoff rather
+          than overlapping the <=1180px tablet rules. Description remains fully
+          untouched. As vertical room falls below 1050px, Outcome progressively
+          surrenders lines first; at genuinely shallow heights the whole Outcome
+          row is removed so technologies and project actions always stay inside
+          the viewport. The internal detail CTA becomes "Read more" only while
+          this compact desktop mode is active, making the truncation intentional
+          and giving the user an obvious path to the complete project detail.
+        */
+        .backend-project-details-link-label-compact {
+          display: none;
+        }
+
+        @media (min-width: 1181px) and (max-height: 1050px) {
+          .backend-project-detail-outcome .backend-compact-phone-detail-value {
+            display: block;
+            max-height: calc(3 * 1lh);
+            overflow: hidden;
+          }
+
+          .backend-project-details-link-label-default {
+            display: none;
+          }
+
+          .backend-project-details-link-label-compact {
+            display: inline;
+          }
+        }
+
+        @media (min-width: 1181px) and (max-height: 900px) {
+          .backend-project-detail-outcome .backend-compact-phone-detail-value {
+            max-height: calc(2 * 1lh);
+          }
+        }
+
+        @media (min-width: 1181px) and (max-height: 780px) {
+          .backend-project-detail-outcome .backend-compact-phone-detail-value {
+            max-height: 1lh;
+          }
+        }
+
+        @media (min-width: 1181px) and (max-height: 720px) {
+          .backend-project-detail-outcome {
+            display: none !important;
+          }
+        }
+
+        /*
           Wide desktop uses the stack's existing flex-1 height as the exact
           safe vertical region below the rendered section heading + intro.
           The project title stays at the top of that region and the lower row
@@ -1699,7 +1935,7 @@ export default function BackendSection({
                   const projectDetails = [
                     { label: "Description", value: project.description },
                     { label: "My work", value: project.contribution },
-                    { label: "Outcome", value: project.outcome },
+                    { label: "Outcome", value: project.shortOutcome },
                   ].filter(
                     (detail): detail is { label: string; value: string } =>
                       Boolean(detail.value?.trim()),
@@ -1765,7 +2001,11 @@ export default function BackendSection({
                                       className={
                                         detail.label === "Description"
                                           ? "backend-project-detail-row backend-project-detail-primary"
-                                          : "backend-project-detail-row backend-project-detail-secondary"
+                                          : `backend-project-detail-row backend-project-detail-secondary${
+                                              detail.label === "Outcome"
+                                                ? " backend-project-detail-outcome"
+                                                : ""
+                                            }`
                                       }
                                       key={detail.label}
                                     >
@@ -1781,9 +2021,16 @@ export default function BackendSection({
                                         <span className="backend-desktop-detail-label font-mono text-[clamp(0.57rem,0.62vw,0.68rem)] uppercase tracking-[0.16em] text-[#171717]/42 max-[1180px]:text-[0.52rem] max-[1180px]:tracking-[0.14em] min-[901px]:max-[1180px]:text-[0.46rem] min-[901px]:max-[1180px]:tracking-[0.13em] max-[680px]:text-[0.46rem] max-[680px]:tracking-[0.14em]">
                                           {detail.label}
                                         </span>
-                                        <p className="backend-compact-phone-detail-value max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
-                                          {detail.value}
-                                        </p>
+                                        {detail.label === "Outcome" ? (
+                                          <ResponsiveOutcomeText
+                                            className="backend-compact-phone-detail-value max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]"
+                                            value={detail.value}
+                                          />
+                                        ) : (
+                                          <p className="backend-compact-phone-detail-value max-w-[22rem] font-[Garamond,_'Times_New_Roman',_serif] text-[clamp(1.16rem,1vw,1.42rem)] leading-[1.54] text-[#171717]/64 max-[1180px]:max-w-[30rem] max-[1180px]:text-[clamp(0.92rem,1.45vw,1.04rem)] max-[1180px]:leading-[1.45] min-[901px]:max-[1180px]:text-[clamp(0.82rem,1.75vh,0.9rem)] min-[901px]:max-[1180px]:leading-[1.36] max-[680px]:max-w-none max-[680px]:text-[0.86rem] max-[680px]:leading-[1.48]">
+                                            {detail.value}
+                                          </p>
+                                        )}
                                       </div>
                                     </div>
                                   ))}
@@ -1854,7 +2101,12 @@ export default function BackendSection({
                                       }}
                                       to="/experience/backend/$projectSlug"
                                     >
-                                      View project →
+                                      <span className="backend-project-details-link-label-default">
+                                        View project →
+                                      </span>
+                                      <span className="backend-project-details-link-label-compact">
+                                        Read more →
+                                      </span>
                                     </Link>
                                   ) : null}
                                 </div>
