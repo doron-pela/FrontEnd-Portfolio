@@ -8,14 +8,14 @@ import { getProjectScreenshotsWithFallback } from "@/utils/home-asset-registry";
 //images updates every presentation without maintaining screenshot imports.
 export const BACKEND_PROJECTS: readonly PortfolioProject[] = [
   {
-    title: "Xceed365HR",
+    title: "Xceed365HR (HR management company)",
     description:
       "Talpro Software is a unified, AI-powered HR and payroll platform for African enterprises, spanning core HR, payroll, hiring, learning, talent and agentic workflows.",
     contribution:
       "I build C# / ASP.NET Core API endpoints and backend workflows, and contribute Python RAG/agent systems for retrieval, grounding and evaluation.",
     outcome:
       "Supports HR and payroll operations for 70,000+ employees across enterprise customers.",
-    shortOutcome: 
+    shortOutcome:
       "Supports HR and payroll operations for 70,000+ employees across enterprise customers.",
     technologies: [
       "C#",

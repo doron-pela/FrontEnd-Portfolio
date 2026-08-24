@@ -1933,8 +1933,8 @@ export default function BackendSection({
                   //Description visible; My work and Outcome remain available
                   //everywhere else without changing the data model or timeline.
                   const projectDetails = [
-                    { label: "Description", value: project.description },
-                    { label: "My work", value: project.contribution },
+                    // { label: "Description", value: project.description },
+                    { label: "My Contribution", value: project.contribution },
                     { label: "Outcome", value: project.shortOutcome },
                   ].filter(
                     (detail): detail is { label: string; value: string } =>
