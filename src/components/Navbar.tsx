@@ -226,7 +226,7 @@ export default function Navbar({ currentSection, onSkillsOpen }: NavbarProps) {
   return (
     <nav
       aria-label="Portfolio sections"
-      className="portfolio-nav fixed left-1/2 top-[clamp(0.45rem,1vh,0.68rem)] z-[500] -translate-x-1/2"
+      className="portfolio-nav fixed left-1/2 top-[clamp(0.45rem,5vh,2rem)] z-[500] -translate-x-1/2"
     >
       <style>{`
         .portfolio-nav {

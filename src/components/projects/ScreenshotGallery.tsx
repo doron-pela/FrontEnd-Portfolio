@@ -37,7 +37,7 @@ type GalleryMotionMetrics = {
   totalVirtualDistance: number;
 };
 
-const PROJECT_GALLERY_MASONRY_GAP_PX = 6;
+const PROJECT_GALLERY_MASONRY_GAP_PX = 1;
 const PROJECT_GALLERY_OVERFLOW_EPSILON_PX = 6;
 const PROJECT_GALLERY_MOBILE_QUERY = "(max-width: 680px)";
 const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";
@@ -47,7 +47,7 @@ const PROJECT_GALLERY_DESKTOP_QUERY = "(min-width: 1181px)";
 //composition: it begins translated LEFT underneath the copy and reveals RIGHT.
 //In both modalities the wrapper reveal happens before native screenshot scroll,
 //so there is no clipping/direction discontinuity at the reveal handoff.
-const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 27.5;
+const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 31;
 
 //A small amount of drag hysteresis prevents tiny pointer noise from needlessly
 //writing scrollLeft / transform values before the user has actually dragged.
