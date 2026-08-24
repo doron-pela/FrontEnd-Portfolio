@@ -26,7 +26,7 @@ export const FRONTEND_PROJECTS: readonly PortfolioProject[] = [
     screenshots: getProjectScreenshots("frontend", "cybervylle", "Cybervylle"),
   },
   {
-    title: "Ashesi-CV-Generator",
+    title: "CV-Generator",
     description:
       "A web-based CV builder for Ashesi University students that turns form entries into a consistently formatted CV ready to download.",
     outcome:
