@@ -114,7 +114,7 @@ export default function HomeScrollIndicator({
   return (
     <div
       aria-hidden="true"
-      className="home-scroll-indicator pointer-events-none fixed left-[22.5%] top-[72vh] z-[470] max-[1100px]:hidden"
+      className="home-scroll-indicator pointer-events-none fixed left-[22.5%] top-[71vh] z-[470] max-[1100px]:hidden"
       data-visible={visible ? "true" : "false"}
     >
       <style>{`
@@ -155,19 +155,11 @@ export default function HomeScrollIndicator({
               rgba(255,255,255,0.048) 0%,
               rgba(255,255,255,0.012) 38%,
               transparent 65%
-            ),
-            linear-gradient(
-              180deg,
-              rgb(8,8,8) 0%,
-              rgb(2,2,2) 25%,
-              rgb(0,0,0) 60%,
-              rgb(5,5,5) 100%
             );
           // box-shadow:
           //   inset 0 8px 13px -14px rgba(255,255,255,0.28),
           //   inset 0 -10px 14px -14px rgba(255,255,255,0.08),
           //   0 8px 24px rgba(0,0,0,0.2);
-          color: rgba(255,255,255,0.9);
           isolation: isolate;
         }
 
@@ -184,7 +176,7 @@ export default function HomeScrollIndicator({
             Consolas,
             "Liberation Mono",
             monospace;
-          font-size: clamp(0.56rem, 0.58vw, 0.67rem);
+          font-size: clamp(0.56rem, 0.70vw, 0.8rem);
           font-weight: 650;
           letter-spacing: 0.13em;
           line-height: 1;
