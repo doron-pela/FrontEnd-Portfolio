@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 const HOME_SIGNATURE_FADE_DISTANCE_PX = 320;
-const HOME_ROLE_TITLE = "Fullstack software engineer";
+const HOME_ROLE_TITLE = "Fullstack Software Engineer";
 
 export default function HomeRoleSignature() {
   const signatureRef = useRef<HTMLDivElement | null>(null);
@@ -63,25 +63,27 @@ export default function HomeRoleSignature() {
       <style>{`
         @import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Pinyon+Script&display=swap");
 
-        .home-role-signature-text {
-          font-family:
-            "Monotype Corsiva",
-            "Pinyon Script",
-            cursive;
-          word-spacing: 0.3em;
-        }
+        // .home-role-signature-text {
+        //   font-family:
+        //     "Monotype Corsiva",
+        //     "Pinyon Script",
+        //     cursive;
+        //   word-spacing: 0.3em;
+        // }
 
-        @media (min-width: 1101px) {
           .home-role-signature-text {
             font-family:
-              "Segoe Script",
-              "Brush Script MT",
-              cursive;
+            ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            Monaco,
+            Consolas,
+            "Liberation Mono",
+            monospace;
             font-weight: 600;
-            letter-spacing: 0.015em;
-            word-spacing: 1w.2em;
+            letter-spacing: 0.01em;
+            word-spacing: 0.3em;
           }
-        }
       `}</style>
 
       <div
@@ -98,7 +100,7 @@ export default function HomeRoleSignature() {
       >
         <span
           className="home-role-signature-text inline-block whitespace-nowrap text-[clamp(1.28rem,1.2vw,2.45rem)] font-[500] leading-none tracking-[0.1em]
-            min-[1101px]:text-[min(1.15vw,2.8vh)] min-[1101px]:tracking-[0.015em]"
+            min-[1101px]:text-[min(0.9vw,2.8vh)] min-[1101px]:tracking-[0.015em]"
         >
           {HOME_ROLE_TITLE}
         </span>
