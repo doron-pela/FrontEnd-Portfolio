@@ -2128,13 +2128,24 @@ export default function BackendSection({
                 dots; <=1180px lays that same line horizontally on the bottom bed
                 immediately before the unchanged horizontal dot navigator.
               */}
-            <div
-              aria-hidden="true"
-              className="backend-timeline-rail pointer-events-none absolute left-[2.1vw] z-[65] hidden w-[2px] overflow-hidden rounded-full min-[1181px]:block"
-              ref={timelineVerticalRailRef}
-              style={{ height: 0, top: 0 }}
-            >
-              <span className="backend-timeline-progress-vertical absolute inset-0 h-full w-full bg-[#171717]/72 will-change-transform" />
+            <div 
+              title="With 2 fingers" 
+              className="pointer-events-auto w-[11px] h-full absolute left-[2.1vw] top-0 z-[65]"
+              onClick={()=>{
+                <span className="pointer-events-none absolute bottom-[calc(100%+0.52rem)] left-0 w-max max-w-[min(19rem,36vw)] translate-y-1 rounded-[0.72rem] border border-[#171717]/11 bg-[#f4f2eb]/96 px-[clamp(0.72rem,0.92vw,0.96rem)] py-[clamp(0.52rem,0.66vw,0.68rem)] text-left opacity-0 shadow-[0_10px_28px_rgba(23,23,23,0.08)] backdrop-blur-[12px] transition-[opacity,transform] duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 min-[1181px]:bottom-auto min-[1181px]:left-[calc(100%+0.45rem)] min-[1181px]:top-1/2 min-[1181px]:-translate-y-1/2 min-[1181px]:group-hover:-translate-y-1/2 min-[1181px]:group-focus-visible:-translate-y-1/2 max-[680px]:hidden">
+                  <span className="block font-sans text-[clamp(0.82rem,0.96vw,1.04rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-[#171717] max-[680px]:text-[0.76rem]">
+                    With two fingers
+                  </span>
+                </span>
+              }}>
+              <div
+                aria-hidden="true"
+                className="backend-timeline-rail absolute z-[65] hidden ml-[40%] w-[2px] overflow-hidden rounded-full min-[1181px]:block"
+                ref={timelineVerticalRailRef}
+                style={{ height: 0, top: 0 }}
+              >
+                <span className="backend-timeline-progress-vertical absolute inset-0 h-full w-full bg-[#171717]/72 will-change-transform" />
+              </div>
             </div>
 
             <div

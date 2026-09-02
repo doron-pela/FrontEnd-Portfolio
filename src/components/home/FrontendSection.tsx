@@ -2127,13 +2127,15 @@ export default function FrontendSection({
                 dots; <=1180px lays that same line horizontally on the bottom bed
                 immediately before the unchanged horizontal dot navigator.
               */}
-            <div
-              aria-hidden="true"
-              className="frontend-timeline-rail pointer-events-none absolute right-[2.1vw] z-[65] hidden w-[2px] overflow-hidden rounded-full min-[1181px]:block"
-              ref={timelineVerticalRailRef}
-              style={{ height: 0, top: 0 }}
-            >
-              <span className="frontend-timeline-progress-vertical absolute inset-0 h-full w-full bg-[#171717]/72 will-change-transform" />
+            <div title="With 2 fingers" className="pointer-events-auto w-[11px] h-full absolute right-[2.1vw] top-0 z-[65]">
+              <div
+                aria-hidden="true"
+                className="frontend-timeline-rail absolute hidden ml-[40%] w-[2px] overflow-hidden rounded-full min-[1181px]:block"
+                ref={timelineVerticalRailRef}
+                style={{ height: 0, top: 0 }}
+              >
+                <span className="frontend-timeline-progress-vertical absolute inset-0 h-full w-full bg-[#171717]/72 will-change-transform" />
+              </div>
             </div>
 
             <div
