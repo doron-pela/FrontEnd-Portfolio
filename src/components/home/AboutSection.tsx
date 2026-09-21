@@ -11,7 +11,7 @@ import type {
 import { ABOUT_DATA } from "@/data/home/about/data-about";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
-// import reactLogo from "../assets/react.svg";
+import gradImage from "@/assets/Grad_Image.png";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -583,34 +583,36 @@ export function AboutSection({
                 ))}
               </p>
 
+              <div className="size-[90%] mx-auto mt-[3.5rem] flex items-center justify-center max-[900px]:justify-end">
+                <img
+                  src={gradImage}
+                  alt="Grad Image"
+                  className="size-full object-contain"
+                />
+              </div>
+
               {/* <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="size-full object-contain"
-        />
-      </div>
-      <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="size-full object-contain"
-        />
-      </div>
-      <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="size-full object-contain"
-        />
-      </div>
-      <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="size-full object-contain"
-        />
-      </div> */}
+                <img
+                  src={reactLogo}
+                  alt="React Logo"
+                  className="size-full object-contain"
+                />
+              </div>
+              <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                <img
+                  src={reactLogo}
+                  alt="React Logo"
+                  className="size-full object-contain"
+                />
+              </div>
+              <div className="size-60 mt-[3.5rem] flex items-center justify-center gap-6 max-[900px]:justify-end">
+                <img
+                  src={reactLogo}
+                  alt="React Logo"
+                  className="size-full object-contain"
+                />
+              </div> */}
+
             </div>
           </div>
         </div>
