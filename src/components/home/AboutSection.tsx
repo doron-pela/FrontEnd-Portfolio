@@ -11,7 +11,7 @@ import type {
 import { ABOUT_DATA } from "@/data/home/about/data-about";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
-import gradImage from "@/assets/Grad_Image.png";
+import gradImage from "@/assets/Grad_Image.jpg";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
