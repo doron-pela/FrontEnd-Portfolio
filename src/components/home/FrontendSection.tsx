@@ -1456,41 +1456,60 @@ export default function FrontendSection({
         */
         @media (min-width: 681px) and (max-width: 1180px) {
           .frontend-compact-phone-heading {
-            font-size: clamp(2.3rem, 3.5vw, 3rem) !important;
-            line-height: 0.8 !important;
+            font-size: clamp(2.15rem, min(4.15vw, 5vh), 3.25rem) !important;
+            line-height: 0.86 !important;
           }
 
           .frontend-compact-phone-intro {
-            font-size: clamp(0.62rem, 0.74vw, 0.72rem) !important;
+            max-width: min(30rem, 60vw) !important;
+            font-size: clamp(0.65rem, min(1.15vw, 1.3vh), 0.78rem) !important;
             line-height: 1.5 !important;
+          }
+
+          .frontend-desktop-project-title-block {
+            margin-top: clamp(0.45rem, 1.35vh, 1rem) !important;
           }
 
           .frontend-compact-phone-project-title {
-            font-size: clamp(1.5rem, 2.6vw, 1.95rem) !important;
-            line-height: 0.96 !important;
+            font-size: clamp(1.55rem, min(3.1vw, 3.6vh), 2.15rem) !important;
+            line-height: 1.04 !important;
+          }
+
+          .frontend-compact-phone-project-row {
+            margin-top: clamp(0.55rem, 1.2vh, 0.95rem) !important;
+            gap: clamp(0.5rem, 1vh, 0.8rem) !important;
+          }
+
+          .frontend-compact-phone-detail {
+            gap: clamp(0.3rem, 0.6vh, 0.48rem) !important;
+            padding-block: clamp(0.4rem, 1.05vh, 0.75rem) !important;
           }
 
           .frontend-desktop-detail-label {
-            font-size: clamp(0.56rem, 0.72vw, 0.64rem) !important;
+            font-size: clamp(0.6rem, min(0.96vw, 1.2vh), 0.72rem) !important;
           }
 
           .frontend-compact-phone-detail-value {
-            font-size: clamp(1rem, 1.6vw, 1.16rem) !important;
-            line-height: 1.42 !important;
+            font-size: clamp(0.98rem, min(2vw, 2.2vh), 1.23rem) !important;
+            line-height: 1.35 !important;
           }
 
           .frontend-desktop-technology {
-            font-size: clamp(0.76rem, 1vw, 0.86rem) !important;
+            font-size: clamp(0.76rem, min(1.2vw, 1.5vh), 0.92rem) !important;
             line-height: 1.5 !important;
           }
 
+          .frontend-desktop-technology,
+          .frontend-desktop-links {
+            margin-top: clamp(0.45rem, 0.85vh, 0.8rem) !important;
+          }
+
           .frontend-compact-phone-action {
-            padding: clamp(0.56rem, 0.72vw, 0.68rem)
-              clamp(0.96rem, 1.2vw, 1.12rem) !important;
-            font-size: clamp(0.72rem, 0.86vw, 0.8rem) !important;
+            padding: clamp(0.48rem, min(0.9vw, 1.05vh), 0.7rem)
+              clamp(0.84rem, 1.3vw, 1.15rem) !important;
+            font-size: clamp(0.71rem, min(1.05vw, 1.4vh), 0.86rem) !important;
           }
         }
-
         /*
           Normal phone heights keep the card centered in its available stack
           and retain Outcome. Outcome is capped to two lines in the compact fit
@@ -1796,7 +1815,7 @@ export default function FrontendSection({
           .frontend-compact-phone-project-row {
             display: grid !important;
             grid-template-rows: minmax(0, 1fr) auto;
-            height: clamp(31rem, 52vh, 42rem);
+            height: min(59vh, 40rem);
             min-height: 0 !important;
             flex: none !important;
             margin-top: clamp(0.78rem, 1.15vh, 1rem) !important;
@@ -1816,7 +1835,7 @@ export default function FrontendSection({
           .frontend-desktop-copy-distribution {
             height: 100%;
             min-height: 0;
-            justify-content: space-between;
+            justify-content: space-evenly;
           }
 
           .frontend-desktop-detail-list {
@@ -1834,6 +1853,24 @@ export default function FrontendSection({
             min-height: 0 !important;
             flex: none !important;
             align-self: stretch !important;
+          }
+        }
+
+        @media (min-width: 681px) and (max-width: 1180px) and (max-height: 820px) {
+          .frontend-compact-phone-heading {
+            font-size: clamp(2rem, min(3.8vw, 5vh), 2.8rem) !important;
+          }
+
+          .frontend-compact-phone-project-title {
+            font-size: clamp(1.42rem, min(2.7vw, 3.6vh), 1.85rem) !important;
+          }
+
+          .frontend-compact-phone-detail-value {
+            font-size: clamp(0.91rem, min(1.8vw, 2.1vh), 1.08rem) !important;
+          }
+
+          .frontend-compact-phone-gallery {
+            height: min(21vh, 12.5rem) !important;
           }
         }
 
@@ -2127,7 +2164,10 @@ export default function FrontendSection({
                 dots; <=1180px lays that same line horizontally on the bottom bed
                 immediately before the unchanged horizontal dot navigator.
               */}
-            <div title="With 2 fingers" className="pointer-events-auto w-[11px] h-full absolute right-[2.1vw] top-0 z-[65]">
+            <div
+              title="With 2 fingers"
+              className="pointer-events-auto w-[11px] h-full absolute right-[2.1vw] top-0 z-[65]"
+            >
               <div
                 aria-hidden="true"
                 className="frontend-timeline-rail absolute hidden ml-[40%] w-[2px] overflow-hidden rounded-full min-[1181px]:block"

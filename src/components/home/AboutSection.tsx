@@ -11,7 +11,7 @@ import type {
 import { ABOUT_DATA } from "@/data/home/about/data-about";
 import { setScrollSectionProgressImmediately } from "@/utils/scroll-locked-section.utils";
 
-import gradImage from "@/assets/Grad_Image.jpg";
+import gradImage from "@/assets/Grad_Image.png";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -379,7 +379,7 @@ export function AboutSection({
           content,
           {
             y: () => -getContentTravelDistance(),
-            duration: 0.78,
+            duration: 1.48,
           },
           0.35, //position parameter (start tween at.. in total time)
         )
@@ -388,9 +388,9 @@ export function AboutSection({
           {
             filter: "blur(7px)",
             autoAlpha: 0,
-            duration: 0.7,
+            duration: 0.08,
           },
-          ">", //position parameter to start this tween after the previous one ends
+          ">-0.08", //start the exit during the final 0.08 of content travel so both finish together
         );
 
       //When paused: true on a tween/timeline, the time becomes virtual time, cause it wont play that
@@ -508,20 +508,21 @@ export function AboutSection({
       data-scroll-locked-section="about"
       //About is presentation-only: pointer input passes through to the Spline
       //canvas, while select-none prevents the rendered copy from being highlighted.
-      className="pointer-events-none select-none absolute z-20 top-0 left-0 w-full"
+      className=" absolute z-20 top-0 left-0 w-full"
     >
       <div
         ref={planeRef}
         className="absolute right-[9vw] top-[32vh] w-fit text-[#171717] mix-blend-multiply [transform-style:preserve-3d] will-change-[transform,opacity]
           max-[900px]:right-0 max-[900px]:top-[15vh] max-[900px]:w-[min(70vw,34rem)] max-[900px]:mix-blend-normal
-          min-[651px]:max-[900px]:top-[30vh]
-          min-[900px]:max-[1600px]:top-[40vh]
+          min-[651px]:max-[900px]:w-[min(90vw,34rem)]
+          min-[651px]:max-[1181px]:top-[clamp(7rem,21vh,18rem)]
+          min-[1181px]:max-[1600px]:top-[40vh]
           min-[900px]:max-[1600px]:right-0
           max-[650px]:left-[44vw] max-[650px]:right-0 max-[650px]:w-auto"
       >
         <div
           ref={viewportRef}
-          className="relative h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] max-[650px]:h-[min(44vh,24rem)] max-[650px]:w-full overflow-y-clip"
+          className="relative [--about-viewport-height:min(45vh,40rem)] h-[min(45vh,40rem)] w-[min(42vw,42rem)] max-[900px]:[--about-viewport-height:min(52vh,32rem)] max-[900px]:h-[min(52vh,32rem)] max-[900px]:w-[min(90vw,34rem)] max-[650px]:[--about-viewport-height:min(44vh,24rem)] max-[650px]:h-[min(44vh,24rem)] max-[650px]:w-full min-[651px]:max-[1181px]:[--about-viewport-height:min(70vh,54rem)] min-[651px]:max-[1181px]:h-[min(70vh,54rem)] min-[901px]:max-[1181px]:w-[min(53vw,37rem)] overflow-y-clip"
         >
           <div className="absolute w-full right-0 bottom-0 z-20 h-20 bg-linear-to-t from-[#e3e3e3]/95 via-[#e3e3e3]/48 to-transparent max-[900px]:w-[90%] max-[900px]:-right-[10%] max-[650px]:right-0 max-[650px]:w-full " />
 
@@ -529,17 +530,18 @@ export function AboutSection({
             <div
               ref={contentRef}
               className="absolute right-10 z-10 pt-12 will-change-transform
-                min-[651px]:max-[700px]:mr-[10vw]
+                min-[651px]:max-[1181px]:right-[clamp(0.5rem,1.5vw,1rem)] min-[651px]:max-[1181px]:pt-[clamp(1.7rem,3.4vh,2.5rem)]
                 max-[650px]:right-0 max-[650px]:mr-0 max-[650px]:w-full
-                pb-[40vh]"
+                pb-[var(--about-viewport-height)]
+                "
             >
               <div className="about-blur-item">
-                <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)] max-[650px]:justify-end">
+                <div className="mb-[1.15rem] flex items-center gap-4 font-mono text-[clamp(0.66rem,0.7vw,0.78rem)] uppercase tracking-[0.18em] text-[rgba(23,23,23,0.48)] max-[1400px]:justify-center max-[901px]:ml-auto max-[901px]:w-fit min-[651px]:max-[1181px]:mb-[clamp(0.8rem,1.4vh,1.15rem)] min-[651px]:max-[1181px]:text-[clamp(0.7rem,1vw,0.8rem)]">
                   <span>{ABOUT_DATA.eyebrow}</span>
                   <span className="about-rule block h-px w-[min(10vw,8rem)] bg-[rgba(23,23,23,0.28)]" />
                 </div>
                 <h1
-                  className="m-0 font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-balance max-[650px]:ml-auto max-[650px]:w-fit max-[650px]:text-right max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
+                  className="m-0 text-center font-[ui-rounded,'SF_Pro_Rounded','Arial_Rounded_MT_Bold',sans-serif] text-[clamp(2rem,3.5vw,9.65rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-balance min-[651px]:max-[1181px]:text-[clamp(2.05rem,min(4.1vw,5.1vh),3.3rem)] min-[651px]:max-[1181px]:leading-[1] max-[901px]:ml-auto max-[901px]:w-fit max-[651px]:mr-[clamp(0.5rem,2.5vw,0.875rem)] max-[650px]:text-[clamp(1.75rem,7vw,2rem)]"
                   aria-label={ABOUT_DATA.titleLines.join(" ")}
                 >
                   {ABOUT_DATA.titleLines.map((line, lineIndex) => (
@@ -559,10 +561,11 @@ export function AboutSection({
               </div>
 
               <p
-                className="about-blur-item mt-[2.45rem] mx-auto max-w-[32rem] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
+                className="about-blur-item mt-[2.45rem] mx-auto max-w-[23vw] font-[Garamond,_'Baskerville_Old_Face',_'Times_New_Roman',_serif] text-[clamp(0.94rem,1.2vw,1.5rem)]
                   font-normal leading-[1.8] tracking-[-0.025em] text-[rgba(23,23,23,0.64)] [overflow-wrap:normal] [word-break:normal]
+                  min-[651px]:max-[1181px]:w-[min(100%,25rem)] min-[651px]:max-[1181px]:max-w-[clamp(18rem,42vw,25rem)] min-[651px]:max-[1181px]:mt-[clamp(1.4rem,2.6vh,2rem)] min-[651px]:max-[1181px]:text-[clamp(1.04rem,min(2vw,2.15vh),1.22rem)] min-[651px]:max-[1181px]:leading-[1.58]
                   max-[900px]:w-[min(90vw,30rem)] max-[900px]:text-[0.95rem] max-[900px]:max-w-[15rem] max-[900px]:text-right
-                  max-[650px]:ml-auto max-[650px]:mr-0 max-[650px]:w-full max-[650px]:max-w-[15rem]"
+                  max-[901px]:mr-0 max-[650px]:mr-0 max-[650px]:w-full max-[650px]:max-w-[15rem]"
                 aria-label={ABOUT_DATA.body}
               >
                 {bodyWords.map((word, wordIndex) => (
@@ -583,7 +586,7 @@ export function AboutSection({
                 ))}
               </p>
 
-              <div className="size-[90%] mx-auto mt-[3.5rem] flex items-center justify-center max-[900px]:justify-end">
+              <div className="size-[80%] mx-auto mt-[3.5rem] flex items-center max-[901px]:mr-0 min-[651px]:max-[901px]:w-[50%] min-[901px]:max-[1181px]:w-[70%]">
                 <img
                   src={gradImage}
                   alt="Doron Pela"
@@ -612,7 +615,6 @@ export function AboutSection({
                   className="size-full object-contain"
                 />
               </div> */}
-
             </div>
           </div>
         </div>
