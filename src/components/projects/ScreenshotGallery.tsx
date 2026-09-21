@@ -53,6 +53,24 @@ const PROJECT_GALLERY_DESKTOP_PEEK_PERCENT = 39;
 //writing scrollLeft / transform values before the user has actually dragged.
 const PROJECT_GALLERY_DRAG_DEAD_ZONE_PX = 1.5;
 
+const PROJECT_GALLERY_TUG_CLASSES =
+  "absolute top-1/2 z-40 flex size-[clamp(2rem,2.55vw,2.55rem)] items-center justify-center rounded-full border border-[rgba(255,255,255,0.42)] bg-[rgba(255,255,255,0.42)] text-[rgba(23,23,23,0.72)] shadow-[0_8px_28px_rgba(23,23,23,0.08)] backdrop-blur-[14px] opacity-0 invisible pointer-events-none [--gallery-arrow-scale:0.94] [transform:translate(var(--gallery-arrow-x),-50%)_scale(var(--gallery-arrow-scale))] [transition:opacity_150ms_ease,transform_170ms_cubic-bezier(.2,.8,.2,1),background-color_150ms_ease] data-[visible=true]:opacity-100 data-[visible=true]:visible data-[visible=true]:pointer-events-auto data-[visible=true]:[--gallery-arrow-scale:1] data-[visible=true]:hover:bg-[rgba(255,255,255,0.62)] data-[visible=true]:hover:[--gallery-arrow-scale:1.05] focus-visible:outline-2 focus-visible:outline-[rgba(23,23,23,0.18)] focus-visible:outline-offset-2 max-[680px]:size-8 max-[680px]:[--gallery-arrow-scale:1] max-[680px]:data-[visible=true]:hover:[--gallery-arrow-scale:1] motion-reduce:transition-none";
+
+const PROJECT_GALLERY_TUG_LEFT_CLASSES =
+  "left-0 [--gallery-arrow-x:-55%] max-[680px]:left-[0.45rem] max-[680px]:[--gallery-arrow-x:0%]";
+
+const PROJECT_GALLERY_TUG_RIGHT_CLASSES =
+  "right-0 [--gallery-arrow-x:55%] max-[680px]:right-[0.45rem] max-[680px]:[--gallery-arrow-x:0%]";
+
+// The opening arrow rides with the translated screenshot wall on desktop and
+// hangs completely beyond its scene-facing edge. The closing arrow stays at
+// the details-side edge. The backend version mirrors these positions.
+const PROJECT_GALLERY_TUG_OPEN_FRONTEND_CLASSES =
+  "min-[1181px]:left-[clamp(-2.75rem,-2.6vw,-2.2rem)] min-[1181px]:right-auto min-[1181px]:[--gallery-arrow-x:0%]";
+
+const PROJECT_GALLERY_TUG_OPEN_BACKEND_CLASSES =
+  "min-[1181px]:left-auto min-[1181px]:right-[clamp(-2.75rem,-2.6vw,-2.2rem)] min-[1181px]:[--gallery-arrow-x:0%]";
+
 function getKnownScreenshotRatio(
   screenshot: RenderableProjectScreenshot,
   index: number,
@@ -234,13 +252,13 @@ function LiquidGlass({
 
   return (
     <div
-      className={`${orientation}-liquid-glass project-gallery-liquid-glass relative isolate ${className}`}
+      className={`${orientation}-liquid-glass project-gallery-liquid-glass relative isolate ${className} [--glass-rotate-x:0deg] [--glass-rotate-y:0deg] bg-[rgba(255,255,255,0.025)] [backface-visibility:hidden] [transform:perspective(900px)_rotateX(var(--glass-rotate-x))_rotateY(var(--glass-rotate-y))_translateZ(0)] origin-center [transform-style:preserve-3d] [transition:transform_135ms_cubic-bezier(.18,.78,.2,1)] will-change-transform shadow-[inset_1px_1px_0_rgba(255,255,255,0.5),inset_-1px_-1px_0_rgba(255,255,255,0.1)] group-data-[dragging=true]/gallery:[--glass-rotate-x:0deg]! group-data-[dragging=true]/gallery:[--glass-rotate-y:0deg]! group-data-[dragging=true]/gallery:transition-none motion-reduce:[transform:none] motion-reduce:transition-none after:content-[''] after:pointer-events-none after:absolute after:inset-0 after:z-20 after:rounded-[inherit] after:p-px after:bg-[linear-gradient(115deg,rgba(255,255,255,0.7),rgba(180,226,255,0.16)_24%,rgba(255,255,255,0.08)_48%,rgba(255,190,221,0.12)_74%,rgba(255,255,255,0.46))] after:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] after:[-webkit-mask-composite:xor] after:[mask-composite:exclude] after:opacity-[0.58]`}
       onPointerLeave={resetSurface}
       onPointerMove={handlePointerMove}
       ref={surfaceRef}
     >
       <div
-        className={`${orientation}-liquid-content project-gallery-liquid-content relative z-10 h-full w-full overflow-hidden rounded-[inherit]`}
+        className={`${orientation}-liquid-content project-gallery-liquid-content relative z-10 h-full w-full overflow-hidden rounded-[inherit] [backface-visibility:hidden] [transform:translateZ(0)]`}
       >
         {children}
       </div>
@@ -974,7 +992,7 @@ export default function ProjectScreenshotGallery({
     index: number,
   ) => (
     <div
-      className={`${orientation}-project-shot project-gallery-shot h-full min-h-0 w-full`}
+      className={`${orientation}-project-shot project-gallery-shot h-full min-h-0 w-full origin-center overflow-visible`}
     >
       <LiquidGlass
         className="h-full min-h-0 w-full rounded-[clamp(0.68rem,0.9vw,0.95rem)]"
@@ -1025,314 +1043,18 @@ export default function ProjectScreenshotGallery({
 
   return (
     <div
-      className={`${orientation}-project-gallery-shell project-gallery-shell relative h-full min-h-0 w-full overflow-visible`}
+      className={`${orientation}-project-gallery-shell project-gallery-shell group/gallery relative h-full min-h-0 w-full overflow-visible [--project-gallery-peek-x:0%] [contain:layout_style]`}
       data-dragging="false"
       data-orientation={orientation}
       ref={galleryShellRef}
     >
-      <style>{`
-        .project-gallery-shell {
-          --project-gallery-peek-x: 0%;
-          contain: layout style;
-        }
-
-        .project-gallery-clip {
-          contain: paint;
-        }
-
-        .project-gallery-liquid-glass {
-          --glass-rotate-x: 0deg;
-          --glass-rotate-y: 0deg;
-
-          background: rgba(255, 255, 255, 0.025);
-          backface-visibility: hidden;
-          transform:
-            perspective(900px)
-            rotateX(var(--glass-rotate-x))
-            rotateY(var(--glass-rotate-y))
-            translateZ(0);
-          transform-origin: center center;
-          transform-style: preserve-3d;
-          transition: transform 135ms cubic-bezier(.18,.78,.2,1);
-          will-change: transform;
-          box-shadow:
-            inset 1px 1px 0 rgba(255, 255, 255, 0.5),
-            inset -1px -1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        /*
-          The section timeline owns this wrapper's x/y/scale. The complete
-          screenshot surface lives one level deeper and owns the hover tilt, so
-          the image, rounded corners and optical edge all bend as one object
-          without a stationary outer frame clipping the transformed media.
-        */
-        .project-gallery-shot {
-          transform-origin: center center;
-          overflow: visible;
-        }
-
-        .project-gallery-liquid-content {
-          backface-visibility: hidden;
-          transform: translateZ(0);
-        }
-
-        /*
-          During a drag the gallery motion itself is the visual priority. Freeze
-          the hover tilt and its transition so the compositor is not resolving a
-          second transform animation on every screenshot while scrollLeft moves.
-        */
-        .project-gallery-shell[data-dragging="true"] .project-gallery-liquid-glass {
-          --glass-rotate-x: 0deg !important;
-          --glass-rotate-y: 0deg !important;
-          transition: none;
-        }
-
-        .project-gallery-liquid-glass::after {
-          content: "";
-          pointer-events: none;
-          position: absolute;
-          inset: 0;
-          z-index: 20;
-          border-radius: inherit;
-          padding: 1px;
-          background:
-            linear-gradient(
-              115deg,
-              rgba(255, 255, 255, 0.7),
-              rgba(180, 226, 255, 0.16) 24%,
-              rgba(255, 255, 255, 0.08) 48%,
-              rgba(255, 190, 221, 0.12) 74%,
-              rgba(255, 255, 255, 0.46)
-            );
-          -webkit-mask:
-            linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          opacity: 0.58;
-        }
-
-        .project-gallery-scroll {
-          -webkit-overflow-scrolling: touch;
-          user-select: none;
-        }
-
-        .project-gallery-scroll::-webkit-scrollbar {
-          display: none;
-        }
-
-        @media (min-width: 1181px) {
-          .project-gallery-peek,
-          .project-gallery-opening-tug-track {
-            transform: translate3d(var(--project-gallery-peek-x), 0, 0);
-            will-change: transform;
-          }
-        }
-
-        /*
-          The arrows remain click-only controls; dragging is still owned by the
-          gallery surface. On wide desktop the OPENING arrow rides with the
-          translated screenshot wall but is offset completely beyond its
-          scene-facing edge, so it reads as an external pull/reveal affordance
-          and never covers project media. The CLOSING arrow stays at the
-          details-side edge in its existing position.
-        */
-        .project-gallery-opening-tug-track {
-          pointer-events: none;
-          position: absolute;
-          inset: 0;
-          z-index: 40;
-        }
-
-        .project-gallery-tug {
-          position: absolute;
-          top: 50%;
-          z-index: 40;
-          display: flex;
-          width: clamp(2rem, 2.55vw, 2.55rem);
-          height: clamp(2rem, 2.55vw, 2.55rem);
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(255, 255, 255, 0.42);
-          border-radius: 9999px;
-          background: rgba(255, 255, 255, 0.42);
-          color: rgba(23, 23, 23, 0.72);
-          box-shadow: 0 8px 28px rgba(23, 23, 23, 0.08);
-          -webkit-backdrop-filter: blur(14px);
-          backdrop-filter: blur(14px);
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-          transform: translateY(-50%) scale(0.94);
-          transition:
-            opacity 150ms ease,
-            transform 170ms cubic-bezier(.2,.8,.2,1),
-            background-color 150ms ease;
-        }
-
-        .project-gallery-tug-left {
-          left: 0;
-          transform: translate(-55%, -50%) scale(0.94);
-        }
-
-        .project-gallery-tug-right {
-          right: 0;
-          transform: translate(55%, -50%) scale(0.94);
-        }
-
-        .project-gallery-tug[data-visible="true"] {
-          opacity: 1;
-          visibility: visible;
-          pointer-events: auto;
-        }
-
-        .project-gallery-tug-left[data-visible="true"] {
-          transform: translate(-55%, -50%) scale(1);
-        }
-
-        .project-gallery-tug-right[data-visible="true"] {
-          transform: translate(55%, -50%) scale(1);
-        }
-
-        .project-gallery-tug[data-visible="true"]:hover {
-          background: rgba(255, 255, 255, 0.62);
-          transform: translateY(-50%) scale(1.05);
-        }
-
-        .project-gallery-tug-left[data-visible="true"]:hover {
-          transform: translate(-55%, -50%) scale(1.05);
-        }
-
-        .project-gallery-tug-right[data-visible="true"]:hover {
-          transform: translate(55%, -50%) scale(1.05);
-        }
-
-        .project-gallery-tug:focus-visible {
-          outline: 2px solid rgba(23, 23, 23, 0.18);
-          outline-offset: 2px;
-        }
-
-        @media (min-width: 1181px) {
-          /*
-            Frontend's opening control hangs beyond the gallery's LEFT,
-            scene-facing edge. Backend mirrors it beyond the RIGHT edge. The
-            whole circular control stays clear of screenshot pixels; only the
-            closing control remains attached to the details-side gallery edge.
-          */
-          .project-gallery-opening-tug-track[data-orientation="frontend"]
-            .project-gallery-tug-open {
-            left: clamp(-2.75rem, -2.6vw, -2.2rem);
-            right: auto;
-            transform: translateY(-50%) scale(0.94);
-          }
-
-          .project-gallery-opening-tug-track[data-orientation="frontend"]
-            .project-gallery-tug-open[data-visible="true"] {
-            transform: translateY(-50%) scale(1);
-          }
-
-          .project-gallery-opening-tug-track[data-orientation="frontend"]
-            .project-gallery-tug-open[data-visible="true"]:hover {
-            transform: translateY(-50%) scale(1.05);
-          }
-
-          .project-gallery-opening-tug-track[data-orientation="backend"]
-            .project-gallery-tug-open {
-            left: auto;
-            right: clamp(-2.75rem, -2.6vw, -2.2rem);
-            transform: translateY(-50%) scale(0.94);
-          }
-
-          .project-gallery-opening-tug-track[data-orientation="backend"]
-            .project-gallery-tug-open[data-visible="true"] {
-            transform: translateY(-50%) scale(1);
-          }
-
-          .project-gallery-opening-tug-track[data-orientation="backend"]
-            .project-gallery-tug-open[data-visible="true"]:hover {
-            transform: translateY(-50%) scale(1.05);
-          }
-
-          /*
-            The reverse/closing control takes over the ORIGINAL opening-control
-            location next to the project details: right side for Frontend, left
-            side for Backend. Its arrow direction itself never changes.
-          */
-          .project-gallery-shell[data-orientation="frontend"]
-            > .project-gallery-tug-close {
-            left: auto;
-            right: 0;
-            transform: translate(55%, -50%) scale(0.94);
-          }
-
-          .project-gallery-shell[data-orientation="frontend"]
-            > .project-gallery-tug-close[data-visible="true"] {
-            transform: translate(55%, -50%) scale(1);
-          }
-
-          .project-gallery-shell[data-orientation="frontend"]
-            > .project-gallery-tug-close[data-visible="true"]:hover {
-            transform: translate(55%, -50%) scale(1.05);
-          }
-
-          .project-gallery-shell[data-orientation="backend"]
-            > .project-gallery-tug-close {
-            left: 0;
-            right: auto;
-            transform: translate(-55%, -50%) scale(0.94);
-          }
-
-          .project-gallery-shell[data-orientation="backend"]
-            > .project-gallery-tug-close[data-visible="true"] {
-            transform: translate(-55%, -50%) scale(1);
-          }
-
-          .project-gallery-shell[data-orientation="backend"]
-            > .project-gallery-tug-close[data-visible="true"]:hover {
-            transform: translate(-55%, -50%) scale(1.05);
-          }
-        }
-
-        @media (max-width: 680px) {
-          .project-gallery-tug {
-            width: 2rem;
-            height: 2rem;
-          }
-
-          .project-gallery-tug-left,
-          .project-gallery-tug-left[data-visible="true"],
-          .project-gallery-tug-left[data-visible="true"]:hover {
-            left: 0.45rem;
-            transform: translate(0, -50%) scale(1);
-          }
-
-          .project-gallery-tug-right,
-          .project-gallery-tug-right[data-visible="true"],
-          .project-gallery-tug-right[data-visible="true"]:hover {
-            right: 0.45rem;
-            transform: translate(0, -50%) scale(1);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .project-gallery-liquid-glass {
-            transform: none;
-            transition: none;
-          }
-
-          .project-gallery-tug {
-            transition: none;
-          }
-        }
-      `}</style>
-
-      <div className="project-gallery-clip absolute inset-0 overflow-hidden max-[680px]:rounded-[0.9rem]">
+      <div className="project-gallery-clip absolute inset-0 overflow-hidden [contain:paint] max-[680px]:rounded-[0.9rem]">
         <div
-          className={`${orientation}-project-gallery-peek project-gallery-peek relative h-full min-h-0 w-full`}
+          className={`${orientation}-project-gallery-peek project-gallery-peek relative h-full min-h-0 w-full min-[1181px]:[transform:translate3d(var(--project-gallery-peek-x),0,0)] min-[1181px]:will-change-transform`}
         >
           <div
             aria-label={`${projectTitle} screenshot gallery`}
-            className={`${orientation}-project-gallery project-gallery-scroll pointer-events-auto h-full min-h-0 w-full cursor-grab overflow-x-auto overflow-y-hidden overscroll-x-contain active:cursor-grabbing`}
+            className={`${orientation}-project-gallery project-gallery-scroll pointer-events-auto h-full min-h-0 w-full cursor-grab overflow-x-auto overflow-y-hidden overscroll-x-contain select-none [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden active:cursor-grabbing`}
             onLostPointerCapture={finishDragging}
             onPointerCancel={finishDragging}
             onPointerDown={handlePointerDown}
@@ -1398,16 +1120,16 @@ export default function ProjectScreenshotGallery({
       </div>
 
       <div
-        className="project-gallery-opening-tug-track"
+        className="project-gallery-opening-tug-track pointer-events-none absolute inset-0 z-40 min-[1181px]:[transform:translate3d(var(--project-gallery-peek-x),0,0)] min-[1181px]:will-change-transform"
         data-orientation={orientation}
       >
         <button
           aria-label={`Reveal ${projectTitle} screenshots`}
-          className={`project-gallery-tug project-gallery-tug-open ${
+          className={`project-gallery-tug project-gallery-tug-open ${PROJECT_GALLERY_TUG_CLASSES} ${
             isMirrored
-              ? "project-gallery-tug-left"
-              : "project-gallery-tug-right"
-          } pointer-events-auto cursor-pointer`}
+              ? `${PROJECT_GALLERY_TUG_LEFT_CLASSES} ${PROJECT_GALLERY_TUG_OPEN_BACKEND_CLASSES}`
+              : `${PROJECT_GALLERY_TUG_RIGHT_CLASSES} ${PROJECT_GALLERY_TUG_OPEN_FRONTEND_CLASSES}`
+          } cursor-pointer`}
           onClick={() => scrollGallery(isMirrored ? "left" : "right")}
           ref={isMirrored ? leftTugRef : rightTugRef}
           type="button"
@@ -1418,9 +1140,11 @@ export default function ProjectScreenshotGallery({
 
       <button
         aria-label={`Move ${projectTitle} screenshots back`}
-        className={`project-gallery-tug project-gallery-tug-close ${
-          isMirrored ? "project-gallery-tug-right" : "project-gallery-tug-left"
-        } pointer-events-auto cursor-pointer`}
+        className={`project-gallery-tug project-gallery-tug-close ${PROJECT_GALLERY_TUG_CLASSES} ${
+          isMirrored
+            ? PROJECT_GALLERY_TUG_RIGHT_CLASSES
+            : PROJECT_GALLERY_TUG_LEFT_CLASSES
+        } cursor-pointer`}
         onClick={() => scrollGallery(isMirrored ? "right" : "left")}
         ref={isMirrored ? rightTugRef : leftTugRef}
         type="button"
