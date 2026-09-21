@@ -508,7 +508,7 @@ export function AboutSection({
       data-scroll-locked-section="about"
       //About is presentation-only: pointer input passes through to the Spline
       //canvas, while select-none prevents the rendered copy from being highlighted.
-      className=" absolute z-20 top-0 left-0 w-full"
+      className="pointer-events-none select-none absolute z-20 top-0 left-0 w-full"
     >
       <div
         ref={planeRef}

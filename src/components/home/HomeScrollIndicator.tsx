@@ -4,7 +4,7 @@ type HomeScrollIndicatorProps = {
   active: boolean;
 };
 
-const HOME_SCROLL_INDICATOR_IDLE_DELAY_MS = 3000;
+const HOME_SCROLL_INDICATOR_IDLE_DELAY_MS = 1500;
 const HOME_SCROLL_INDICATOR_TOP_THRESHOLD_PX = 24;
 const HOME_SCROLL_INDICATOR_DESKTOP_QUERY = "(min-width: 1101px)";
 
