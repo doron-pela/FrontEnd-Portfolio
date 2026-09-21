@@ -586,7 +586,7 @@ export function AboutSection({
               <div className="size-[90%] mx-auto mt-[3.5rem] flex items-center justify-center max-[900px]:justify-end">
                 <img
                   src={gradImage}
-                  alt="Grad Image"
+                  alt="Doron Pela"
                   className="size-full object-contain"
                 />
               </div>
